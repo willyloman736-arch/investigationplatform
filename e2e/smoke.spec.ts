@@ -7,7 +7,9 @@ test.describe("Digital Asset Investigations smoke (demo mode)", () => {
   test("landing renders the positioning headline and brand", async ({
     page,
   }) => {
-    await page.goto("/");
+    // domcontentloaded (not full 'load') — the hero video shouldn't gate asserting
+    // server-rendered content, and avoids flakiness under parallel workers.
+    await page.goto("/", { waitUntil: "domcontentloaded" });
     await expect(page).toHaveTitle(/Digital Asset Investigations/);
     await expect(
       page.getByRole("heading", {

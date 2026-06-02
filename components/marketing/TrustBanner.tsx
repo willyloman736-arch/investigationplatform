@@ -4,11 +4,12 @@ import {
   BadgeCheck,
   ShieldCheck,
   ScrollText,
-  Award,
-  Fingerprint,
   FileCheck,
+  Medal,
+  Fingerprint,
+  ListChecks,
   Landmark,
-  Globe,
+  Scale,
   type LucideIcon,
 } from "lucide-react";
 
@@ -31,23 +32,24 @@ const WORKFLOW: Item[] = [
 
 /**
  * Certifications being PURSUED — shown as a roadmap, clearly marked "In progress".
- * These are NOT yet held. Do not relabel them "Certified"/"Compliant" until the
- * audits are actually completed — that would be false advertising.
+ * These are NOT yet held. Do not swap in the official cert seals or relabel them
+ * "Certified"/"Compliant" until the audit is actually completed — the real marks
+ * are trademark-controlled and imply certification.
  */
 const COMPLIANCE: Item[] = [
-  { label: "SOC 2 Type II", icon: ShieldCheck },
-  { label: "ISO 27001", icon: Award },
+  { label: "SOC 2 Type II", icon: FileCheck },
+  { label: "ISO 27001", icon: Medal },
   { label: "CJIS", icon: Fingerprint },
-  { label: "NIST 800-53", icon: FileCheck },
+  { label: "NIST 800-53", icon: ListChecks },
   { label: "DFARS", icon: Landmark },
-  { label: "GDPR", icon: Globe },
+  { label: "GDPR", icon: Scale },
 ];
 
 function WorkflowPill({ icon: Icon, label }: Item) {
   return (
-    <li className="flex shrink-0 items-center gap-2.5 rounded-full border border-white/10 bg-white/5 py-2 pl-2 pr-4 backdrop-blur-md">
-      <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary/15 text-primary ring-1 ring-inset ring-primary/25">
-        <Icon className="h-4 w-4" aria-hidden="true" />
+    <li className="flex shrink-0 items-center gap-2.5 rounded-full border border-white/10 bg-white/5 py-1.5 pl-1.5 pr-4 backdrop-blur-md">
+      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/15 text-primary ring-1 ring-inset ring-primary/25">
+        <Icon className="h-[18px] w-[18px]" strokeWidth={2} aria-hidden="true" />
       </span>
       <span className="whitespace-nowrap text-sm font-medium text-foreground/90">
         {label}
@@ -58,20 +60,19 @@ function WorkflowPill({ icon: Icon, label }: Item) {
 
 function CompliancePill({ icon: Icon, label }: Item) {
   return (
-    <li className="flex shrink-0 items-center gap-2.5 rounded-lg border border-white/10 bg-white/[0.03] px-3.5 py-2">
-      <Icon
-        className="h-4 w-4 shrink-0 text-muted-foreground"
-        aria-hidden="true"
-      />
+    <li className="flex shrink-0 items-center gap-3 rounded-xl border border-white/10 bg-white/[0.04] py-1.5 pl-1.5 pr-4 backdrop-blur-md">
+      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-amber-400/10 text-amber-300 ring-1 ring-inset ring-amber-400/25">
+        <Icon className="h-[18px] w-[18px]" strokeWidth={2} aria-hidden="true" />
+      </span>
       <span className="flex flex-col leading-tight">
-        <span className="whitespace-nowrap text-xs font-semibold text-foreground/90">
+        <span className="whitespace-nowrap text-sm font-semibold text-foreground/90">
           {label}
         </span>
-        <span className="inline-flex items-center gap-1 text-[10px] font-medium text-amber-300/90">
-          <span
-            className="h-1 w-1 rounded-full bg-amber-400"
-            aria-hidden="true"
-          />
+        <span className="inline-flex items-center gap-1.5 text-[11px] font-medium text-amber-300/90">
+          <span className="relative flex h-1.5 w-1.5">
+            <span className="absolute inline-flex h-1.5 w-1.5 animate-ping rounded-full bg-amber-400/70" />
+            <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-amber-400" />
+          </span>
           In progress
         </span>
       </span>
