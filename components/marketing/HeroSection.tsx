@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { ArrowRight, ShieldCheck, Lock, FileSearch, Scale } from "lucide-react";
 import { motion, type Variants } from "framer-motion";
@@ -127,6 +127,7 @@ export function HeroSection() {
 /** Muted, looping cinematic hero video. Falls back to the poster image when the
  *  user prefers reduced motion. */
 function HeroVideo() {
+  const videoRef = useRef<HTMLVideoElement>(null);
   const [reducedMotion, setReducedMotion] = useState(false);
 
   useEffect(() => {
@@ -136,6 +137,36 @@ function HeroVideo() {
     mql.addEventListener?.("change", onChange);
     return () => mql.removeEventListener?.("change", onChange);
   }, []);
+
+  // Force muted + kick off playback imperatively. Browsers only autoplay MUTED
+  // video, and React doesn't reliably reflect the `muted` attribute on hydration
+  // (a long-standing bug), which silently blocks autoplay. Setting it on the
+  // element and calling play() is the reliable fix.
+  useEffect(() => {
+    if (reducedMotion) return;
+    const v = videoRef.current;
+    if (!v) return;
+    v.muted = true;
+    v.defaultMuted = true;
+    const tryPlay = () => {
+      const p = v.play();
+      if (p && typeof p.catch === "function") p.catch(() => {});
+    };
+    tryPlay();
+    // Retry when the first frames are ready (covers slow first paint / preload)
+    // and when the tab becomes visible (covers being opened in a background tab).
+    v.addEventListener("loadeddata", tryPlay, { once: true });
+    v.addEventListener("canplay", tryPlay, { once: true });
+    const onVisible = () => {
+      if (document.visibilityState === "visible") tryPlay();
+    };
+    document.addEventListener("visibilitychange", onVisible);
+    return () => {
+      v.removeEventListener("loadeddata", tryPlay);
+      v.removeEventListener("canplay", tryPlay);
+      document.removeEventListener("visibilitychange", onVisible);
+    };
+  }, [reducedMotion]);
 
   if (reducedMotion) {
     return (
@@ -148,12 +179,13 @@ function HeroVideo() {
 
   return (
     <video
+      ref={videoRef}
       className="absolute inset-0 h-full w-full object-cover"
       autoPlay
       muted
       loop
       playsInline
-      preload="metadata"
+      preload="auto"
       poster="/hero/cinematic-hero-poster.jpg"
       aria-hidden="true"
     >
