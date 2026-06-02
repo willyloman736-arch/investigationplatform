@@ -13,7 +13,8 @@ This folder contains the database layer for **Digital Asset Investigations — S
 | 1 | `schema.sql` | Enables `pgcrypto`; creates all enums, tables, foreign keys, indexes, `updated_at` triggers, and the `handle_new_user()` trigger that auto-creates a `profiles` row on sign-up. |
 | 2 | `rls-policies.sql` | Enables Row Level Security on every table; defines `is_admin()` / `has_case_access()`; adds all access policies. |
 | 3 | `storage.sql` | Creates the private **`evidence`** storage bucket and its access policies (path = `<case_id>/<file_name>`). |
-| 4 | `seed.sql` | **Optional.** Loads the same demo dataset the app shows in DEMO mode. Requires the five demo auth users to exist first (see below). |
+| 4 | `recovery.sql` | Creates **`account_recovery`** — service-role-only scrypt hashes of each user's recovery phrase. RLS enabled with **no policies**. |
+| 5 | `seed.sql` | **Optional.** Loads the same demo dataset the app shows in DEMO mode. Requires the five demo auth users to exist first (see below). |
 
 Each file is **idempotent** — safe to re-run.
 
@@ -31,7 +32,8 @@ Open **SQL Editor** (left sidebar) and run the files **in order**. For each file
 1. `schema.sql`
 2. `rls-policies.sql`
 3. `storage.sql`
-4. `seed.sql` *(optional — see "Demo seed" below)*
+4. `recovery.sql`
+5. `seed.sql` *(optional — see "Demo seed" below)*
 
 > The SQL Editor runs as the **service role**, which bypasses RLS — this is required for `seed.sql` to insert rows on behalf of multiple users.
 
@@ -40,6 +42,7 @@ The CLI alternative, if you use it:
 supabase db execute --file supabase/schema.sql
 supabase db execute --file supabase/rls-policies.sql
 supabase db execute --file supabase/storage.sql
+supabase db execute --file supabase/recovery.sql
 # optional:
 supabase db execute --file supabase/seed.sql
 ```
@@ -66,11 +69,11 @@ where email = 'you@example.com';
 `seed.sql` reproduces the deterministic dataset used by DEMO mode. Because `profiles.id` references `auth.users(id)`, you must create the five demo auth users **first**:
 
 - **Option A (Dashboard):** Authentication → Users → **Add user** for each of:
-  `client@Digital Asset Investigations.demo`, `counterparty@Digital Asset Investigations.demo`, `admin@Digital Asset Investigations.demo`, `taylor@meridian.demo`, `casey@summit.demo`.
+  `client@dai.demo`, `counterparty@dai.demo`, `admin@dai.demo`, `taylor@meridian.demo`, `casey@summit.demo`.
   Then update each `profiles` row's id to match, or use Option B.
 - **Option B (SQL, exact UUIDs):** uncomment the `insert into auth.users (...)` block at the top of `seed.sql` (**STEP 0, Option B**) and run it once. It creates the users with the exact UUIDs the seed expects.
 
-Then run the rest of `seed.sql`. The body is **guarded**: if the five demo users are not present it does nothing and raises a `NOTICE` (so it is harmless to run early). After seeding, promote the admin demo user if it is not already admin (the seed sets `admin@Digital Asset Investigations.demo` to `admin`).
+Then run the rest of `seed.sql`. The body is **guarded**: if the five demo users are not present it does nothing and raises a `NOTICE` (so it is harmless to run early). After seeding, promote the admin demo user if it is not already admin (the seed sets `admin@dai.demo` to `admin`).
 
 ---
 
@@ -115,10 +118,11 @@ NEXT_PUBLIC_DEMO_MODE=true
 - **`escrow_transactions`:** insert + select only — an **append-only** ledger (no update/delete policy).
 - **`audit_logs`:** insert by any authenticated user; select by case access or admin; **no update/delete policy** → append-only.
 - **`evidence` storage:** private bucket; objects readable/writable only under a case-id prefix the user can access; admins all.
-- **Service role bypasses RLS** and is used only on trusted server paths (webhook deposit/release confirmation, guaranteed audit writes).
+- **`account_recovery`:** RLS on with **no policies** → clients get zero access; only the service role can read/write it. It holds only a **scrypt hash** of each user's recovery phrase — the phrase itself is never stored, logged, or returned.
+- **Service role bypasses RLS** and is used only on trusted server paths (webhook deposit/release confirmation, guaranteed audit writes, and `account_recovery` reads/writes for recovery-phrase signup/reset).
 
 ---
 
 ## Rebranding
 
-The brand name **Digital Asset Investigations** is a placeholder. To rebrand, update `APP_NAME` in `lib/constants.ts` and the wordmark in `components/shared/Logo.tsx`. Nothing in this SQL depends on the brand name (the `case_number` prefix `AEG-` in the seed is cosmetic — change it freely).
+To rebrand, update `APP_NAME` / `APP_SHORT_NAME` in `lib/constants.ts` and replace the SVG artwork in `public/brand/` (and `app/icon.svg`) used by `components/shared/Logo.tsx`. Nothing in this SQL depends on the brand name (the `case_number` prefix `AEG-` in the seed is cosmetic — change it freely).

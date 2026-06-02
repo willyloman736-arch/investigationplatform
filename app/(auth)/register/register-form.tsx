@@ -1,11 +1,14 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { useFormStatus } from "react-dom";
 import { AlertCircle, Loader2, UserPlus, Briefcase, Users } from "lucide-react";
 import { toast } from "sonner";
 
 import { signUp } from "@/lib/actions/auth";
+import { generateRecoveryPhrase } from "@/lib/recovery/phrase";
+import { RecoveryPhraseReveal } from "@/components/auth/RecoveryPhraseReveal";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -22,9 +25,11 @@ import type { UserRole } from "@/lib/types";
 /**
  * Client registration form. Submits to the `signUp` server action.
  *
- * Self-service registration is limited to `client` and `counterparty`. The
- * Radix Select does not emit a native form field, so we mirror the chosen role
- * into a hidden <input name="role"> consumed by the server action.
+ * A 12-word recovery phrase is generated in the browser and sent once with the
+ * signup so the server can store only its hash. On success we reveal that phrase
+ * (one time) before sending the user to the dashboard.
+ *
+ * Self-service registration is limited to `client` and `counterparty`.
  */
 
 type SelectableRole = Extract<UserRole, "client" | "counterparty">;
@@ -66,17 +71,38 @@ function SubmitButton() {
 }
 
 export function RegisterForm() {
+  const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [role, setRole] = useState<SelectableRole>("client");
+  const [phrase, setPhrase] = useState<string | null>(null);
 
   async function handleAction(formData: FormData) {
     setError(null);
+    // Generate the recovery phrase in the browser and send it once so the server
+    // can store only its hash. Keep it in state to reveal after signup succeeds.
+    const generated = generateRecoveryPhrase();
+    formData.set("recoveryPhrase", generated);
+
     const result = await signUp(formData);
-    // Only reached on failure (success redirects).
     if (result?.error) {
       setError(result.error);
       toast.error(result.error);
+      return;
     }
+    if (result?.success) {
+      setPhrase(generated);
+    }
+  }
+
+  // Once the account is created, reveal the recovery phrase (one time) before
+  // continuing. The form is replaced by the reveal step.
+  if (phrase) {
+    return (
+      <RecoveryPhraseReveal
+        phrase={phrase}
+        onConfirmed={() => router.push("/dashboard")}
+      />
+    );
   }
 
   return (
@@ -168,6 +194,11 @@ export function RegisterForm() {
       </div>
 
       <SubmitButton />
+
+      <p className="text-center text-xs leading-relaxed text-muted-foreground/70">
+        On the next step you&apos;ll get a one-time recovery phrase — save it to
+        regain access if you forget your password.
+      </p>
 
       <p className="text-center text-xs leading-relaxed text-muted-foreground/70">
         Administrator accounts are provisioned by {APP_NAME} staff and cannot be

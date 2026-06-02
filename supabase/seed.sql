@@ -39,17 +39,17 @@
 --   email_confirmed_at, created_at, updated_at, raw_app_meta_data, raw_user_meta_data)
 -- values
 --   ('00000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000000',
---    'authenticated', 'authenticated', 'client@Digital Asset Investigations.demo',
+--    'authenticated', 'authenticated', 'client@dai.demo',
 --    crypt('Demo!Passw0rd', gen_salt('bf')), now(), now(), now(),
 --    '{"provider":"email","providers":["email"]}'::jsonb,
 --    '{"full_name":"Jordan Avery","company":"Northwind Capital","phone":"+1 415 555 0142"}'::jsonb),
 --   ('00000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000000',
---    'authenticated', 'authenticated', 'counterparty@Digital Asset Investigations.demo',
+--    'authenticated', 'authenticated', 'counterparty@dai.demo',
 --    crypt('Demo!Passw0rd', gen_salt('bf')), now(), now(), now(),
 --    '{"provider":"email","providers":["email"]}'::jsonb,
 --    '{"full_name":"Morgan Pierce","company":"Halcyon Recovery LLC","phone":"+1 312 555 0188"}'::jsonb),
 --   ('00000000-0000-0000-0000-000000000003', '00000000-0000-0000-0000-000000000000',
---    'authenticated', 'authenticated', 'admin@Digital Asset Investigations.demo',
+--    'authenticated', 'authenticated', 'admin@dai.demo',
 --    crypt('Demo!Passw0rd', gen_salt('bf')), now(), now(), now(),
 --    '{"provider":"email","providers":["email"]}'::jsonb,
 --    '{"full_name":"Riley Chen","company":"Digital Asset Investigations Trust Operations","phone":"+1 206 555 0117"}'::jsonb),
@@ -97,9 +97,9 @@ begin
 
   -- ── profiles (upsert rich fields; promote admin) ──────────────────────────
   insert into public.profiles (id, email, full_name, role, company, phone, avatar_url, created_at, updated_at) values
-    ('00000000-0000-0000-0000-000000000001','client@Digital Asset Investigations.demo','Jordan Avery','client','Northwind Capital','+1 415 555 0142',null,'2026-01-04T09:00:00.000Z','2026-01-04T09:00:00.000Z'),
-    ('00000000-0000-0000-0000-000000000002','counterparty@Digital Asset Investigations.demo','Morgan Pierce','counterparty','Halcyon Recovery LLC','+1 312 555 0188',null,'2026-01-05T11:30:00.000Z','2026-01-05T11:30:00.000Z'),
-    ('00000000-0000-0000-0000-000000000003','admin@Digital Asset Investigations.demo','Riley Chen','admin','Digital Asset Investigations Trust Operations','+1 206 555 0117',null,'2025-12-20T08:00:00.000Z','2025-12-20T08:00:00.000Z'),
+    ('00000000-0000-0000-0000-000000000001','client@dai.demo','Jordan Avery','client','Northwind Capital','+1 415 555 0142',null,'2026-01-04T09:00:00.000Z','2026-01-04T09:00:00.000Z'),
+    ('00000000-0000-0000-0000-000000000002','counterparty@dai.demo','Morgan Pierce','counterparty','Halcyon Recovery LLC','+1 312 555 0188',null,'2026-01-05T11:30:00.000Z','2026-01-05T11:30:00.000Z'),
+    ('00000000-0000-0000-0000-000000000003','admin@dai.demo','Riley Chen','admin','Digital Asset Investigations Trust Operations','+1 206 555 0117',null,'2025-12-20T08:00:00.000Z','2025-12-20T08:00:00.000Z'),
     ('00000000-0000-0000-0000-000000000004','taylor@meridian.demo','Taylor Brooks','client','Meridian Holdings','+1 646 555 0173',null,'2026-01-09T14:10:00.000Z','2026-01-09T14:10:00.000Z'),
     ('00000000-0000-0000-0000-000000000005','casey@summit.demo','Casey Nguyen','counterparty','Summit Forensics','+1 503 555 0150',null,'2026-01-12T10:45:00.000Z','2026-01-12T10:45:00.000Z')
   on conflict (id) do update
@@ -121,16 +121,16 @@ begin
 
   -- ── case_parties ──────────────────────────────────────────────────────────
   insert into public.case_parties (id, case_id, profile_id, invited_email, party_role, accepted, created_at) values
-    ('22222222-0001-0000-0000-000000000001','11111111-1111-1111-1111-111111111101','00000000-0000-0000-0000-000000000001','client@Digital Asset Investigations.demo','party_a',true,'2026-01-06T09:16:00.000Z'),
-    ('22222222-0001-0000-0000-000000000002','11111111-1111-1111-1111-111111111101','00000000-0000-0000-0000-000000000002','counterparty@Digital Asset Investigations.demo','party_b',true,'2026-01-06T10:02:00.000Z'),
+    ('22222222-0001-0000-0000-000000000001','11111111-1111-1111-1111-111111111101','00000000-0000-0000-0000-000000000001','client@dai.demo','party_a',true,'2026-01-06T09:16:00.000Z'),
+    ('22222222-0001-0000-0000-000000000002','11111111-1111-1111-1111-111111111101','00000000-0000-0000-0000-000000000002','counterparty@dai.demo','party_b',true,'2026-01-06T10:02:00.000Z'),
     ('22222222-0002-0000-0000-000000000001','11111111-1111-1111-1111-111111111102','00000000-0000-0000-0000-000000000004','taylor@meridian.demo','party_a',true,'2026-01-11T13:41:00.000Z'),
     ('22222222-0002-0000-0000-000000000002','11111111-1111-1111-1111-111111111102','00000000-0000-0000-0000-000000000005','casey@summit.demo','party_b',true,'2026-01-11T14:20:00.000Z'),
-    ('22222222-0003-0000-0000-000000000001','11111111-1111-1111-1111-111111111103','00000000-0000-0000-0000-000000000001','client@Digital Asset Investigations.demo','party_a',true,'2026-01-14T08:26:00.000Z'),
+    ('22222222-0003-0000-0000-000000000001','11111111-1111-1111-1111-111111111103','00000000-0000-0000-0000-000000000001','client@dai.demo','party_a',true,'2026-01-14T08:26:00.000Z'),
     ('22222222-0003-0000-0000-000000000002','11111111-1111-1111-1111-111111111103','00000000-0000-0000-0000-000000000005','casey@summit.demo','party_b',true,'2026-01-14T09:10:00.000Z'),
     ('22222222-0004-0000-0000-000000000001','11111111-1111-1111-1111-111111111104','00000000-0000-0000-0000-000000000004','taylor@meridian.demo','party_a',true,'2026-01-18T15:01:00.000Z'),
-    ('22222222-0004-0000-0000-000000000002','11111111-1111-1111-1111-111111111104','00000000-0000-0000-0000-000000000002','counterparty@Digital Asset Investigations.demo','party_b',true,'2026-01-18T15:45:00.000Z'),
-    ('22222222-0005-0000-0000-000000000001','11111111-1111-1111-1111-111111111105','00000000-0000-0000-0000-000000000001','client@Digital Asset Investigations.demo','party_a',true,'2025-12-22T10:01:00.000Z'),
-    ('22222222-0005-0000-0000-000000000002','11111111-1111-1111-1111-111111111105','00000000-0000-0000-0000-000000000002','counterparty@Digital Asset Investigations.demo','party_b',true,'2025-12-22T10:30:00.000Z'),
+    ('22222222-0004-0000-0000-000000000002','11111111-1111-1111-1111-111111111104','00000000-0000-0000-0000-000000000002','counterparty@dai.demo','party_b',true,'2026-01-18T15:45:00.000Z'),
+    ('22222222-0005-0000-0000-000000000001','11111111-1111-1111-1111-111111111105','00000000-0000-0000-0000-000000000001','client@dai.demo','party_a',true,'2025-12-22T10:01:00.000Z'),
+    ('22222222-0005-0000-0000-000000000002','11111111-1111-1111-1111-111111111105','00000000-0000-0000-0000-000000000002','counterparty@dai.demo','party_b',true,'2025-12-22T10:30:00.000Z'),
     ('22222222-0006-0000-0000-000000000001','11111111-1111-1111-1111-111111111106','00000000-0000-0000-0000-000000000004','taylor@meridian.demo','party_a',true,'2026-01-20T09:31:00.000Z'),
     ('22222222-0006-0000-0000-000000000002','11111111-1111-1111-1111-111111111106','00000000-0000-0000-0000-000000000005','casey@summit.demo','party_b',false,'2026-01-20T09:35:00.000Z')
   on conflict (id) do nothing;

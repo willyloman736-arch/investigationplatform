@@ -26,7 +26,8 @@ A step-by-step checklist to take Digital Asset Investigations from this repo to 
    1. `schema.sql` — enums, tables, indexes, `handle_new_user` trigger
    2. `rls-policies.sql` — Row Level Security + `is_admin` / `has_case_access`
    3. `storage.sql` — the private `evidence` bucket + access policies
-   4. `seed.sql` — *optional* demo data (run **after** creating auth users)
+   4. `recovery.sql` — `account_recovery` table (service-role-only phrase hashes)
+   5. `seed.sql` — *optional* demo data (run **after** creating auth users)
 3. **Confirm the `evidence` bucket** exists and is **Private** (Storage tab).
 4. **Grab your keys** (Project Settings → API):
    - `Project URL` → `NEXT_PUBLIC_SUPABASE_URL`

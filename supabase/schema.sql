@@ -6,7 +6,8 @@
 --   1. schema.sql        (this file)
 --   2. rls-policies.sql
 --   3. storage.sql
---   4. seed.sql          (optional demo data)
+--   4. recovery.sql      (account_recovery: service-role-only phrase hashes)
+--   5. seed.sql          (optional demo data)
 --
 -- Safe to re-run: this file is written to be idempotent (IF NOT EXISTS guards,
 -- enum bootstrapping via DO blocks, CREATE OR REPLACE for functions/triggers).

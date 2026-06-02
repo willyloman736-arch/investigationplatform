@@ -16,9 +16,14 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { logAudit } from "@/lib/audit";
 import { DEMO_MODE } from "@/lib/constants";
+import { hashPhrase } from "@/lib/recovery/hash";
+import {
+  normalizeRecoveryPhrase,
+  validateRecoveryPhrase,
+} from "@/lib/recovery/phrase";
 import type { UserRole } from "@/lib/types";
 
 /**
@@ -28,6 +33,9 @@ import type { UserRole } from "@/lib/types";
  */
 export interface AuthResult {
   error?: string;
+  /** signUp resolves with success:true (instead of redirecting like signIn) so
+   *  the client can reveal the one-time recovery phrase before navigating. */
+  success?: boolean;
 }
 
 // ── Validation schemas ───────────────────────────────────────────────────────
@@ -157,12 +165,25 @@ export async function signUp(formData: FormData): Promise<AuthResult> {
     return { error: parsed.error.issues[0]?.message ?? "Invalid details." };
   }
 
+  // The recovery phrase is generated in the user's browser and sent once over
+  // HTTPS so we can store ONLY its hash. We never persist or log the phrase.
+  const rawPhrase = formData.get("recoveryPhrase");
+  const recoveryPhrase =
+    typeof rawPhrase === "string" ? normalizeRecoveryPhrase(rawPhrase) : "";
+  if (!validateRecoveryPhrase(recoveryPhrase)) {
+    return {
+      error:
+        "Could not establish your recovery phrase. Please refresh and try again.",
+    };
+  }
+
   const { fullName, email, password, role } = parsed.data;
 
-  // DEMO path: skip real account creation so the flow is demonstrable.
+  // DEMO path: skip real account creation, but still resolve with success so the
+  // client can show the (client-generated) recovery-phrase reveal step.
   // TODO(demo): remove this bypass for production — DEMO_MODE must be false.
   if (DEMO_MODE) {
-    redirect("/dashboard");
+    return { success: true };
   }
 
   const supabase = await createClient();
@@ -186,22 +207,34 @@ export async function signUp(formData: FormData): Promise<AuthResult> {
     return { error: readableAuthError(error.message) };
   }
 
-  // Fallback profile upsert (in case the auth.users trigger is not present).
-  // RLS must allow a user to upsert their own profile row (id = auth.uid()).
   if (data.user) {
+    // Fallback profile upsert (the auth.users trigger is the source of truth).
+    // RLS must allow a user to upsert their own profile row (id = auth.uid()).
     try {
       await supabase.from("profiles").upsert(
-        {
-          id: data.user.id,
-          email,
-          full_name: fullName,
-          role,
-        },
+        { id: data.user.id, email, full_name: fullName, role },
         { onConflict: "id" }
       );
     } catch {
-      // Non-fatal: the trigger is the source of truth. Swallow so a missing
-      // RLS grant in one environment never blocks registration.
+      // Non-fatal: swallow so a missing RLS grant never blocks registration.
+    }
+
+    // Store ONLY the scrypt hash of the recovery phrase, in a service-role-only
+    // table the browser can never read. Best-effort: a failure here must never
+    // strand a created account (the user can still sign in with their password).
+    try {
+      const admin = createAdminClient();
+      const phraseHash = await hashPhrase(recoveryPhrase);
+      await admin.from("account_recovery").upsert(
+        {
+          profile_id: data.user.id,
+          phrase_hash: phraseHash,
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: "profile_id" }
+      );
+    } catch {
+      // Non-fatal: account exists; recovery-by-phrase just won't be available.
     }
 
     await logAudit(supabase, {
@@ -213,12 +246,10 @@ export async function signUp(formData: FormData): Promise<AuthResult> {
     });
   }
 
-  // If email confirmation is required, there is no active session yet. Sending
-  // the user to /dashboard is safe: middleware will bounce them to /login until
-  // they confirm. This keeps the happy path simple without leaking whether
-  // confirmation is on/off.
+  // Resolve with success so the client reveals the recovery phrase, then routes
+  // to /dashboard (middleware bounces to /login if email confirmation is on).
   revalidatePath("/", "layout");
-  redirect("/dashboard");
+  return { success: true };
 }
 
 // ── Sign out ─────────────────────────────────────────────────────────────────
