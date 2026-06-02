@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1320 320" role="img" aria-labelledby="title desc">
+  <title id="title">Digital Asset Investigations reverse horizontal logo</title>
+  <desc id="desc">A reverse horizontal logo with a white DAI shield icon and uppercase wordmark for dark backgrounds.</desc>
+  <defs>
+    <style>
+      .navy{fill:#071827}
+      .black{fill:#05070a}
+      .white{fill:#f8fbff}
+      .soft{fill:#dce7ee}
+      .emerald{fill:none;stroke:#14b87a;stroke-linecap:square;stroke-linejoin:miter}
+      .emerald-fill{fill:#14b87a}
+      .fine{fill:none;stroke:#9be8c8;stroke-linecap:square;stroke-linejoin:miter}
+      .word-main{font-family:Montserrat,"Avenir Next",Inter,"Segoe UI",Arial,sans-serif;font-size:70px;font-weight:850;letter-spacing:1.5px}
+      .word-sub{font-family:Montserrat,"Avenir Next",Inter,"Segoe UI",Arial,sans-serif;font-size:39px;font-weight:750;letter-spacing:6px}
+    </style>
+  </defs>
+  <g id="icon" transform="translate(48 48) scale(.4375)">
+    <path class="white" d="M256 34 431 111 405 350 256 470 107 350 81 111Z"/>
+    <path class="soft" opacity=".55" d="M256 61 405 126 383 336 256 438 129 336 107 126Z"/>
+    <path class="emerald" stroke-width="10" d="M256 69 395 131 376 329 256 426 136 329 117 131Z"/>
+    <path class="navy" fill-rule="evenodd" d="M149 145h96c69 0 117 46 117 111s-48 111-117 111h-96V145Zm57 55v112h39c35 0 59-23 59-56s-24-56-59-56h-39Z"/>
+    <path class="navy" d="M355 145h36v222h-36Z"/>
+    <path class="emerald" stroke-width="24" d="M214 350 256 159 326 350"/>
+    <path class="emerald" stroke-width="18" d="M237 284h62"/>
+    <path class="fine" stroke-width="7" opacity=".9" d="M209 321 256 190h99"/>
+    <circle class="emerald-fill" cx="256" cy="159" r="13"/>
+    <circle class="emerald-fill" cx="214" cy="350" r="10"/>
+    <circle class="emerald-fill" cx="326" cy="350" r="10"/>
+    <circle class="emerald-fill" cx="355" cy="190" r="9"/>
+  </g>
+  <g id="wordmark">
+    <text class="word-main white" x="320" y="136">DIGITAL ASSET</text>
+    <text class="word-sub soft" x="323" y="198">INVESTIGATIONS</text>
+    <path class="emerald" stroke-width="7" d="M324 232h222l35 24h396"/>
+    <circle class="emerald-fill" cx="324" cy="232" r="7"/>
+    <circle class="emerald-fill" cx="581" cy="256" r="7"/>
+    <circle class="emerald-fill" cx="977" cy="256" r="7"/>
+  </g>
+</svg>

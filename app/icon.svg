@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
+  <title id="title">Digital Asset Investigations icon mark</title>
+  <desc id="desc">A premium DAI monogram inside an angular shield with an emerald forensic trace line and minimal node details.</desc>
+  <defs>
+    <style>
+      .navy{fill:#071827}
+      .ink{fill:#02070c}
+      .white{fill:#f8fbff}
+      .emerald{fill:none;stroke:#14b87a;stroke-linecap:square;stroke-linejoin:miter}
+      .emerald-fill{fill:#14b87a}
+      .fine{fill:none;stroke:#9be8c8;stroke-linecap:square;stroke-linejoin:miter}
+    </style>
+  </defs>
+  <g id="dai-icon">
+    <path class="navy" d="M256 34 431 111 405 350 256 470 107 350 81 111Z"/>
+    <path class="ink" opacity=".16" d="M256 61 405 126 383 336 256 438 129 336 107 126Z"/>
+    <path class="emerald" stroke-width="10" d="M256 69 395 131 376 329 256 426 136 329 117 131Z"/>
+    <path class="white" fill-rule="evenodd" d="M149 145h96c69 0 117 46 117 111s-48 111-117 111h-96V145Zm57 55v112h39c35 0 59-23 59-56s-24-56-59-56h-39Z"/>
+    <path class="white" d="M355 145h36v222h-36Z"/>
+    <path class="emerald" stroke-width="24" d="M214 350 256 159 326 350"/>
+    <path class="emerald" stroke-width="18" d="M237 284h62"/>
+    <path class="fine" stroke-width="7" opacity=".9" d="M209 321 256 190h99"/>
+    <circle class="emerald-fill" cx="256" cy="159" r="13"/>
+    <circle class="emerald-fill" cx="214" cy="350" r="10"/>
+    <circle class="emerald-fill" cx="326" cy="350" r="10"/>
+    <circle class="emerald-fill" cx="355" cy="190" r="9"/>
+  </g>
+</svg>

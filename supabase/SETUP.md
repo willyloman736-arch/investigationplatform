@@ -1,8 +1,8 @@
-# AEGIS — Supabase Setup
+# Digital Asset Investigations — Supabase Setup
 
-This folder contains the database layer for **AEGIS — Secure Escrow & Investigation Management**.
+This folder contains the database layer for **Digital Asset Investigations — Secure Escrow & Investigation Management**.
 
-> **Money-movement disclaimer.** AEGIS never moves real funds and performs **no balance arithmetic**. The `escrow_contracts` amounts and the `escrow_transactions` ledger only *represent* provider-confirmed status. Real money movement happens exclusively through a licensed payment/escrow partner wired into `lib/escrow/provider.ts` (look for `// TODO(provider):`).
+> **Money-movement disclaimer.** Digital Asset Investigations never moves real funds and performs **no balance arithmetic**. The `escrow_contracts` amounts and the `escrow_transactions` ledger only *represent* provider-confirmed status. Real money movement happens exclusively through a licensed payment/escrow partner wired into `lib/escrow/provider.ts` (look for `// TODO(provider):`).
 
 ---
 
@@ -66,11 +66,11 @@ where email = 'you@example.com';
 `seed.sql` reproduces the deterministic dataset used by DEMO mode. Because `profiles.id` references `auth.users(id)`, you must create the five demo auth users **first**:
 
 - **Option A (Dashboard):** Authentication → Users → **Add user** for each of:
-  `client@aegis.demo`, `counterparty@aegis.demo`, `admin@aegis.demo`, `taylor@meridian.demo`, `casey@summit.demo`.
+  `client@Digital Asset Investigations.demo`, `counterparty@Digital Asset Investigations.demo`, `admin@Digital Asset Investigations.demo`, `taylor@meridian.demo`, `casey@summit.demo`.
   Then update each `profiles` row's id to match, or use Option B.
 - **Option B (SQL, exact UUIDs):** uncomment the `insert into auth.users (...)` block at the top of `seed.sql` (**STEP 0, Option B**) and run it once. It creates the users with the exact UUIDs the seed expects.
 
-Then run the rest of `seed.sql`. The body is **guarded**: if the five demo users are not present it does nothing and raises a `NOTICE` (so it is harmless to run early). After seeding, promote the admin demo user if it is not already admin (the seed sets `admin@aegis.demo` to `admin`).
+Then run the rest of `seed.sql`. The body is **guarded**: if the five demo users are not present it does nothing and raises a `NOTICE` (so it is harmless to run early). After seeding, promote the admin demo user if it is not already admin (the seed sets `admin@Digital Asset Investigations.demo` to `admin`).
 
 ---
 
@@ -121,4 +121,4 @@ NEXT_PUBLIC_DEMO_MODE=true
 
 ## Rebranding
 
-The brand name **AEGIS** is a placeholder. To rebrand, update `APP_NAME` in `lib/constants.ts` and the wordmark in `components/shared/Logo.tsx`. Nothing in this SQL depends on the brand name (the `case_number` prefix `AEG-` in the seed is cosmetic — change it freely).
+The brand name **Digital Asset Investigations** is a placeholder. To rebrand, update `APP_NAME` in `lib/constants.ts` and the wordmark in `components/shared/Logo.tsx`. Nothing in this SQL depends on the brand name (the `case_number` prefix `AEG-` in the seed is cosmetic — change it freely).

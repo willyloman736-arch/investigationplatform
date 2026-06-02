@@ -395,7 +395,7 @@ export default async function CaseWorkspacePage({
                   Transaction ledger
                 </h2>
                 <p className="text-xs text-muted-foreground">
-                  Append-only record of provider-confirmed events. AEGIS never
+                  Append-only record of provider-confirmed events. Digital Asset Investigations never
                   moves funds itself; entries reflect the licensed partner.
                 </p>
                 <TransactionLedger

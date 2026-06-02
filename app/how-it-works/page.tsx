@@ -13,9 +13,9 @@ import { TrustBanner } from "@/components/marketing/TrustBanner";
 import { Footer } from "@/components/marketing/Footer";
 
 export const metadata: Metadata = {
-  title: "How escrow works — AEGIS",
+  title: "How escrow works — Digital Asset Investigations",
   description:
-    "A transparent walkthrough of the AEGIS escrow lifecycle: contract setup, funding, verification, and mutual release — plus what every escrow status means.",
+    "A transparent walkthrough of the Digital Asset Investigations escrow lifecycle: contract setup, funding, verification, and mutual release — plus what every escrow status means.",
 };
 
 /**
@@ -51,7 +51,7 @@ export default function HowItWorksPage() {
           <div className="mx-auto w-full max-w-7xl px-4 pb-12 pt-16 sm:px-6 sm:pt-20 lg:px-8">
             <SectionHeading
               eyebrow="Transparency"
-              title="How escrow works on AEGIS"
+              title="How escrow works on Digital Asset Investigations"
               subtitle="No black boxes. Here is exactly how funds are protected, how evidence is handled, and the conditions that must be met before money is ever released."
             />
           </div>

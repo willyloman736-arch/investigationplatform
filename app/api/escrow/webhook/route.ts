@@ -2,7 +2,7 @@
 // POST /api/escrow/webhook
 //
 // Inbound webhook from the LICENSED escrow/payment provider. This is how
-// provider-confirmed money movement is reflected into AEGIS — the app NEVER
+// provider-confirmed money movement is reflected into Digital Asset Investigations — the app NEVER
 // moves funds itself; it records what the provider confirms.
 //
 // Flow:

@@ -11,23 +11,23 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "AEGIS — Secure Escrow & Investigation Management",
+  title: "Digital Asset Investigations — Secure Escrow & Investigation Management",
   description:
-    "AEGIS is a trust-heavy platform to open investigation projects, fund escrow, upload evidence, communicate securely, and release funds only after mutual approval or admin dispute resolution. Funds are processed only through licensed payment/escrow partners where available.",
-  applicationName: "AEGIS",
+    "Digital Asset Investigations is a trust-heavy platform to open investigation projects, fund escrow, upload evidence, communicate securely, and release funds only after mutual approval or admin dispute resolution. Funds are processed only through licensed payment/escrow partners where available.",
+  applicationName: "Digital Asset Investigations",
   metadataBase: new URL(
     process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"
   ),
   openGraph: {
-    title: "AEGIS — Secure Escrow & Investigation Management",
+    title: "Digital Asset Investigations — Secure Escrow & Investigation Management",
     description:
       "Open cases, fund escrow, exchange evidence, and release funds only after mutual approval or admin dispute resolution.",
     type: "website",
-    siteName: "AEGIS",
+    siteName: "Digital Asset Investigations",
   },
   twitter: {
     card: "summary_large_image",
-    title: "AEGIS — Secure Escrow & Investigation Management",
+    title: "Digital Asset Investigations — Secure Escrow & Investigation Management",
     description:
       "Open cases, fund escrow, exchange evidence, and release funds only after mutual approval or admin dispute resolution.",
   },
@@ -42,7 +42,7 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  // Ship DARK by default. The brand name "AEGIS" is a placeholder — change it in
+  // Ship DARK by default. The brand name "Digital Asset Investigations" is a placeholder — change it in
   // lib/constants.ts (APP_NAME) and components/shared/Logo.tsx.
   return (
     <html lang="en" className="dark" suppressHydrationWarning>

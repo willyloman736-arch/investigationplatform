@@ -27,7 +27,7 @@ const FEATURES: Feature[] = [
   {
     title: "Escrow held by licensed partners",
     description:
-      "Funds are deposited and held through licensed payment/escrow partners. AEGIS tracks status — it never custodies or moves money itself.",
+      "Funds are deposited and held through licensed payment/escrow partners. Digital Asset Investigations tracks status — it never custodies or moves money itself.",
     icon: Landmark,
   },
   {

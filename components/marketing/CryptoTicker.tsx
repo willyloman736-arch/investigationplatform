@@ -14,7 +14,7 @@ import { useEffect, useRef } from "react";
  *   https://*.tradingview.com and https://s3.tradingview.com.
  * - TradingView's terms require keeping the attribution link visible — do not
  *   remove the "Track all markets on TradingView" link below.
- * - This is informational market context only; AEGIS is not a trading venue and
+ * - This is informational market context only; Digital Asset Investigations is not a trading venue and
  *   does not custody or trade these assets.
  *
  * To change the assets shown, edit SYMBOLS.

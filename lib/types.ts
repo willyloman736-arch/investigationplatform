@@ -1,5 +1,5 @@
 /**
- * AEGIS shared TypeScript types.
+ * Digital Asset Investigations shared TypeScript types.
  * String-literal unions mirror the Postgres ENUMs exactly; row types mirror the
  * table columns (snake_case) from the SPEC data model. Import these everywhere
  * instead of redefining shapes.

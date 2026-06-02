@@ -1,5 +1,5 @@
 -- ============================================================================
--- AEGIS — Secure Escrow & Investigation Management
+-- Digital Asset Investigations — Secure Escrow & Investigation Management
 -- storage.sql — private "evidence" bucket + access policies
 -- ----------------------------------------------------------------------------
 -- Run AFTER schema.sql and rls-policies.sql (it relies on the helper functions

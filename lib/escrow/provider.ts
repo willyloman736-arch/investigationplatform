@@ -3,7 +3,7 @@
 // MOCK escrow/payment provider abstraction.
 //
 // This module is the ONLY boundary through which "money movement" is ever
-// represented in AEGIS. It does NOT move real funds and performs NO balance
+// represented in Digital Asset Investigations. It does NOT move real funds and performs NO balance
 // arithmetic. Every method returns realistic, provider-confirmed *status* data.
 //
 // To go live, replace each mocked method with a real call to a LICENSED
@@ -141,7 +141,7 @@ export const escrowProvider = {
   },
 
   /**
-   * Ask the provider whether a contract is releasable on their side. AEGIS also
+   * Ask the provider whether a contract is releasable on their side. Digital Asset Investigations also
    * enforces its own approval/dispute rules before ever calling requestRelease.
    * TODO(provider): integrate <licensed provider> — check hold/clearance state.
    */

@@ -16,10 +16,11 @@ import type {
 } from "@/lib/types";
 
 /**
- * Brand name placeholder. AEGIS is changeable — update here and in
- * components/shared/Logo.tsx to rebrand the entire app.
+ * Brand name. To rebrand, update these and replace the SVG artwork in
+ * /public/brand (and app/icon.svg) used by components/shared/Logo.tsx.
  */
-export const APP_NAME = "AEGIS";
+export const APP_NAME = "Digital Asset Investigations";
+export const APP_SHORT_NAME = "DAI";
 
 export const APP_TAGLINE = "Secure Escrow & Investigation Management";
 

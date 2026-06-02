@@ -1,12 +1,12 @@
-# AEGIS — Secure Escrow & Investigation Management (MVP)
+# Digital Asset Investigations — Secure Escrow & Investigation Management (MVP)
 
-AEGIS is a trust-heavy platform where clients open investigation/projects, fund
+Digital Asset Investigations is a trust-heavy platform where clients open investigation/projects, fund
 escrow, upload evidence, communicate securely, track escrow status, and release
 funds **only** after mutual approval or admin dispute resolution. It is built as
 a single, coherent Next.js 14 (App Router) + Supabase codebase, dark-themed by
 default, mobile-first, and styled like an institutional fintech product.
 
-> ⚠️ **This is an MVP scaffold.** AEGIS **does not move real money** and performs
+> ⚠️ **This is an MVP scaffold.** Digital Asset Investigations **does not move real money** and performs
 > **no internal balance arithmetic**. Every "fund movement" is represented as a
 > **provider-confirmed status change** behind a server-side abstraction
 > (`lib/escrow/provider.ts`). Before any real value can change hands you **must**
@@ -39,7 +39,7 @@ default, mobile-first, and styled like an institutional fintech product.
 
 ## Compliance posture
 
-AEGIS is designed to be **defensible, not just slick**. The non-negotiable rules
+Digital Asset Investigations is designed to be **defensible, not just slick**. The non-negotiable rules
 are encoded consistently across the UI and the server:
 
 - **No fake money movement.** The app never moves funds and never computes
@@ -301,7 +301,7 @@ deliberately bypasses authentication and authorization.
    - `SUPABASE_SERVICE_ROLE_KEY` *(server-only — do not prefix with `NEXT_PUBLIC_`)*
    - `ESCROW_PROVIDER_API_KEY` *(server-only)*
    - `ESCROW_PROVIDER_WEBHOOK_SECRET` *(server-only)*
-   - `NEXT_PUBLIC_APP_URL` *(your deployed origin, e.g. `https://aegis.example.com`)*
+   - `NEXT_PUBLIC_APP_URL` *(your deployed origin, e.g. `https://Digital Asset Investigations.example.com`)*
    - `NEXT_PUBLIC_DEMO_MODE` → **`false`** (or omit) for production.
 4. Ensure the Supabase SQL has been run against the project these keys point to,
    and that the `evidence` bucket exists.
@@ -443,7 +443,7 @@ access. See `supabase/rls-policies.sql` and `supabase/storage.sql`.
 ## Where to integrate a licensed escrow/payment provider
 
 > 🔌 **This is the single most important integration point before going live.**
-> Until it is done, AEGIS only *represents* money movement — it never performs it.
+> Until it is done, Digital Asset Investigations only *represents* money movement — it never performs it.
 
 All provider interaction is isolated behind one **server-only** module and two API
 routes. Replace the mock with a real, **licensed** payment/escrow provider; every
@@ -457,7 +457,7 @@ spot to change is marked with a `// TODO(provider):` comment.
    - `confirmDepositFromWebhook(payload)` — map a verified inbound event to a
      confirmed/failed deposit.
    - `checkReleaseEligibility(contractId)` — confirm funds are cleared / not on
-     hold on the provider side (AEGIS still enforces its own approval/dispute
+     hold on the provider side (Digital Asset Investigations still enforces its own approval/dispute
      rules first).
    - `requestRelease(input)` — create the payout/release (use the idempotency
      key); return `{ status: "requested" | "confirmed", providerReference }`.
@@ -473,7 +473,7 @@ spot to change is marked with a `// TODO(provider):` comment.
 
 3. **`app/api/escrow/webhook/route.ts`** (`POST`) — the provider's inbound
    webhook. Update the **signature header name** and verification, then map the
-   provider's real event types to AEGIS's `deposit.confirmed` /
+   provider's real event types to Digital Asset Investigations's `deposit.confirmed` /
    `release.confirmed` handling. It uses the service-role client so updates
    succeed without a user session.
 
@@ -489,7 +489,7 @@ trail reflect each provider-confirmed step.
 
 ## Rebranding
 
-The brand name **AEGIS** is a placeholder. To rebrand the whole app:
+The brand name **Digital Asset Investigations** is a placeholder. To rebrand the whole app:
 
 - Change `APP_NAME` (and optionally `APP_TAGLINE`) in `lib/constants.ts`.
 - Swap the `ShieldCheck` icon / wordmark in `components/shared/Logo.tsx`.
@@ -511,4 +511,4 @@ implemented. Use the standard disclaimer where funds are referenced:
 > available.**
 
 This is an MVP scaffold. **Real fund movement MUST go through a licensed
-provider** before AEGIS is used with real value.
+provider** before Digital Asset Investigations is used with real value.

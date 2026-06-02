@@ -30,7 +30,7 @@ const NAV_LINKS: NavLink[] = [
 
 /**
  * Public marketing navigation.
- * Sticky glass bar with the AEGIS logo, anchor/page links, and auth CTAs.
+ * Sticky glass bar with the Digital Asset Investigations logo, anchor/page links, and auth CTAs.
  * On mobile the links collapse into a Radix Sheet drawer.
  */
 export function Navbar() {
@@ -63,7 +63,7 @@ export function Navbar() {
         <Link
           href="/"
           className="rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-          aria-label="AEGIS home"
+          aria-label="Digital Asset Investigations home"
         >
           <Logo href={null} />
         </Link>

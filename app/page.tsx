@@ -58,7 +58,7 @@ export default async function LandingPage() {
             <SectionHeading
               eyebrow="Built for high-trust deals"
               title="Everything a secured transaction needs"
-              subtitle="From the first signature to the final release, AEGIS keeps funds protected, evidence organized, and every action on the record."
+              subtitle="From the first signature to the final release, Digital Asset Investigations keeps funds protected, evidence organized, and every action on the record."
             />
             <div className="mt-12">
               <FeatureGrid />
@@ -106,7 +106,7 @@ export default async function LandingPage() {
                     align="left"
                     eyebrow="Security & trust"
                     title="Designed to be defensible, not just slick"
-                    subtitle="AEGIS does not custody funds and makes no claims it cannot back. Transport is encrypted over SSL, access is scoped per case, and every meaningful action is written to an append-only audit trail."
+                    subtitle="Digital Asset Investigations does not custody funds and makes no claims it cannot back. Transport is encrypted over SSL, access is scoped per case, and every meaningful action is written to an append-only audit trail."
                   />
                   <p className="mt-6 text-xs leading-relaxed text-muted-foreground/80">
                     {PROVIDER_DISCLAIMER}
@@ -164,7 +164,7 @@ export default async function LandingPage() {
                 className="pointer-events-none absolute left-1/2 top-0 -z-10 h-64 w-[min(680px,90%)] -translate-x-1/2 rounded-full bg-primary/20 blur-[110px]"
               />
               <h2 className="mx-auto max-w-2xl text-balance text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
-                Secure your next high-trust transaction with AEGIS
+                Secure your next high-trust transaction with Digital Asset Investigations
               </h2>
               <p className="mx-auto mt-4 max-w-xl text-pretty text-base leading-relaxed text-muted-foreground">
                 Open a case, fund escrow through a licensed partner, and release

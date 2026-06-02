@@ -1,8 +1,8 @@
-# AEGIS — Deployment Guide
+# Digital Asset Investigations — Deployment Guide
 
-A step-by-step checklist to take AEGIS from this repo to a working deployment.
+A step-by-step checklist to take Digital Asset Investigations from this repo to a working deployment.
 
-> **MVP / compliance reminder:** AEGIS does **not** move real money. All fund
+> **MVP / compliance reminder:** Digital Asset Investigations does **not** move real money. All fund
 > movement is represented as provider-confirmed status changes through the
 > abstraction in `lib/escrow/provider.ts` (a mock). **Before accepting real
 > deposits you must integrate a licensed escrow/payment provider** — see

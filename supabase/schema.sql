@@ -1,5 +1,5 @@
 -- ============================================================================
--- AEGIS — Secure Escrow & Investigation Management
+-- Digital Asset Investigations — Secure Escrow & Investigation Management
 -- schema.sql — enums, tables, foreign keys, indexes, triggers
 -- ----------------------------------------------------------------------------
 -- Run ORDER (see supabase/SETUP.md):

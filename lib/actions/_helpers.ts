@@ -1,6 +1,6 @@
 // NEVER import in a client component.
 // ─────────────────────────────────────────────────────────────────────────────
-// Shared server-only helpers for the AEGIS server actions.
+// Shared server-only helpers for the Digital Asset Investigations server actions.
 //
 // These centralize authentication, role/ownership checks, and standard result
 // shapes so every mutation in lib/actions/* behaves consistently and securely.

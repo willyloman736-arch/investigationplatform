@@ -1,5 +1,5 @@
 -- ============================================================================
--- AEGIS — Secure Escrow & Investigation Management
+-- Digital Asset Investigations — Secure Escrow & Investigation Management
 -- rls-policies.sql — Row Level Security helpers + policies
 -- ----------------------------------------------------------------------------
 -- Run AFTER schema.sql.

@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 /*
- * AEGIS design tokens.
+ * Digital Asset Investigations design tokens.
  * Ships DARK by default (see <html className="dark"> in app/layout.tsx).
  * :root holds a light fallback; .dark holds the canonical trust-fintech palette.
  * Palette: deep navy/near-black background, navy cards, emerald primary,

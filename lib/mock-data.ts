@@ -1,5 +1,5 @@
 /**
- * AEGIS deterministic mock dataset.
+ * Digital Asset Investigations deterministic mock dataset.
  *
  * Powers the app in DEMO mode and serves as the default return value for the
  * read helpers in lib/data.ts until real Supabase queries are wired in.
@@ -29,7 +29,7 @@ import type {
 export const MOCK_PROFILES: Profile[] = [
   {
     id: "00000000-0000-0000-0000-000000000001",
-    email: "client@aegis.demo",
+    email: "client@Digital Asset Investigations.demo",
     full_name: "Jordan Avery",
     role: "client",
     company: "Northwind Capital",
@@ -40,7 +40,7 @@ export const MOCK_PROFILES: Profile[] = [
   },
   {
     id: "00000000-0000-0000-0000-000000000002",
-    email: "counterparty@aegis.demo",
+    email: "counterparty@Digital Asset Investigations.demo",
     full_name: "Morgan Pierce",
     role: "counterparty",
     company: "Halcyon Recovery LLC",
@@ -51,10 +51,10 @@ export const MOCK_PROFILES: Profile[] = [
   },
   {
     id: "00000000-0000-0000-0000-000000000003",
-    email: "admin@aegis.demo",
+    email: "admin@Digital Asset Investigations.demo",
     full_name: "Riley Chen",
     role: "admin",
-    company: "AEGIS Trust Operations",
+    company: "Digital Asset Investigations Trust Operations",
     phone: "+1 206 555 0117",
     avatar_url: null,
     created_at: "2025-12-20T08:00:00.000Z",
@@ -201,7 +201,7 @@ export const MOCK_CASE_PARTIES: CaseParty[] = [
     id: "22222222-0001-0000-0000-000000000001",
     case_id: "11111111-1111-1111-1111-111111111101",
     profile_id: "00000000-0000-0000-0000-000000000001",
-    invited_email: "client@aegis.demo",
+    invited_email: "client@Digital Asset Investigations.demo",
     party_role: "party_a",
     accepted: true,
     created_at: "2026-01-06T09:16:00.000Z",
@@ -210,7 +210,7 @@ export const MOCK_CASE_PARTIES: CaseParty[] = [
     id: "22222222-0001-0000-0000-000000000002",
     case_id: "11111111-1111-1111-1111-111111111101",
     profile_id: "00000000-0000-0000-0000-000000000002",
-    invited_email: "counterparty@aegis.demo",
+    invited_email: "counterparty@Digital Asset Investigations.demo",
     party_role: "party_b",
     accepted: true,
     created_at: "2026-01-06T10:02:00.000Z",
@@ -239,7 +239,7 @@ export const MOCK_CASE_PARTIES: CaseParty[] = [
     id: "22222222-0003-0000-0000-000000000001",
     case_id: "11111111-1111-1111-1111-111111111103",
     profile_id: "00000000-0000-0000-0000-000000000001",
-    invited_email: "client@aegis.demo",
+    invited_email: "client@Digital Asset Investigations.demo",
     party_role: "party_a",
     accepted: true,
     created_at: "2026-01-14T08:26:00.000Z",
@@ -267,7 +267,7 @@ export const MOCK_CASE_PARTIES: CaseParty[] = [
     id: "22222222-0004-0000-0000-000000000002",
     case_id: "11111111-1111-1111-1111-111111111104",
     profile_id: "00000000-0000-0000-0000-000000000002",
-    invited_email: "counterparty@aegis.demo",
+    invited_email: "counterparty@Digital Asset Investigations.demo",
     party_role: "party_b",
     accepted: true,
     created_at: "2026-01-18T15:45:00.000Z",
@@ -277,7 +277,7 @@ export const MOCK_CASE_PARTIES: CaseParty[] = [
     id: "22222222-0005-0000-0000-000000000001",
     case_id: "11111111-1111-1111-1111-111111111105",
     profile_id: "00000000-0000-0000-0000-000000000001",
-    invited_email: "client@aegis.demo",
+    invited_email: "client@Digital Asset Investigations.demo",
     party_role: "party_a",
     accepted: true,
     created_at: "2025-12-22T10:01:00.000Z",
@@ -286,7 +286,7 @@ export const MOCK_CASE_PARTIES: CaseParty[] = [
     id: "22222222-0005-0000-0000-000000000002",
     case_id: "11111111-1111-1111-1111-111111111105",
     profile_id: "00000000-0000-0000-0000-000000000002",
-    invited_email: "counterparty@aegis.demo",
+    invited_email: "counterparty@Digital Asset Investigations.demo",
     party_role: "party_b",
     accepted: true,
     created_at: "2025-12-22T10:30:00.000Z",

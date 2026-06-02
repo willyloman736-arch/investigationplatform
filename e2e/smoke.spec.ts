@@ -3,12 +3,12 @@ import { test, expect } from "@playwright/test";
 // These run against a production build in DEMO mode (see playwright.config.ts),
 // so the auth guard is bypassed and pages render from mock data.
 
-test.describe("AEGIS smoke (demo mode)", () => {
+test.describe("Digital Asset Investigations smoke (demo mode)", () => {
   test("landing renders the positioning headline and brand", async ({
     page,
   }) => {
     await page.goto("/");
-    await expect(page).toHaveTitle(/AEGIS/);
+    await expect(page).toHaveTitle(/Digital Asset Investigations/);
     await expect(
       page.getByRole("heading", {
         name: /Secure Escrow & Investigation Management/i,
