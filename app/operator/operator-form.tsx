@@ -14,8 +14,8 @@ import { Label } from "@/components/ui/label";
 /**
  * Operator (admin) sign-in form. Uses the same `signIn` server action as the
  * client portal, but passes redirectTo="/admin" so operators land in the command
- * center. Authentication and role enforcement are handled server-side + by the
- * middleware — this is only a branded entry point, not a separate auth system.
+ * center. Authentication + role enforcement are server-side / middleware — this
+ * is only a branded entry point, not a separate auth system.
  */
 function SubmitButton() {
   const { pending } = useFormStatus();
