@@ -28,6 +28,10 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
+# local build/verify logs
+.next-verify.*
+*.local.log
+
 # local env files (NEVER commit real secrets)
 .env
 .env.local
