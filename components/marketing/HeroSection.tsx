@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { ArrowRight, ShieldCheck, Lock, FileSearch, Scale } from "lucide-react";
 import { motion, type Variants } from "framer-motion";
@@ -26,14 +27,15 @@ const item: Variants = {
 };
 
 /**
- * Landing hero. Headline copy is fixed per the product brief. The background
- * layers an animated emerald gradient glow over a subtle grid; all decorative
- * and pointer-events-none so it never blocks interaction or causes overflow.
+ * Landing hero. Headline copy is fixed per the product brief. The background is
+ * a muted, looping cinematic video under a cyber-blue gradient overlay + grid +
+ * ice glows; all decorative and pointer-events-none so it never blocks
+ * interaction or causes overflow. Honors prefers-reduced-motion (poster only).
  */
 export function HeroSection() {
   return (
     <section className="relative isolate w-full overflow-hidden">
-      {/* Decorative background */}
+      {/* Decorative background (video + overlays) */}
       <HeroBackground />
 
       <div className="mx-auto w-full max-w-7xl px-4 pb-16 pt-16 sm:px-6 sm:pt-24 lg:px-8 lg:pb-24 lg:pt-28">
@@ -46,7 +48,7 @@ export function HeroSection() {
           {/* Eyebrow pill */}
           <motion.div variants={item} className="flex justify-center">
             <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3.5 py-1.5 text-xs font-medium text-muted-foreground backdrop-blur-md">
-              <span className="flex h-1.5 w-1.5">
+              <span className="relative flex h-1.5 w-1.5">
                 <span className="absolute inline-flex h-1.5 w-1.5 animate-ping rounded-full bg-primary/70" />
                 <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-primary" />
               </span>
@@ -107,7 +109,10 @@ export function HeroSection() {
                   key={badge.label}
                   className="inline-flex items-center gap-2 text-xs font-medium text-muted-foreground"
                 >
-                  <Icon className="h-3.5 w-3.5 text-primary" aria-hidden="true" />
+                  <Icon
+                    className="h-3.5 w-3.5 text-cyan-300"
+                    aria-hidden="true"
+                  />
                   {badge.label}
                 </li>
               );
@@ -119,6 +124,44 @@ export function HeroSection() {
   );
 }
 
+/** Muted, looping cinematic hero video. Falls back to the poster image when the
+ *  user prefers reduced motion. */
+function HeroVideo() {
+  const [reducedMotion, setReducedMotion] = useState(false);
+
+  useEffect(() => {
+    const mql = window.matchMedia("(prefers-reduced-motion: reduce)");
+    setReducedMotion(mql.matches);
+    const onChange = () => setReducedMotion(mql.matches);
+    mql.addEventListener?.("change", onChange);
+    return () => mql.removeEventListener?.("change", onChange);
+  }, []);
+
+  if (reducedMotion) {
+    return (
+      <div
+        className="absolute inset-0 bg-cover bg-center opacity-50"
+        style={{ backgroundImage: "url('/hero/cinematic-hero-poster.jpg')" }}
+      />
+    );
+  }
+
+  return (
+    <video
+      className="absolute inset-0 h-full w-full object-cover opacity-50"
+      autoPlay
+      muted
+      loop
+      playsInline
+      preload="metadata"
+      poster="/hero/cinematic-hero-poster.jpg"
+      aria-hidden="true"
+    >
+      <source src="/hero/cinematic-hero.mp4" type="video/mp4" />
+    </video>
+  );
+}
+
 /** Layered, animated, purely-decorative hero backdrop. */
 function HeroBackground() {
   return (
@@ -126,23 +169,30 @@ function HeroBackground() {
       aria-hidden="true"
       className="pointer-events-none absolute inset-0 -z-10 overflow-hidden"
     >
-      {/* Grid */}
+      {/* Cinematic video (bottom layer) */}
+      <HeroVideo />
+
+      {/* Readability + brand overlay over the video */}
+      <div className="absolute inset-0 bg-gradient-to-b from-background/70 via-background/80 to-background" />
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_60%_50%_at_50%_0%,transparent,hsl(var(--background)/0.45))]" />
+
+      {/* Grid texture */}
       <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.04)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.04)_1px,transparent_1px)] bg-[size:56px_56px] [mask-image:radial-gradient(ellipse_70%_55%_at_50%_0%,black,transparent)]" />
 
-      {/* Animated emerald glow */}
+      {/* Animated cyber-blue glow */}
       <motion.div
         initial={{ opacity: 0.5, scale: 0.95 }}
-        animate={{ opacity: [0.45, 0.7, 0.45], scale: [0.95, 1.05, 0.95] }}
+        animate={{ opacity: [0.4, 0.62, 0.4], scale: [0.95, 1.05, 0.95] }}
         transition={{ duration: 9, repeat: Infinity, ease: "easeInOut" }}
-        className="absolute left-1/2 top-[-10%] h-[420px] w-[min(760px,90vw)] -translate-x-1/2 rounded-full bg-primary/20 blur-[120px]"
+        className="absolute left-1/2 top-[-10%] h-[420px] w-[min(760px,90vw)] -translate-x-1/2 rounded-full bg-primary/25 blur-[120px]"
       />
 
-      {/* Secondary blue glow for depth */}
+      {/* Secondary ice-cyan glow for depth */}
       <motion.div
         initial={{ opacity: 0.3 }}
-        animate={{ opacity: [0.25, 0.45, 0.25] }}
+        animate={{ opacity: [0.2, 0.4, 0.2] }}
         transition={{ duration: 11, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-        className="absolute right-[-10%] top-[20%] h-[320px] w-[min(520px,80vw)] rounded-full bg-blue-500/10 blur-[120px]"
+        className="absolute right-[-10%] top-[18%] h-[320px] w-[min(520px,80vw)] rounded-full bg-cyan-400/15 blur-[120px]"
       />
 
       {/* Bottom fade into page background */}

@@ -331,7 +331,7 @@ function FeeRow({
       <dd
         className={
           accent
-            ? "font-semibold tabular-nums text-emerald-400"
+            ? "font-semibold tabular-nums text-cyan-300"
             : "tabular-nums text-foreground"
         }
       >

@@ -6,9 +6,9 @@
       .navy{fill:#071827}
       .white{fill:#f8fbff}
       .soft{fill:#dce7ee}
-      .emerald{fill:none;stroke:#14b87a;stroke-linecap:square;stroke-linejoin:miter}
-      .emerald-fill{fill:#14b87a}
-      .fine{fill:none;stroke:#9be8c8;stroke-linecap:square;stroke-linejoin:miter}
+      .emerald{fill:none;stroke:#2563eb;stroke-linecap:square;stroke-linejoin:miter}
+      .emerald-fill{fill:#2563eb}
+      .fine{fill:none;stroke:#67e8f9;stroke-linecap:square;stroke-linejoin:miter}
     </style>
   </defs>
   <g id="dai-icon">

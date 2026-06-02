@@ -7,9 +7,9 @@
       .black{fill:#05070a}
       .white{fill:#f8fbff}
       .soft{fill:#dce7ee}
-      .emerald{fill:none;stroke:#14b87a;stroke-linecap:square;stroke-linejoin:miter}
-      .emerald-fill{fill:#14b87a}
-      .fine{fill:none;stroke:#9be8c8;stroke-linecap:square;stroke-linejoin:miter}
+      .emerald{fill:none;stroke:#2563eb;stroke-linecap:square;stroke-linejoin:miter}
+      .emerald-fill{fill:#2563eb}
+      .fine{fill:none;stroke:#67e8f9;stroke-linecap:square;stroke-linejoin:miter}
       .word-main{font-family:Montserrat,"Avenir Next",Inter,"Segoe UI",Arial,sans-serif;font-size:70px;font-weight:850;letter-spacing:1.5px}
       .word-sub{font-family:Montserrat,"Avenir Next",Inter,"Segoe UI",Arial,sans-serif;font-size:39px;font-weight:750;letter-spacing:6px}
     </style>

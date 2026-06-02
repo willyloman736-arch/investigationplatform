@@ -39,7 +39,7 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
         aria-hidden
         className="pointer-events-none absolute inset-0 -z-10 bg-background"
       >
-        <div className="absolute -left-32 top-[-10%] h-[420px] w-[420px] rounded-full bg-emerald-500/10 blur-3xl" />
+        <div className="absolute -left-32 top-[-10%] h-[420px] w-[420px] rounded-full bg-cyan-500/10 blur-3xl" />
         <div className="absolute bottom-[-15%] right-[-10%] h-[460px] w-[460px] rounded-full bg-blue-500/10 blur-3xl" />
       </div>
 
@@ -56,7 +56,7 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
         </div>
 
         <div className="max-w-md">
-          <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1 text-xs font-medium text-emerald-300">
+          <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-cyan-500/30 bg-cyan-500/10 px-3 py-1 text-xs font-medium text-cyan-200">
             <ShieldCheck className="h-3.5 w-3.5" />
             Secure Escrow &amp; Investigation Management
           </div>
@@ -71,7 +71,7 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
           <ul className="mt-10 space-y-6">
             {TRUST_POINTS.map(({ icon: Icon, title, body }) => (
               <li key={title} className="flex gap-4">
-                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-emerald-400">
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-cyan-300">
                   <Icon className="h-5 w-5" />
                 </span>
                 <div>

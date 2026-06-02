@@ -109,7 +109,7 @@ export function FundsBreakdownTable({
                 <TableCell className="whitespace-nowrap text-right tabular-nums text-muted-foreground">
                   {formatCurrency(row.providerFee, row.currency)}
                 </TableCell>
-                <TableCell className="whitespace-nowrap text-right font-semibold tabular-nums text-emerald-400">
+                <TableCell className="whitespace-nowrap text-right font-semibold tabular-nums text-cyan-300">
                   {formatCurrency(row.netRelease, row.currency)}
                 </TableCell>
                 <TableCell className="whitespace-nowrap text-xs text-muted-foreground">

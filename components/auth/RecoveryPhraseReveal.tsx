@@ -92,7 +92,7 @@ export function RecoveryPhraseReveal({
           type="checkbox"
           checked={saved}
           onChange={(e) => setSaved(e.target.checked)}
-          className="mt-0.5 h-4 w-4 rounded border-white/20 bg-background accent-emerald-500"
+          className="mt-0.5 h-4 w-4 rounded border-white/20 bg-background accent-cyan-500"
         />
         <span>
           I&apos;ve saved my recovery phrase somewhere safe. I understand it

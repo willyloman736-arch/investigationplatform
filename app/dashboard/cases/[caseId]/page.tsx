@@ -530,7 +530,7 @@ function EscrowOverviewStrip({ escrow }: { escrow: EscrowContract }) {
         </span>
       </Metric>
       <Metric label="Net release">
-        <span className="text-lg font-semibold tabular-nums text-emerald-400">
+        <span className="text-lg font-semibold tabular-nums text-cyan-300">
           {formatCurrency(escrow.net_release_amount, escrow.currency)}
         </span>
       </Metric>

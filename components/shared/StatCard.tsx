@@ -72,7 +72,7 @@ export function StatCard({
             className={cn(
               "inline-flex items-center gap-1 rounded-full px-1.5 py-0.5 text-xs font-medium",
               direction === "up" &&
-                "bg-emerald-500/10 text-emerald-400",
+                "bg-cyan-500/10 text-cyan-300",
               direction === "down" && "bg-red-500/10 text-red-400",
               direction === "neutral" &&
                 "bg-white/5 text-muted-foreground"

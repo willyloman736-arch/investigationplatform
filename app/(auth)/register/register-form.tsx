@@ -178,7 +178,7 @@ export function RegisterForm() {
               <SelectItem key={opt.value} value={opt.value}>
                 <span className="flex items-center gap-2">
                   {opt.value === "client" ? (
-                    <Briefcase className="h-4 w-4 text-emerald-400" aria-hidden />
+                    <Briefcase className="h-4 w-4 text-cyan-300" aria-hidden />
                   ) : (
                     <Users className="h-4 w-4 text-blue-400" aria-hidden />
                   )}

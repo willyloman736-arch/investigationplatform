@@ -399,7 +399,7 @@ function InfoCard({
       <p
         className={cn(
           "mt-2 truncate text-lg font-semibold tracking-tight",
-          accent ? "text-emerald-400" : "text-foreground"
+          accent ? "text-cyan-300" : "text-foreground"
         )}
         title={value}
       >

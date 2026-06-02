@@ -556,7 +556,7 @@ function Snapshot({
       <p
         className={cn(
           "mt-0.5 truncate text-sm font-semibold",
-          accent ? "text-emerald-400" : "text-foreground"
+          accent ? "text-cyan-300" : "text-foreground"
         )}
       >
         {value}
