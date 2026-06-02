@@ -46,7 +46,10 @@ export default function OperatorLoginPage() {
 
       <OperatorForm />
 
-      <div className="mt-6 border-t border-white/10 pt-5 text-center">
+      <div className="mt-6 space-y-2 border-t border-white/10 pt-5 text-center">
+        <p className="text-sm text-muted-foreground">
+          Need operator access? Contact your administrator.
+        </p>
         <p className="text-sm text-muted-foreground">
           Client or counterparty?{" "}
           <Link

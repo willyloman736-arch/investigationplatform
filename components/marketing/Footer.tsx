@@ -23,6 +23,7 @@ const COLUMNS: FooterColumn[] = [
     heading: "Platform",
     links: [
       { label: "Client portal", href: "/login" },
+      { label: "Operator sign-in", href: "/operator" },
       { label: "Open secure escrow", href: "/register" },
       { label: "Dispute resolution", href: "/how-it-works#workflow" },
       { label: "Evidence audit trail", href: "/how-it-works#security" },
