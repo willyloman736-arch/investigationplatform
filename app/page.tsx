@@ -6,6 +6,7 @@ import { PROVIDER_DISCLAIMER } from "@/lib/constants";
 import { Button } from "@/components/ui/button";
 import { SectionHeading } from "@/components/shared/SectionHeading";
 import { Navbar } from "@/components/marketing/Navbar";
+import { CryptoTicker } from "@/components/marketing/CryptoTicker";
 import { HeroSection } from "@/components/marketing/HeroSection";
 import { TrustBanner } from "@/components/marketing/TrustBanner";
 import { StatsCounter } from "@/components/marketing/StatsCounter";
@@ -24,6 +25,9 @@ export default async function LandingPage() {
   return (
     <div className="flex min-h-screen flex-col bg-background">
       <Navbar />
+
+      {/* Live crypto market ticker — TradingView free widget */}
+      <CryptoTicker />
 
       <main className="flex-1">
         {/* Hero */}
