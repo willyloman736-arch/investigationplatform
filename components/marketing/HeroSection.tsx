@@ -27,10 +27,10 @@ const item: Variants = {
 };
 
 /**
- * Landing hero. Headline copy is fixed per the product brief. The background is
- * a muted, looping cinematic video under a cyber-blue gradient overlay + grid +
- * ice glows; all decorative and pointer-events-none so it never blocks
- * interaction or causes overflow. Honors prefers-reduced-motion (poster only).
+ * Landing hero. Headline copy is fixed per the product brief. Content is
+ * left-aligned so the cinematic background video stays visible on the right.
+ * The overlay is left-biased (dark behind the text, clearing toward the video)
+ * and honors prefers-reduced-motion (poster only).
  */
 export function HeroSection() {
   return (
@@ -38,15 +38,15 @@ export function HeroSection() {
       {/* Decorative background (video + overlays) */}
       <HeroBackground />
 
-      <div className="mx-auto w-full max-w-7xl px-4 pb-16 pt-16 sm:px-6 sm:pt-24 lg:px-8 lg:pb-24 lg:pt-28">
+      <div className="mx-auto w-full max-w-7xl px-4 pb-20 pt-20 sm:px-6 sm:pt-28 lg:px-8 lg:pb-32 lg:pt-36">
         <motion.div
           variants={container}
           initial="hidden"
           animate="show"
-          className="mx-auto max-w-3xl text-center"
+          className="max-w-xl text-left sm:max-w-2xl"
         >
           {/* Eyebrow pill */}
-          <motion.div variants={item} className="flex justify-center">
+          <motion.div variants={item} className="flex justify-start">
             <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3.5 py-1.5 text-xs font-medium text-muted-foreground backdrop-blur-md">
               <span className="relative flex h-1.5 w-1.5">
                 <span className="absolute inline-flex h-1.5 w-1.5 animate-ping rounded-full bg-primary/70" />
@@ -59,7 +59,7 @@ export function HeroSection() {
           {/* EXACT headline */}
           <motion.h1
             variants={item}
-            className="mt-6 text-balance text-4xl font-semibold leading-[1.1] tracking-tight text-foreground sm:text-5xl lg:text-6xl"
+            className="mt-6 text-balance text-4xl font-semibold leading-[1.05] tracking-tight text-foreground sm:text-5xl lg:text-6xl"
           >
             Secure Escrow &amp; Investigation Management for High-Trust Digital
             Transactions
@@ -68,7 +68,7 @@ export function HeroSection() {
           {/* Subheadline */}
           <motion.p
             variants={item}
-            className="mx-auto mt-6 max-w-2xl text-pretty text-base leading-relaxed text-muted-foreground sm:text-lg"
+            className="mt-6 max-w-xl text-pretty text-base leading-relaxed text-muted-foreground sm:text-lg"
           >
             Open investigation projects, secure funds in escrow, upload and
             verify evidence, and manage disputes in one place. Funds are released
@@ -79,7 +79,7 @@ export function HeroSection() {
           {/* Primary CTAs */}
           <motion.div
             variants={item}
-            className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row"
+            className="mt-9 flex flex-col gap-3 sm:flex-row sm:justify-start"
           >
             <Button asChild size="lg" className="w-full sm:w-auto">
               <Link href="/register">
@@ -100,7 +100,7 @@ export function HeroSection() {
           {/* Trust micro-badges */}
           <motion.ul
             variants={item}
-            className="mx-auto mt-10 flex max-w-2xl flex-wrap items-center justify-center gap-x-5 gap-y-3"
+            className="mt-10 flex max-w-2xl flex-wrap items-center justify-start gap-x-5 gap-y-3"
           >
             {MICRO_BADGES.map((badge) => {
               const Icon = badge.icon;
@@ -140,7 +140,7 @@ function HeroVideo() {
   if (reducedMotion) {
     return (
       <div
-        className="absolute inset-0 bg-cover bg-center opacity-50"
+        className="absolute inset-0 bg-cover bg-center"
         style={{ backgroundImage: "url('/hero/cinematic-hero-poster.jpg')" }}
       />
     );
@@ -148,7 +148,7 @@ function HeroVideo() {
 
   return (
     <video
-      className="absolute inset-0 h-full w-full object-cover opacity-50"
+      className="absolute inset-0 h-full w-full object-cover"
       autoPlay
       muted
       loop
@@ -169,34 +169,38 @@ function HeroBackground() {
       aria-hidden="true"
       className="pointer-events-none absolute inset-0 -z-10 overflow-hidden"
     >
-      {/* Cinematic video (bottom layer) */}
+      {/* Cinematic video (bottom layer, full brightness) */}
       <HeroVideo />
 
-      {/* Readability + brand overlay over the video */}
-      <div className="absolute inset-0 bg-gradient-to-b from-background/70 via-background/80 to-background" />
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_60%_50%_at_50%_0%,transparent,hsl(var(--background)/0.45))]" />
+      {/* Light base darken — a little stronger on mobile for text legibility,
+          minimal on desktop so the video reads clearly. */}
+      <div className="absolute inset-0 bg-background/40 sm:bg-background/15" />
 
-      {/* Grid texture */}
-      <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.04)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.04)_1px,transparent_1px)] bg-[size:56px_56px] [mask-image:radial-gradient(ellipse_70%_55%_at_50%_0%,black,transparent)]" />
+      {/* Left-biased readability gradient: dark behind the text, clearing to the
+          right so the video shows through. */}
+      <div className="absolute inset-0 bg-gradient-to-r from-background/85 via-background/45 to-transparent" />
 
-      {/* Animated cyber-blue glow */}
+      {/* Gentle bottom fade into the page background */}
+      <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-background to-transparent" />
+
+      {/* Subtle grid texture (kept light) */}
+      <div className="absolute inset-0 opacity-50 bg-[linear-gradient(to_right,rgba(255,255,255,0.04)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.04)_1px,transparent_1px)] bg-[size:56px_56px] [mask-image:radial-gradient(ellipse_80%_60%_at_30%_30%,black,transparent)]" />
+
+      {/* Cyber-blue glow behind the headline (top-left) */}
       <motion.div
-        initial={{ opacity: 0.5, scale: 0.95 }}
-        animate={{ opacity: [0.4, 0.62, 0.4], scale: [0.95, 1.05, 0.95] }}
+        initial={{ opacity: 0.4, scale: 0.95 }}
+        animate={{ opacity: [0.32, 0.5, 0.32], scale: [0.95, 1.05, 0.95] }}
         transition={{ duration: 9, repeat: Infinity, ease: "easeInOut" }}
-        className="absolute left-1/2 top-[-10%] h-[420px] w-[min(760px,90vw)] -translate-x-1/2 rounded-full bg-primary/25 blur-[120px]"
+        className="absolute left-[2%] top-[-15%] h-[420px] w-[min(620px,80vw)] rounded-full bg-primary/20 blur-[120px]"
       />
 
-      {/* Secondary ice-cyan glow for depth */}
+      {/* Secondary ice-cyan glow on the right for depth */}
       <motion.div
-        initial={{ opacity: 0.3 }}
-        animate={{ opacity: [0.2, 0.4, 0.2] }}
+        initial={{ opacity: 0.25 }}
+        animate={{ opacity: [0.18, 0.32, 0.18] }}
         transition={{ duration: 11, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-        className="absolute right-[-10%] top-[18%] h-[320px] w-[min(520px,80vw)] rounded-full bg-cyan-400/15 blur-[120px]"
+        className="absolute right-[-8%] top-[12%] h-[320px] w-[min(520px,70vw)] rounded-full bg-cyan-400/12 blur-[120px]"
       />
-
-      {/* Bottom fade into page background */}
-      <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-b from-transparent to-background" />
     </div>
   );
 }
