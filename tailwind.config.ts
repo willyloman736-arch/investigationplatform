@@ -101,6 +101,10 @@ const config = {
           from: { transform: "translateX(0)" },
           to: { transform: "translateX(-100%)" },
         },
+        "marquee-reverse": {
+          from: { transform: "translateX(-100%)" },
+          to: { transform: "translateX(0)" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -109,6 +113,7 @@ const config = {
         "fade-up": "fade-up 0.5s ease-out",
         shimmer: "shimmer 2s infinite",
         marquee: "marquee 32s linear infinite",
+        "marquee-reverse": "marquee-reverse 36s linear infinite",
       },
     },
   },
