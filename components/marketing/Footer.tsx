@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ShieldCheck } from "lucide-react";
 
 import { APP_NAME, APP_TAGLINE, PROVIDER_DISCLAIMER } from "@/lib/constants";
+import { ComplianceStrip } from "@/components/marketing/ComplianceStrip";
 
 interface FooterColumn {
   heading: string;
@@ -48,6 +49,11 @@ export function Footer() {
   return (
     <footer className="relative border-t border-white/10 bg-card/40">
       <div className="mx-auto w-full max-w-7xl px-4 py-12 sm:px-6 lg:px-8 lg:py-16">
+        {/* Compliance roadmap — moved here from the hero to keep the top clean */}
+        <div className="mb-10 border-b border-white/10 pb-10">
+          <ComplianceStrip />
+        </div>
+
         <div className="grid grid-cols-1 gap-10 md:grid-cols-2 lg:grid-cols-5">
           {/* Brand block */}
           <div className="lg:col-span-2">
