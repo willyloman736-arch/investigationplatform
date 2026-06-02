@@ -97,6 +97,10 @@ const config = {
         shimmer: {
           "100%": { transform: "translateX(100%)" },
         },
+        marquee: {
+          from: { transform: "translateX(0)" },
+          to: { transform: "translateX(-100%)" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -104,6 +108,7 @@ const config = {
         "fade-in": "fade-in 0.4s ease-out",
         "fade-up": "fade-up 0.5s ease-out",
         shimmer: "shimmer 2s infinite",
+        marquee: "marquee 32s linear infinite",
       },
     },
   },

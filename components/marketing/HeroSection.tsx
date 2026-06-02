@@ -38,7 +38,7 @@ export function HeroSection() {
       {/* Decorative background (video + overlays) */}
       <HeroBackground />
 
-      <div className="mx-auto w-full max-w-7xl px-4 pb-20 pt-20 sm:px-6 sm:pt-28 lg:px-8 lg:pb-32 lg:pt-36">
+      <div className="mx-auto w-full max-w-7xl px-4 pb-14 pt-14 sm:px-6 sm:pb-24 sm:pt-28 lg:px-8 lg:pb-32 lg:pt-36">
         <motion.div
           variants={container}
           initial="hidden"
@@ -59,7 +59,7 @@ export function HeroSection() {
           {/* EXACT headline */}
           <motion.h1
             variants={item}
-            className="mt-6 text-balance text-4xl font-semibold leading-[1.05] tracking-tight text-foreground sm:text-5xl lg:text-6xl"
+            className="mt-5 text-balance text-[1.75rem] font-semibold leading-[1.15] tracking-tight text-foreground sm:mt-6 sm:text-5xl sm:leading-[1.05] lg:text-6xl"
           >
             Secure Escrow &amp; Investigation Management for High-Trust Digital
             Transactions
@@ -68,7 +68,7 @@ export function HeroSection() {
           {/* Subheadline */}
           <motion.p
             variants={item}
-            className="mt-6 max-w-xl text-pretty text-base leading-relaxed text-muted-foreground sm:text-lg"
+            className="mt-4 max-w-xl text-pretty text-sm leading-relaxed text-muted-foreground sm:mt-6 sm:text-lg"
           >
             Open investigation projects, secure funds in escrow, upload and
             verify evidence, and manage disputes in one place. Funds are released
@@ -79,7 +79,7 @@ export function HeroSection() {
           {/* Primary CTAs */}
           <motion.div
             variants={item}
-            className="mt-9 flex flex-col gap-3 sm:flex-row sm:justify-start"
+            className="mt-7 flex flex-col gap-3 sm:mt-9 sm:flex-row sm:justify-start"
           >
             <Button asChild size="lg" className="w-full sm:w-auto">
               <Link href="/register">
@@ -100,7 +100,7 @@ export function HeroSection() {
           {/* Trust micro-badges */}
           <motion.ul
             variants={item}
-            className="mt-10 flex max-w-2xl flex-wrap items-center justify-start gap-x-5 gap-y-3"
+            className="mt-8 flex max-w-2xl flex-wrap items-center justify-start gap-x-5 gap-y-3 sm:mt-10"
           >
             {MICRO_BADGES.map((badge) => {
               const Icon = badge.icon;
