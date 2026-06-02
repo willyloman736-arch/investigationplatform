@@ -20,6 +20,7 @@ import { z } from "zod";
 
 import { logAudit } from "@/lib/audit";
 import { ESCROW_STATUS_CONFIG } from "@/lib/constants";
+import { isValidReason } from "@/lib/escrow/rules";
 import type { EscrowStatus, EscrowContract } from "@/lib/types";
 import {
   getAuthContext,
@@ -81,7 +82,7 @@ export async function adminSetEscrowStatus(
   input: AdminSetEscrowStatusInput
 ): Promise<ActionResult> {
   // Enforce a non-empty reason explicitly so the failure is unambiguous.
-  if (!input.reason || input.reason.trim().length === 0) {
+  if (!isValidReason(input.reason)) {
     throw new Error("A reason is required to change the escrow status.");
   }
 
@@ -246,7 +247,7 @@ export interface FreezeReleaseInput {
 export async function freezeRelease(
   input: FreezeReleaseInput
 ): Promise<ActionResult> {
-  if (!input.reason || input.reason.trim().length === 0) {
+  if (!isValidReason(input.reason)) {
     throw new Error("A reason is required to freeze a release.");
   }
 
@@ -316,7 +317,7 @@ export interface RequestAdditionalVerificationInput {
 export async function requestAdditionalVerification(
   input: RequestAdditionalVerificationInput
 ): Promise<ActionResult> {
-  if (!input.reason || input.reason.trim().length === 0) {
+  if (!isValidReason(input.reason)) {
     throw new Error("A reason is required to request additional verification.");
   }
 
@@ -386,7 +387,7 @@ export interface ApproveReleaseEligibilityInput {
 export async function approveReleaseEligibility(
   input: ApproveReleaseEligibilityInput
 ): Promise<ActionResult> {
-  if (!input.reason || input.reason.trim().length === 0) {
+  if (!isValidReason(input.reason)) {
     throw new Error("A reason is required to approve release eligibility.");
   }
 

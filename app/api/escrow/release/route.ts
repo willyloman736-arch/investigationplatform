@@ -25,13 +25,10 @@ import { NextResponse, type NextRequest } from "next/server";
 
 import { createClient } from "@/lib/supabase/server";
 import { escrowProvider } from "@/lib/escrow/provider";
+import { evaluateRelease } from "@/lib/escrow/rules";
 import { logAudit } from "@/lib/audit";
 import { DEMO_MODE } from "@/lib/constants";
-import type {
-  EscrowContract,
-  Profile,
-  PartyRole,
-} from "@/lib/types";
+import type { EscrowContract, Profile } from "@/lib/types";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -126,63 +123,25 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  // ── Guard rails: already released / frozen / under dispute ─────────────────
-  if (escrow.escrow_status === "released" || escrow.release_status === "completed") {
-    return NextResponse.json(
-      { error: "This escrow has already been released." },
-      { status: 409 }
-    );
-  }
-  if (escrow.escrow_status === "release_frozen") {
-    return NextResponse.json(
-      { error: "Release is frozen by an administrator." },
-      { status: 409 }
-    );
-  }
-  if (escrow.escrow_status === "under_dispute_audit") {
-    return NextResponse.json(
-      { error: "Release is blocked while a dispute is under review." },
-      { status: 409 }
-    );
-  }
-  if (escrow.deposit_status !== "received") {
-    return NextResponse.json(
-      { error: "Funds have not been confirmed as deposited yet." },
-      { status: 409 }
-    );
-  }
-
-  // ── RE-CHECK eligibility server-side (do not trust the client) ─────────────
+  // ── Re-check ALL release rules server-side (do not trust the client) ───────
+  // Guard rails (released / frozen / disputed / unfunded) AND eligibility (both
+  // parties approved OR admin dispute-resolution) are decided by the pure,
+  // exhaustively unit-tested evaluateRelease() in lib/escrow/rules.ts.
   const { data: approvals } = await supabase
     .from("approvals")
     .select("party_role, approved")
     .eq("case_id", caseId);
 
-  const approvedRole = (role: PartyRole): boolean =>
-    Boolean(approvals?.some((a) => a.party_role === role && a.approved));
-
-  const bothPartiesApproved =
-    approvedRole("party_a") && approvedRole("party_b");
-
-  const adminEligibility =
-    escrow.release_status === "eligible" &&
-    Boolean(escrow.release_eligibility_reason);
-
-  const eligible = bothPartiesApproved || adminEligibility;
-
-  if (!eligible) {
+  const evaluation = evaluateRelease(escrow, approvals ?? []);
+  if (!evaluation.ok) {
     return NextResponse.json(
-      {
-        error:
-          "Release is not eligible: both parties must approve, or an admin must resolve a dispute to release.",
-      },
-      { status: 403 }
+      { error: evaluation.reason },
+      { status: evaluation.code === "not_eligible" ? 403 : 409 }
     );
   }
 
-  const eligibilityReason = bothPartiesApproved
-    ? "Both parties approved the release."
-    : escrow.release_eligibility_reason ?? "Admin-approved release eligibility.";
+  const bothPartiesApproved = evaluation.via === "mutual_approval";
+  const eligibilityReason = evaluation.reason;
 
   // ── Provider-side eligibility (defense in depth) ───────────────────────────
   // The provider also confirms funds are cleared and not on hold. Our app-level

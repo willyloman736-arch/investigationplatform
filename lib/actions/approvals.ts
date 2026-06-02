@@ -16,7 +16,8 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
 import { logAudit } from "@/lib/audit";
-import type { PartyRole, EscrowContract } from "@/lib/types";
+import type { EscrowContract } from "@/lib/types";
+import { bothPartiesApproved, canSubmitApproval } from "@/lib/escrow/rules";
 import {
   getAuthContext,
   userCanAccessCase,
@@ -85,18 +86,11 @@ export async function submitApproval(
     return fail("No escrow contract exists for this case yet.");
   }
 
-  // Block approvals when the case is frozen or under dispute audit — those
-  // states must be cleared by an admin first.
-  if (
-    escrow.escrow_status === "release_frozen" ||
-    escrow.escrow_status === "under_dispute_audit"
-  ) {
-    return fail(
-      "Approvals are paused while this escrow is frozen or under dispute review."
-    );
-  }
-  if (escrow.escrow_status === "released") {
-    return fail("This escrow has already been released.");
+  // Block approvals when the escrow is frozen, under dispute audit, or already
+  // released (canSubmitApproval is unit-tested in lib/escrow/rules.test.ts).
+  const gate = canSubmitApproval(escrow);
+  if (!gate.ok) {
+    return fail(gate.reason ?? "Approvals are not allowed in the current state.");
   }
 
   // Upsert the approval on (case_id, party_role).
@@ -132,10 +126,7 @@ export async function submitApproval(
     .select("party_role, approved")
     .eq("case_id", caseId);
 
-  const approvedRole = (role: PartyRole): boolean =>
-    Boolean(approvals?.some((a) => a.party_role === role && a.approved));
-
-  const bothApproved = approvedRole("party_a") && approvedRole("party_b");
+  const bothApproved = bothPartiesApproved(approvals ?? []);
 
   if (bothApproved && escrow.escrow_status !== "ready_for_release") {
     const { error: escrowError } = await supabase
