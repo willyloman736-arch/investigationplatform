@@ -32,11 +32,16 @@ export const PROVIDER_DISCLAIMER =
   "Funds are processed only through licensed payment/escrow partners where available.";
 
 /**
- * Demo mode flag. When true, the auth guard is bypassed and pages render from
- * mock data so the app is viewable without Supabase configured.
- * MUST be false (or unset) in production.
+ * Demo mode flag. ON when explicitly enabled (NEXT_PUBLIC_DEMO_MODE="true") OR
+ * automatically whenever no Supabase project is configured — so a fresh deploy
+ * is a working showcase on mock data instead of a broken login. As soon as a
+ * real NEXT_PUBLIC_SUPABASE_URL is set, demo mode turns off (unless explicitly
+ * forced on). It never exposes real data: it only auto-enables when there is no
+ * database to connect to.
  */
-export const DEMO_MODE = process.env.NEXT_PUBLIC_DEMO_MODE === "true";
+export const DEMO_MODE =
+  process.env.NEXT_PUBLIC_DEMO_MODE === "true" ||
+  !process.env.NEXT_PUBLIC_SUPABASE_URL;
 
 // ── Fee rates (used for display + mock math only; no real balance arithmetic) ─
 export const PLATFORM_FEE_RATE = 0.03; // 3%

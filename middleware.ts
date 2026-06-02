@@ -13,7 +13,12 @@ import { updateSession } from "@/lib/supabase/middleware";
  * Admin determination: we read the user's role from app_metadata/user_metadata
  * (set at signup / by an admin). This avoids a DB round-trip in middleware.
  */
-const DEMO_MODE = process.env.NEXT_PUBLIC_DEMO_MODE === "true";
+// Demo mode is ON when explicitly enabled, OR when no Supabase URL is
+// configured (a fresh deploy is a working showcase, not a broken login). Adding
+// a real NEXT_PUBLIC_SUPABASE_URL turns the auth guard back on automatically.
+const DEMO_MODE =
+  process.env.NEXT_PUBLIC_DEMO_MODE === "true" ||
+  !process.env.NEXT_PUBLIC_SUPABASE_URL;
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
