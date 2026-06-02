@@ -53,11 +53,12 @@ are encoded consistently across the UI and the server:
   `release.confirmed`.
 - **Release requires consent.** A release is permitted **only** when both
   `party_a` **and** `party_b` have approved, **or** an admin resolved a dispute
-  as *release* and set a release-eligibility reason. Either path sets
-  `release_status = eligible` / `escrow_status = ready_for_release`.
+  as *release* and set a release-eligibility reason. Party approvals record
+  consent; admins control escrow workflow status and provider release requests.
 - **Admins never move money from the UI.** Admin status overrides require a
   non-empty **reason** and are written to `audit_logs`. The only place a release
-  is triggered is the protected server route `POST /api/escrow/release`.
+  is triggered is the admin-only protected server route
+  `POST /api/escrow/release`.
 - **Row Level Security on every table.** Clients/counterparties can see only the
   cases they belong to; admins see all. The browser only ever holds the Supabase
   `anon` key, which is safe **because RLS is enabled everywhere**.
@@ -362,7 +363,7 @@ and the `EscrowStatus` union (`lib/types.ts`).
 | `pending_deposit` | PENDING DEPOSIT | amber | Awaiting the funding deposit to be confirmed by the provider. |
 | `securely_escrowed` | SECURELY ESCROWED | green | Provider-confirmed funds held; locked pending approvals. |
 | `under_dispute_audit` | UNDER DISPUTE AUDIT | red | A dispute is open; release blocked during review. |
-| `ready_for_release` | READY FOR RELEASE | blue | Both parties approved (or dispute resolved to release); eligible. |
+| `ready_for_release` | READY FOR RELEASE | blue | Admin review marked the escrow eligible after mutual approval or dispute resolution. |
 | `release_frozen` | RELEASE FROZEN | orange | Admin froze release pending verification; no funds can move. |
 | `released` | RELEASED | slate/green | Provider confirmed the release; case can be closed. |
 
@@ -375,17 +376,18 @@ and `release_status` (`not_started → eligible → requested → completed`).
    - approvals for `party_a` **and** `party_b` are both `approved`, **or**
    - an admin resolved a dispute as **release** and set
      `release_eligibility_reason`.
-   Either path sets `release_status = eligible`, `escrow_status =
-   ready_for_release`.
+   Party approvals do **not** move escrow status automatically; an admin must
+   review the case and advance escrow workflow state.
 2. **Admins cannot move money from the UI.** Admin actions only steer status /
    eligibility (mark pending deposit, confirm deposit *reflecting the provider*,
    mark securely escrowed, place under dispute audit, freeze release, request
    additional verification, approve release eligibility, and submit a release
    *request*). Status overrides require a reason and are audited.
-3. The actual release is triggered **only** by `POST /api/escrow/release`, which
-   re-checks eligibility, calls `provider.requestRelease()`, writes an
-   `escrow_transactions` row, audits, and sets `release_status = requested`. Funds
-   become `released` / `completed` **only** after the provider confirms
+3. The actual release is triggered **only** by an admin calling
+   `POST /api/escrow/release`, which re-checks eligibility, requires a reason
+   note, calls `provider.requestRelease()`, writes an `escrow_transactions` row,
+   audits, and sets `release_status = requested`. Funds become `released` /
+   `completed` **only** after the provider confirms
    (`requestRelease()` returns `"confirmed"`, or the webhook reports
    `release.confirmed`).
 
@@ -393,8 +395,8 @@ Typical happy path:
 
 ```text
 pending_deposit ──(provider/webhook deposit confirmed)──▶ securely_escrowed
-   securely_escrowed ──(party_a + party_b approve)──▶ ready_for_release
-      ready_for_release ──(POST /api/escrow/release → provider requested)──▶ release_status=requested
+   securely_escrowed ──(party_a + party_b approve)──▶ admin review
+      admin review ──(mark eligible or trigger release request)──▶ release_status=requested
          ──(webhook release.confirmed)──▶ released
 ```
 
@@ -434,7 +436,8 @@ Postgres via Supabase. snake_case columns; `uuid` PKs default
 
 **Access model (RLS):** `has_case_access(uid, case_id)` is true for an **admin**,
 the **case creator**, the **assigned admin**, or a **party** on the case.
-`escrow_transactions` and `audit_logs` have insert + select only (append-only).
+`escrow_contracts` workflow updates and `escrow_transactions` inserts are
+admin-only at the RLS layer; `audit_logs` are append-only.
 The `evidence` bucket grants read/write only under a case-id prefix the user can
 access. See `supabase/rls-policies.sql` and `supabase/storage.sql`.
 

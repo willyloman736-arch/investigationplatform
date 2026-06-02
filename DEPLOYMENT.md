@@ -93,8 +93,8 @@ After setting vars, **redeploy** (Deployments → ⋯ → Redeploy) so they take
 - [ ] Admin can create a case and assign Party A / Party B
 - [ ] A party can upload evidence (lands in the `evidence` bucket, scoped by case id)
 - [ ] Secure chat persists messages
-- [ ] Both parties approve → escrow moves to `READY FOR RELEASE`
-- [ ] Admin escrow actions require a reason note and appear in the audit log
+- [ ] Both parties approve → admin sees the case ready for release review
+- [ ] Admin escrow actions and release requests require a reason note and appear in the audit log
 
 ---
 
@@ -110,8 +110,8 @@ This is the **only** part that touches real money, and it is intentionally a stu
    `confirmDepositFromWebhook`, `checkReleaseEligibility`, `requestRelease`,
    `verifyWebhookSignature`.
 3. **Wire the routes** (already structured for it):
-   - `app/api/escrow/release/route.ts` — the **only** release trigger; re-checks
-     eligibility server-side before calling the provider.
+   - `app/api/escrow/release/route.ts` — the **only** release trigger; admin-only
+     and re-checks eligibility server-side before calling the provider.
    - `app/api/escrow/webhook/route.ts` — point the provider's webhook here and
      verify the signature with `ESCROW_PROVIDER_WEBHOOK_SECRET`.
 4. **Set the webhook URL** in the provider dashboard to

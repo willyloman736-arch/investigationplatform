@@ -159,7 +159,7 @@ export const ESCROW_STATUS_CONFIG: Record<EscrowStatus, StatusConfig> = {
     badgeClass: "bg-blue-500/10 text-blue-400 border border-blue-500/30",
     dotClass: "bg-blue-400",
     description:
-      "Both parties approved (or a dispute resolved to release). Eligible to request release.",
+      "Admin review marked this escrow eligible after mutual approval or dispute resolution.",
   },
   release_frozen: {
     label: "RELEASE FROZEN",

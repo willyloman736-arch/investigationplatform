@@ -45,7 +45,7 @@ const FEATURES: Feature[] = [
   {
     title: "Mutual-approval release",
     description:
-      "Funds release only when both parties approve, or when an admin resolves a dispute. No single party — and no admin — can move funds unilaterally.",
+      "Funds release only when both parties approve, or when an admin resolves a dispute. Admins manage the workflow and request release server-side; no one moves funds unilaterally.",
     icon: Scale,
   },
   {

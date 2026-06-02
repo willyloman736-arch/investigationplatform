@@ -2,17 +2,14 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { ArrowRight, ShieldCheck, Lock, FileSearch, Scale } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { motion, type Variants } from "framer-motion";
 
 import { Button } from "@/components/ui/button";
-
-const MICRO_BADGES = [
-  { label: "Escrow-protected funds", icon: ShieldCheck },
-  { label: "Transport-encrypted (SSL)", icon: Lock },
-  { label: "Full evidence audit trail", icon: FileSearch },
-  { label: "Mutual-approval release", icon: Scale },
-];
+import {
+  HERO_TRUST_MARKS,
+  OfficialTrustLogo,
+} from "@/components/marketing/OfficialTrustMarks";
 
 const container: Variants = {
   hidden: {},
@@ -102,18 +99,14 @@ export function HeroSection() {
             variants={item}
             className="mt-8 flex max-w-2xl flex-wrap items-center justify-start gap-x-5 gap-y-3 sm:mt-10"
           >
-            {MICRO_BADGES.map((badge) => {
-              const Icon = badge.icon;
+            {HERO_TRUST_MARKS.map((badge) => {
               return (
                 <li
                   key={badge.label}
                   className="inline-flex items-center gap-2 text-xs font-medium text-muted-foreground"
                 >
-                  <Icon
-                    className="h-3.5 w-3.5 text-cyan-300"
-                    aria-hidden="true"
-                  />
-                  {badge.label}
+                  <OfficialTrustLogo mark={badge} className="h-7 w-7 p-1.5" />
+                  <span>{badge.label}</span>
                 </li>
               );
             })}

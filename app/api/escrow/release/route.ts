@@ -4,8 +4,7 @@
 // THE ONLY PLACE IN THE CODEBASE WHERE A RELEASE IS TRIGGERED.
 //
 // Flow:
-//  1. Authenticate the caller (must be a signed-in user with access to the case;
-//     a party to the case OR an admin).
+//  1. Authenticate the caller (must be a signed-in admin operator).
 //  2. Load the escrow contract + approvals and RE-CHECK eligibility server-side:
 //       (party_a approved AND party_b approved)  OR
 //       (an admin set release_eligibility_reason and release_status="eligible").
@@ -14,7 +13,7 @@
 //  5. Insert an append-only escrow_transactions row (type "release").
 //  6. Set release_status="requested"; if the provider returns "confirmed", also
 //     set release_status="completed" and escrow_status="released".
-//  7. Audit with the acting user + reason.
+//  7. Audit with the acting admin + required reason.
 //
 // NO release logic lives in any client component. Money is never moved from the
 // client. This route performs no balance arithmetic — it records provider-
@@ -35,6 +34,7 @@ export const dynamic = "force-dynamic";
 
 interface ReleaseRequestBody {
   caseId?: string;
+  reason?: string;
 }
 
 export async function POST(request: NextRequest) {
@@ -47,9 +47,17 @@ export async function POST(request: NextRequest) {
   }
 
   const caseId = typeof body.caseId === "string" ? body.caseId.trim() : "";
+  const operatorReason =
+    typeof body.reason === "string" ? body.reason.trim() : "";
   if (!caseId) {
     return NextResponse.json(
       { error: "caseId is required." },
+      { status: 400 }
+    );
+  }
+  if (!operatorReason) {
+    return NextResponse.json(
+      { error: "A release reason note is required." },
       { status: 400 }
     );
   }
@@ -89,24 +97,12 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
   }
 
-  // ── Authorize: admin OR a party on the case ────────────────────────────────
-  const isAdmin = profile.role === "admin";
-  if (!isAdmin) {
-    const { data: party } = await supabase
-      .from("case_parties")
-      .select("id")
-      .eq("case_id", caseId)
-      .eq("profile_id", profile.id)
-      .maybeSingle<{ id: string }>();
-    const { data: caseRow } = await supabase
-      .from("cases")
-      .select("created_by")
-      .eq("id", caseId)
-      .maybeSingle<{ created_by: string }>();
-    const isParty = Boolean(party) || caseRow?.created_by === profile.id;
-    if (!isParty) {
-      return NextResponse.json({ error: "Forbidden." }, { status: 403 });
-    }
+  // ── Authorize: admin operators only ────────────────────────────────────────
+  if (profile.role !== "admin") {
+    return NextResponse.json(
+      { error: "Only administrators can trigger provider release requests." },
+      { status: 403 }
+    );
   }
 
   // ── Load escrow contract ────────────────────────────────────────────────────
@@ -182,7 +178,7 @@ export async function POST(request: NextRequest) {
       provider_status: result.status,
       status: providerConfirmed ? "confirmed" : "pending",
       initiated_by: profile.id,
-      notes: eligibilityReason,
+      notes: `${eligibilityReason} Operator note: ${operatorReason}`,
     })
     .select("id")
     .maybeSingle<{ id: string }>();
@@ -221,7 +217,7 @@ export async function POST(request: NextRequest) {
       transactionId: txn?.id ?? null,
       via: bothPartiesApproved ? "mutual_approval" : "admin_eligibility",
     },
-    reason: eligibilityReason,
+    reason: operatorReason,
   });
 
   return NextResponse.json(

@@ -121,12 +121,13 @@ export default function HowItWorksPage() {
                     Path 1 — Mutual approval
                   </h3>
                   <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                    When both Party A and Party B approve the outcome, the escrow
-                    becomes eligible for release and moves to{" "}
+                    When both Party A and Party B approve the outcome, the case
+                    moves to admin review before the escrow is marked{" "}
                     <span className="font-medium text-foreground">
                       Ready for Release
                     </span>
-                    . The release is then requested through the licensed partner.
+                    . An administrator records the review reason and requests
+                    release through the licensed partner.
                   </p>
                 </div>
                 <div className="rounded-2xl border border-blue-500/20 bg-blue-500/5 p-6">

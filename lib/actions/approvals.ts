@@ -4,12 +4,12 @@
 // Release-approval server action: submitApproval.
 //
 // SERVER-ONLY. A party records their approval to release escrow. When BOTH
-// party_a AND party_b have approved, the escrow contract is moved to
-// escrow_status="ready_for_release" and release_status="eligible".
+// party_a AND party_b have approved, admins are notified through the audit trail
+// and dashboard revalidation so they can review and advance the escrow workflow.
 //
-// CRITICAL: this NEVER moves money. Marking eligibility is the most this action
-// (or any client) can do — the actual release happens ONLY via the protected
-// POST /api/escrow/release route after a re-check.
+// CRITICAL: this NEVER moves money and no longer changes escrow status. Escrow
+// workflow changes are admin-managed. The actual release happens ONLY via the
+// protected admin POST /api/escrow/release route after a server-side re-check.
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { revalidatePath } from "next/cache";
@@ -42,8 +42,8 @@ export interface SubmitApprovalInput {
 
 /**
  * Upsert the calling party's release approval for a case. If both party_a and
- * party_b are now approved, flip the escrow contract to ready_for_release /
- * eligible. Audited. Does NOT release funds.
+ * party_b are now approved, write an audit event for admin review. Audited.
+ * Does NOT change escrow status and does NOT release funds.
  */
 export async function submitApproval(
   input: SubmitApprovalInput
@@ -128,29 +128,17 @@ export async function submitApproval(
 
   const bothApproved = bothPartiesApproved(approvals ?? []);
 
-  if (bothApproved && escrow.escrow_status !== "ready_for_release") {
-    const { error: escrowError } = await supabase
-      .from("escrow_contracts")
-      .update({
-        escrow_status: "ready_for_release",
-        release_status: "eligible",
-        release_eligibility_reason:
-          "Both parties (Party A and Party B) approved the release.",
-        updated_at: new Date().toISOString(),
-      })
-      .eq("id", escrow.id);
-
-    if (!escrowError) {
-      await logAudit(supabase, {
-        actorId: profile.id,
-        caseId,
-        action: "escrow.release_eligible",
-        entityType: "escrow_contract",
-        entityId: escrow.id,
-        metadata: { via: "mutual_approval" },
-        reason: "Both parties approved the release.",
-      });
-    }
+  if (bothApproved) {
+    await logAudit(supabase, {
+      actorId: profile.id,
+      caseId,
+      action: "escrow.release_review_ready",
+      entityType: "escrow_contract",
+      entityId: escrow.id,
+      metadata: { via: "mutual_approval" },
+      reason:
+        "Both parties approved. Admin review is required before the provider release request can be triggered.",
+    });
   }
 
   revalidatePath(`/dashboard/cases/${caseId}`);

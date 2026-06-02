@@ -210,9 +210,9 @@ create policy case_parties_delete_access
 -- ============================================================================
 -- POLICIES: escrow_contracts
 -- ----------------------------------------------------------------------------
--- Read by case access. Inserts/updates gated by case access as well; admins
--- (covered by has_case_access) drive escrow status changes from server actions.
--- No client-side balance math is possible — these policies only gate row access.
+-- Read by case access. Inserts are allowed for case setup, but escrow workflow
+-- updates are admin-only. Parties can approve/review; they cannot move escrow
+-- state or write ledger events directly.
 -- ============================================================================
 drop policy if exists escrow_contracts_select_access on public.escrow_contracts;
 create policy escrow_contracts_select_access
@@ -230,13 +230,13 @@ drop policy if exists escrow_contracts_update_access on public.escrow_contracts;
 create policy escrow_contracts_update_access
   on public.escrow_contracts for update
   to authenticated
-  using (public.has_case_access(case_id))
-  with check (public.has_case_access(case_id));
+  using (public.is_admin())
+  with check (public.is_admin());
 
 -- ============================================================================
 -- POLICIES: escrow_transactions  (append-only ledger)
 -- ----------------------------------------------------------------------------
--- Read by case access. Insert by case access (server actions / route handlers
+-- Read by case access. Insert by admins only (server actions / route handlers
 -- write provider-confirmed rows; the service role bypasses RLS for webhooks).
 -- No update/delete policies -> the ledger is immutable to normal roles.
 -- ============================================================================
@@ -250,7 +250,7 @@ drop policy if exists escrow_txns_insert_access on public.escrow_transactions;
 create policy escrow_txns_insert_access
   on public.escrow_transactions for insert
   to authenticated
-  with check (public.has_case_access(case_id));
+  with check (public.is_admin());
 
 -- ============================================================================
 -- POLICIES: uploaded_files
@@ -350,8 +350,8 @@ create policy approvals_update_own
 -- POLICIES: disputes
 -- ----------------------------------------------------------------------------
 -- Read by case access. A participant may open a dispute (opened_by = self).
--- Updates (resolution) gated by case access — server actions enforce admin-only
--- resolution and require a reason note. Deletes: admin only.
+-- Updates (resolution/review state) are admin-only and require a reason note in
+-- server actions. Deletes: admin only.
 -- ============================================================================
 drop policy if exists disputes_select_access on public.disputes;
 create policy disputes_select_access
@@ -369,8 +369,8 @@ drop policy if exists disputes_update_access on public.disputes;
 create policy disputes_update_access
   on public.disputes for update
   to authenticated
-  using (public.has_case_access(case_id))
-  with check (public.has_case_access(case_id));
+  using (public.is_admin())
+  with check (public.is_admin());
 
 drop policy if exists disputes_delete_admin on public.disputes;
 create policy disputes_delete_admin

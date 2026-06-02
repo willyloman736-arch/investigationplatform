@@ -59,7 +59,7 @@ const STEPS: Step[] = [
     title: "Mutual Release",
     short:
       "Funds release only after both parties approve — or after an admin resolves a dispute.",
-    long: "Release requires explicit approval from both Party A and Party B. If something goes wrong, either side can raise a dispute, which freezes release while an admin reviews the evidence and resolves it. Funds are released only after the licensed partner confirms.",
+    long: "Release requires explicit approval from both Party A and Party B, followed by admin review of the escrow workflow. If something goes wrong, either side can raise a dispute, which freezes release while an admin reviews the evidence and resolves it. Funds are released only after the licensed partner confirms.",
     icon: Handshake,
     chip: { label: "UNDER DISPUTE AUDIT", tone: "dispute" },
   },

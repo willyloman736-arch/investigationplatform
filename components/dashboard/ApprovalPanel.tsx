@@ -5,8 +5,8 @@
 //
 // Shows a card for Party A and Party B. The signed-in party can submit THEIR
 // approval via the `submitApproval` server action. Release requires BOTH parties
-// approved (or an admin dispute resolution) — this panel makes that explicit and
-// NEVER triggers a release itself. The actual release runs server-side only.
+// approved (or an admin dispute resolution), then an admin review. This panel
+// NEVER changes escrow status or triggers release; release runs server-side only.
 // ─────────────────────────────────────────────────────────────────────────────
 
 import * as React from "react";
@@ -79,7 +79,7 @@ export function ApprovalPanel({
           toast.error(result.error ?? "Could not record your approval.");
         } else {
           toast.success(
-            "Your approval has been recorded. Release requires both parties to approve."
+            "Your approval has been recorded. An admin must review the escrow before release is requested."
           );
         }
       } catch (err) {
@@ -102,7 +102,8 @@ export function ApprovalPanel({
             Funds are released only after both parties approve
           </span>{" "}
           — or after an administrator resolves a dispute in favor of release.
-          Approving here records your consent; it does not move any funds.
+          Approving here records your consent; admins still control escrow
+          workflow status and provider release requests.
         </p>
       </div>
 
@@ -245,11 +246,12 @@ export function ApprovalPanel({
       ) : isReady || bothApproved ? (
         <Alert variant="info">
           <CheckCircle2 className="h-4 w-4" />
-          <AlertTitle>Both parties approved — ready for release</AlertTitle>
+          <AlertTitle>Both parties approved — awaiting admin review</AlertTitle>
           <AlertDescription>
-            This case is eligible for release. An administrator will submit the
-            release request, which executes server-side only after the licensed
-            provider confirms. No funds move from this screen.
+            This case has the consent needed for release. An administrator must
+            review the case, record the reason note, and submit the provider
+            release request from the admin portal. No funds move from this
+            screen.
           </AlertDescription>
         </Alert>
       ) : (
