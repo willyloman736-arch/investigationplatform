@@ -45,8 +45,13 @@ export default function LoginPage() {
       </p>
 
       <p className="mt-4 text-center text-xs leading-relaxed text-muted-foreground/70">
-        Clients and counterparties share this sign-in. Administrators are
-        provisioned separately.
+        Clients and counterparties share this sign-in.{" "}
+        <Link
+          href="/operator"
+          className="font-medium text-muted-foreground underline-offset-4 transition-colors hover:text-foreground hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded"
+        >
+          Operator sign-in →
+        </Link>
       </p>
     </div>
   );

@@ -93,6 +93,20 @@ function readableAuthError(message: string | undefined): string {
   return "Something went wrong. Please try again.";
 }
 
+/** Only allow internal, single-slash paths as post-login redirects (no open
+ *  redirects). The operator console passes "/admin"; default is "/dashboard". */
+function sanitizeRedirectPath(path: string): string {
+  if (
+    path.startsWith("/") &&
+    !path.startsWith("//") &&
+    !path.includes("://") &&
+    !path.includes("\\")
+  ) {
+    return path;
+  }
+  return "/dashboard";
+}
+
 // ── Sign in ──────────────────────────────────────────────────────────────────
 
 /**
@@ -110,11 +124,17 @@ export async function signIn(formData: FormData): Promise<AuthResult> {
     return { error: parsed.error.issues[0]?.message ?? "Invalid credentials." };
   }
 
+  // Where to land after sign-in (sanitized). Operator console passes "/admin".
+  const rawRedirect = formData.get("redirectTo");
+  const target = sanitizeRedirectPath(
+    typeof rawRedirect === "string" ? rawRedirect : ""
+  );
+
   // DEMO path: when previewing without Supabase configured, skip real auth so
   // the dashboard is reachable. MUST be disabled in production.
   // TODO(demo): remove this bypass for production — DEMO_MODE must be false.
   if (DEMO_MODE) {
-    redirect("/dashboard");
+    redirect(target);
   }
 
   // No database configured on this deployment (and not in demo mode): return a
@@ -162,7 +182,7 @@ export async function signIn(formData: FormData): Promise<AuthResult> {
   }
 
   // Outside the try so the redirect's control-flow signal is never swallowed.
-  redirect("/dashboard");
+  redirect(target);
 }
 
 // ── Sign up ──────────────────────────────────────────────────────────────────
