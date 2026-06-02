@@ -31,6 +31,16 @@ test.describe("Digital Asset Investigations smoke (demo mode)", () => {
     ).toBeVisible();
   });
 
+  test("login button submits and reaches the dashboard (demo)", async ({
+    page,
+  }) => {
+    await page.goto("/login");
+    await page.getByLabel("Email").fill("demo@example.com");
+    await page.getByLabel("Password").fill("password1234");
+    await page.getByRole("button", { name: /sign in/i }).click();
+    await expect(page).toHaveURL(/\/dashboard/);
+  });
+
   test("client dashboard is reachable in demo mode", async ({ page }) => {
     await page.goto("/dashboard");
     // Demo bypass: should NOT redirect to /login.

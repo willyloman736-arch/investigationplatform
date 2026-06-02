@@ -117,29 +117,51 @@ export async function signIn(formData: FormData): Promise<AuthResult> {
     redirect("/dashboard");
   }
 
-  const supabase = await createClient();
-
-  const { data, error } = await supabase.auth.signInWithPassword({
-    email: parsed.data.email,
-    password: parsed.data.password,
-  });
-
-  if (error) {
-    return { error: readableAuthError(error.message) };
+  // No database configured on this deployment (and not in demo mode): return a
+  // clear, actionable message instead of throwing, so the form never appears
+  // "unresponsive".
+  if (
+    !process.env.NEXT_PUBLIC_SUPABASE_URL ||
+    !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  ) {
+    return {
+      error:
+        "Sign-in isn't available on this deployment yet — no database is configured. Enable demo mode (NEXT_PUBLIC_DEMO_MODE=true) or add your Supabase keys, then redeploy.",
+    };
   }
 
-  // Best-effort audit of the login event (never throws).
-  if (data.user) {
-    await logAudit(supabase, {
-      actorId: data.user.id,
-      action: "auth.sign_in",
-      entityType: "auth_user",
-      entityId: data.user.id,
-      metadata: { email: parsed.data.email },
+  try {
+    const supabase = await createClient();
+
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email: parsed.data.email,
+      password: parsed.data.password,
     });
+
+    if (error) {
+      return { error: readableAuthError(error.message) };
+    }
+
+    // Best-effort audit of the login event (never throws).
+    if (data.user) {
+      await logAudit(supabase, {
+        actorId: data.user.id,
+        action: "auth.sign_in",
+        entityType: "auth_user",
+        entityId: data.user.id,
+        metadata: { email: parsed.data.email },
+      });
+    }
+
+    revalidatePath("/", "layout");
+  } catch {
+    return {
+      error:
+        "Sign-in is temporarily unavailable. Please check your connection and try again.",
+    };
   }
 
-  revalidatePath("/", "layout");
+  // Outside the try so the redirect's control-flow signal is never swallowed.
   redirect("/dashboard");
 }
 
@@ -184,6 +206,16 @@ export async function signUp(formData: FormData): Promise<AuthResult> {
   // TODO(demo): remove this bypass for production — DEMO_MODE must be false.
   if (DEMO_MODE) {
     return { success: true };
+  }
+
+  if (
+    !process.env.NEXT_PUBLIC_SUPABASE_URL ||
+    !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  ) {
+    return {
+      error:
+        "Registration isn't available on this deployment yet — no database is configured. Enable demo mode or add your Supabase keys, then redeploy.",
+    };
   }
 
   const supabase = await createClient();
