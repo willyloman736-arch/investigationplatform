@@ -1,0 +1,114 @@
+import Link from "next/link";
+import { ShieldCheck } from "lucide-react";
+
+import { APP_NAME, APP_TAGLINE, PROVIDER_DISCLAIMER } from "@/lib/constants";
+
+interface FooterColumn {
+  heading: string;
+  links: { label: string; href: string }[];
+}
+
+const COLUMNS: FooterColumn[] = [
+  {
+    heading: "Product",
+    links: [
+      { label: "How it works", href: "/how-it-works" },
+      { label: "Escrow workflow", href: "/how-it-works#workflow" },
+      { label: "Escrow statuses", href: "/how-it-works#statuses" },
+      { label: "Start a project", href: "/register" },
+    ],
+  },
+  {
+    heading: "Platform",
+    links: [
+      { label: "Client portal", href: "/login" },
+      { label: "Open secure escrow", href: "/register" },
+      { label: "Dispute resolution", href: "/how-it-works#workflow" },
+      { label: "Evidence audit trail", href: "/how-it-works#security" },
+    ],
+  },
+  {
+    heading: "Company",
+    links: [
+      { label: "Log in", href: "/login" },
+      { label: "Register", href: "/register" },
+      { label: "Security overview", href: "/#security" },
+      { label: "Contact", href: "/#product" },
+    ],
+  },
+];
+
+/**
+ * Public marketing footer: link columns, honest compliance disclaimer, and
+ * copyright. The brand name comes from APP_NAME (changeable in lib/constants.ts).
+ */
+export function Footer() {
+  const year = 2026;
+
+  return (
+    <footer className="relative border-t border-white/10 bg-card/40">
+      <div className="mx-auto w-full max-w-7xl px-4 py-12 sm:px-6 lg:px-8 lg:py-16">
+        <div className="grid grid-cols-1 gap-10 md:grid-cols-2 lg:grid-cols-5">
+          {/* Brand block */}
+          <div className="lg:col-span-2">
+            <Link
+              href="/"
+              className="inline-flex items-center gap-2 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+              aria-label={`${APP_NAME} home`}
+            >
+              <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/15 text-primary ring-1 ring-primary/30">
+                <ShieldCheck className="h-5 w-5" />
+              </span>
+              <span className="text-lg font-semibold tracking-tight text-foreground">
+                {APP_NAME}
+              </span>
+            </Link>
+            <p className="mt-4 max-w-sm text-sm leading-relaxed text-muted-foreground">
+              {APP_TAGLINE} for high-trust digital transactions. Open cases, fund
+              escrow, exchange verified evidence, and release funds only after
+              mutual approval or admin dispute resolution.
+            </p>
+            <p className="mt-5 max-w-sm text-xs leading-relaxed text-muted-foreground/80">
+              {PROVIDER_DISCLAIMER}
+            </p>
+          </div>
+
+          {/* Link columns */}
+          {COLUMNS.map((col) => (
+            <div key={col.heading}>
+              <h3 className="text-sm font-semibold text-foreground">
+                {col.heading}
+              </h3>
+              <ul className="mt-4 space-y-3">
+                {col.links.map((link) => (
+                  <li key={`${col.heading}-${link.label}`}>
+                    <Link
+                      href={link.href}
+                      className="rounded text-sm text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+                    >
+                      {link.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
+
+        <div className="mt-12 flex flex-col gap-4 border-t border-white/10 pt-8 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-xs text-muted-foreground">
+            &copy; {year} {APP_NAME}. All rights reserved.
+          </p>
+          <p className="max-w-2xl text-xs leading-relaxed text-muted-foreground/80">
+            {APP_NAME} is an escrow workflow and investigation management
+            platform. It does not itself hold, transfer, or custody funds. All
+            fund movement is performed by licensed payment/escrow partners where
+            available.
+          </p>
+        </div>
+      </div>
+    </footer>
+  );
+}
+
+export default Footer;

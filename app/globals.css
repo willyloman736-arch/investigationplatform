@@ -1,0 +1,177 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+ * AEGIS design tokens.
+ * Ships DARK by default (see <html className="dark"> in app/layout.tsx).
+ * :root holds a light fallback; .dark holds the canonical trust-fintech palette.
+ * Palette: deep navy/near-black background, navy cards, emerald primary,
+ * blue=info, amber=pending/warning, red=dispute/destructive, orange=frozen.
+ */
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222 47% 8%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 8%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 8%;
+
+    --primary: 152 65% 45%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 222 30% 94%;
+    --secondary-foreground: 222 47% 12%;
+
+    --muted: 222 20% 94%;
+    --muted-foreground: 222 12% 42%;
+
+    --accent: 222 30% 94%;
+    --accent-foreground: 222 47% 12%;
+
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+
+    --success: 152 65% 42%;
+    --success-foreground: 0 0% 100%;
+
+    --info: 217 91% 60%;
+    --info-foreground: 0 0% 100%;
+
+    --warning: 38 92% 50%;
+    --warning-foreground: 222 47% 8%;
+
+    --frozen: 24 95% 53%;
+    --frozen-foreground: 0 0% 100%;
+
+    --border: 222 20% 88%;
+    --input: 222 20% 88%;
+    --ring: 152 65% 45%;
+
+    --radius: 0.75rem;
+  }
+
+  .dark {
+    /* Surfaces */
+    --background: 222 47% 6%;
+    --foreground: 210 40% 98%;
+
+    --card: 222 40% 9%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 222 44% 8%;
+    --popover-foreground: 210 40% 98%;
+
+    /* Trust green emerald */
+    --primary: 152 65% 45%;
+    --primary-foreground: 222 47% 6%;
+
+    --secondary: 222 33% 14%;
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 222 30% 15%;
+    --muted-foreground: 215 18% 62%;
+
+    --accent: 222 33% 16%;
+    --accent-foreground: 210 40% 98%;
+
+    /* Dispute red */
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 210 40% 98%;
+
+    /* Success green */
+    --success: 152 60% 48%;
+    --success-foreground: 222 47% 6%;
+
+    /* Info blue */
+    --info: 217 91% 60%;
+    --info-foreground: 222 47% 6%;
+
+    /* Pending amber */
+    --warning: 38 92% 55%;
+    --warning-foreground: 222 47% 6%;
+
+    /* Frozen orange */
+    --frozen: 24 95% 56%;
+    --frozen-foreground: 222 47% 6%;
+
+    /* white at 8% opacity for borders */
+    --border: 0 0% 100% / 0.08;
+    --input: 0 0% 100% / 0.1;
+    --ring: 152 65% 45%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1, "ss01" 1;
+    text-rendering: optimizeLegibility;
+    min-height: 100vh;
+  }
+
+  /* No horizontal overflow anywhere */
+  html,
+  body {
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+
+  /* Selection color (emerald) */
+  ::selection {
+    background-color: hsl(152 65% 45% / 0.3);
+    color: hsl(210 40% 98%);
+  }
+
+  /* Visible focus states for accessibility */
+  :focus-visible {
+    @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background;
+  }
+}
+
+@layer utilities {
+  /* Thin custom scrollbar */
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: hsl(215 18% 30%) transparent;
+  }
+
+  /* Glass surface helper */
+  .glass {
+    @apply border border-white/10 bg-white/5 backdrop-blur-md;
+  }
+}
+
+/* Thin custom scrollbar (WebKit) — applied globally */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: hsl(215 18% 26%);
+  border-radius: 9999px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: hsl(215 18% 36%);
+  background-clip: content-box;
+}
