@@ -95,24 +95,28 @@ export function StatusSummaryCards({
         label="Active Escrow"
         value={d.activeEscrow}
         icon={ShieldCheck}
+        tone="emerald"
         hint="Funds confirmed held by the escrow partner"
       />
       <StatCard
         label="Pending Deposit"
         value={d.pendingDeposit}
         icon={Clock}
+        tone="amber"
         hint="Awaiting funding confirmation"
       />
       <StatCard
         label="Under Dispute"
         value={d.underDispute}
         icon={AlertTriangle}
+        tone="red"
         hint="Release blocked pending admin review"
       />
       <StatCard
         label="Total Value"
         value={formatCurrency(d.totalValue, d.currency)}
         icon={Wallet}
+        tone="blue"
         hint="Aggregate escrow account value"
       />
     </div>

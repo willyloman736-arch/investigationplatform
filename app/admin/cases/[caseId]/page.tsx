@@ -82,6 +82,7 @@ import { RequestEvidenceDialog } from "@/components/admin/RequestEvidenceDialog"
 import { FlagActivityDialog } from "@/components/admin/FlagActivityDialog";
 import { ContractVerificationPanel } from "@/components/admin/ContractVerificationPanel";
 import { RecoveryCaseOperationsPanel } from "@/components/admin/RecoveryCaseOperationsPanel";
+import { Icon3D, type Icon3DTone } from "@/components/shared/Icon3D";
 
 interface PageProps {
   params: { caseId: string };
@@ -266,6 +267,7 @@ export default async function AdminCaseDetailPage({ params }: PageProps) {
         <InfoCard
           icon={Users}
           label="Client"
+          tone="blue"
           value={partyDisplay(partyA, profiles)}
           sub={
             partyA?.accepted
@@ -278,6 +280,7 @@ export default async function AdminCaseDetailPage({ params }: PageProps) {
         <InfoCard
           icon={Users}
           label="Operator"
+          tone="cyan"
           value={partyDisplay(partyB, profiles)}
           sub={
             partyB?.accepted
@@ -290,6 +293,7 @@ export default async function AdminCaseDetailPage({ params }: PageProps) {
         <InfoCard
           icon={ShieldCheck}
           label="Release approvals"
+          tone="emerald"
           value={`${approvedCount} / 2`}
           sub={
             approvedCount === 2
@@ -300,6 +304,7 @@ export default async function AdminCaseDetailPage({ params }: PageProps) {
         <InfoCard
           icon={Wallet}
           label="Net withdrawal"
+          tone="violet"
           value={
             escrow
               ? formatCurrency(escrow.net_release_amount, escrow.currency)
@@ -405,20 +410,20 @@ function InfoCard({
   value,
   sub,
   accent,
+  tone = "blue",
 }: {
   icon: LucideIcon;
   label: string;
   value: string;
   sub?: string;
   accent?: boolean;
+  tone?: Icon3DTone;
 }) {
   return (
     <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4 backdrop-blur-md">
       <div className="flex items-center justify-between gap-2">
         <p className="text-xs font-medium text-muted-foreground">{label}</p>
-        <span className="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-primary/15 text-primary ring-1 ring-inset ring-primary/25">
-          <Icon className="h-4 w-4" />
-        </span>
+        <Icon3D icon={Icon} tone={tone} size={34} />
       </div>
       <p
         className={cn(

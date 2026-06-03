@@ -24,6 +24,7 @@ import {
 } from "@/lib/constants";
 import type { UserRole } from "@/lib/types";
 import { Logo } from "@/components/shared/Logo";
+import { Icon3D } from "@/components/shared/Icon3D";
 import { signOut } from "@/lib/actions/auth";
 
 export interface SidebarProps {
@@ -125,15 +126,7 @@ export function Sidebar({ role, onNavigate, className }: SidebarProps) {
                         : "border border-transparent text-muted-foreground hover:border-white/10 hover:bg-white/[0.055] hover:text-foreground"
                     )}
                   >
-                    <Icon
-                      className={cn(
-                        "h-4 w-4 shrink-0 transition-colors",
-                        active
-                          ? "text-primary"
-                          : "text-muted-foreground group-hover:text-foreground"
-                      )}
-                      aria-hidden="true"
-                    />
+                    <Icon3D icon={Icon} tone="blue" size={26} />
                     <span className="truncate">{item.label}</span>
                     {active ? (
                       <span

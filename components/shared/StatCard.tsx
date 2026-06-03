@@ -2,6 +2,7 @@ import { TrendingUp, TrendingDown, type LucideIcon } from "lucide-react";
 
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
+import { Icon3D, type Icon3DTone } from "@/components/shared/Icon3D";
 
 /**
  * Glassmorphic KPI card used across dashboards and the landing page.
@@ -11,6 +12,8 @@ export interface StatCardProps {
   label: string;
   value: string | number;
   icon?: LucideIcon;
+  /** Icon tile tone. */
+  tone?: Icon3DTone;
   /** Small supporting line under the value. */
   hint?: string;
   /** Optional trend indicator (e.g. "+12% this month"). */
@@ -25,6 +28,7 @@ export function StatCard({
   label,
   value,
   icon: Icon,
+  tone = "blue",
   hint,
   trend,
   className,
@@ -53,14 +57,7 @@ export function StatCard({
 
       <div className="flex items-start justify-between gap-3">
         <p className="text-sm font-medium text-muted-foreground">{label}</p>
-        {Icon && (
-          <span
-            className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/15 text-primary ring-1 ring-inset ring-primary/25"
-            aria-hidden="true"
-          >
-            <Icon className="h-[18px] w-[18px]" />
-          </span>
-        )}
+        {Icon && <Icon3D icon={Icon} tone={tone} size={40} />}
       </div>
 
       <div className="mt-5 flex flex-wrap items-end gap-x-2 gap-y-1">

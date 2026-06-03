@@ -72,6 +72,17 @@ const TONES: Record<
   },
 };
 
+/** Solid stroke fallback so glyphs still paint if the gradient defs are absent. */
+const GLYPH_FALLBACK: Record<Icon3DTone, string> = {
+  blue: "#93c5fd",
+  cyan: "#67e8f9",
+  emerald: "#6ee7b7",
+  amber: "#fcd34d",
+  red: "#fca5a5",
+  violet: "#c4b5fd",
+  slate: "#cbd5e1",
+};
+
 export interface Icon3DProps {
   icon: LucideIcon;
   tone?: Icon3DTone;
@@ -117,7 +128,7 @@ export function Icon3D({
         strokeWidth={2}
         className="relative"
         style={{
-          stroke: `url(#icon3d-grad-${tone})`,
+          stroke: `url(#icon3d-grad-${tone}) ${GLYPH_FALLBACK[tone]}`,
           filter: "url(#icon3d-shadow)",
         }}
       />

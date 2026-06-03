@@ -6,6 +6,7 @@ import { DEMO_MODE } from "@/lib/constants";
 import type { SessionUser, UserRole } from "@/lib/types";
 import { Sidebar } from "@/components/dashboard/Sidebar";
 import { Topbar } from "@/components/dashboard/Topbar";
+import { Icon3DDefs } from "@/components/shared/Icon3D";
 
 export interface DashboardLayoutProps {
   role: UserRole;
@@ -34,6 +35,7 @@ export function DashboardLayout({
 }: DashboardLayoutProps) {
   return (
     <div className="relative h-svh overflow-hidden bg-background text-foreground">
+      <Icon3DDefs />
       {/* Subtle ambient glow — institutional, not flashy. */}
       <div
         aria-hidden="true"
