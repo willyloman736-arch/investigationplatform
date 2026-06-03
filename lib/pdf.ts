@@ -517,20 +517,29 @@ export function createReceiptPdf(input: ReceiptPdfInput): Buffer {
     { size: 8.5, color: COLORS.muted }
   );
 
-  // ── Footer (fixed to page bottom) ──────────────────────────────────────────
-  p.line(ML, top(724), MR, top(724), COLORS.line, 1);
-  p.text(`${input.brandName} - ${input.brandTagline}`, ML, top(738), {
+  // ── Footer (anchored to the page bottom with a guaranteed safe margin) ──────
+  // Pre-wrap every disclaimer line, then lay the block out upward from a fixed
+  // bottom margin so it can never crowd or spill past the page edge regardless
+  // of how many lines the disclaimers wrap to.
+  const footLines = input.disclaimers.flatMap((d) => wrapText(d, CW, 7.6, false));
+  const footStep = 11.5;
+  const bottomMargin = 50;
+  const firstFootFromTop = PAGE_H - bottomMargin - (footLines.length - 1) * footStep;
+  const brandFromTop = firstFootFromTop - 16;
+  const ruleFromTop = brandFromTop - 13;
+
+  p.line(ML, top(ruleFromTop), MR, top(ruleFromTop), COLORS.line, 1);
+  p.text(`${input.brandName} - ${input.brandTagline}`, ML, top(brandFromTop), {
     size: 8.5,
     bold: true,
     color: COLORS.muted,
   });
-  let footY = 751;
-  for (const disclaimer of input.disclaimers) {
-    for (const ln of wrapText(disclaimer, CW, 7.6, false)) {
-      p.text(ln, ML, top(footY), { size: 7.6, color: COLORS.faint });
-      footY += 10;
-    }
-  }
+  footLines.forEach((line, i) => {
+    p.text(line, ML, top(firstFootFromTop + i * footStep), {
+      size: 7.6,
+      color: COLORS.faint,
+    });
+  });
 
   return p.build();
 }
