@@ -19,6 +19,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getCurrentUserMock } from "@/lib/data";
 import type { Profile, SessionUser } from "@/lib/types";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
+import { Icon3DDefs } from "@/components/shared/Icon3D";
 
 export default async function AdminLayout({
   children,
@@ -43,6 +44,7 @@ export default async function AdminLayout({
 
   return (
     <DashboardLayout role="admin" user={user}>
+      <Icon3DDefs />
       {children}
     </DashboardLayout>
   );

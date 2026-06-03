@@ -45,6 +45,7 @@ import { AuditLogTimeline } from "@/components/shared/AuditLogTimeline";
 import { FundsBreakdownTable } from "@/components/dashboard/FundsBreakdownTable";
 import { StatusSummaryCards } from "@/components/dashboard/StatusSummaryCards";
 import { RecoveryOperationsPanel } from "@/components/admin/RecoveryOperationsPanel";
+import { Icon3D, type Icon3DTone } from "@/components/shared/Icon3D";
 
 export const metadata = {
   title: `Command Center · ${APP_NAME}`,
@@ -182,30 +183,40 @@ function CommandHero({
     (operation) => operation.kyc?.status === "in_review"
   ).length;
 
-  const heroStats = [
+  const heroStats: {
+    label: string;
+    value: string | number;
+    hint: string;
+    icon: LucideIcon;
+    tone: Icon3DTone;
+  }[] = [
     {
       label: "Recovered funds",
       value: formatCurrency(recoveredTotal, "USD"),
       hint: "Loaded by admin",
       icon: Wallet,
+      tone: "emerald",
     },
     {
       label: "KYC queue",
       value: kycQueue,
       hint: "Identity review",
       icon: IdCard,
+      tone: "cyan",
     },
     {
       label: "Withdrawals",
       value: withdrawalQueue,
       hint: "Approval needed",
       icon: CreditCard,
+      tone: "blue",
     },
     {
       label: "Disputes",
       value: openDisputes,
       hint: "Admin review",
       icon: ShieldAlert,
+      tone: "red",
     },
   ];
 
@@ -247,9 +258,7 @@ function CommandHero({
 
         <div className="rounded-2xl border border-white/10 bg-background/35 p-4 backdrop-blur-xl">
           <div className="flex items-start gap-3">
-            <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/15 text-primary ring-1 ring-inset ring-primary/25">
-              <Lock className="h-5 w-5" />
-            </span>
+            <Icon3D icon={Lock} tone="blue" size={40} className="shrink-0" />
             <div>
               <p className="font-semibold text-foreground">
                 Workflow control, not frontend money movement
@@ -286,19 +295,19 @@ function HeroStat({
   value,
   hint,
   icon: Icon,
+  tone,
 }: {
   label: string;
   value: string | number;
   hint: string;
   icon: LucideIcon;
+  tone: Icon3DTone;
 }) {
   return (
     <div className="rounded-2xl border border-white/10 bg-background/35 p-4 backdrop-blur-xl">
       <div className="flex items-start justify-between gap-3">
         <p className="text-sm font-medium text-muted-foreground">{label}</p>
-        <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white/[0.07] text-primary ring-1 ring-inset ring-white/10">
-          <Icon className="h-[18px] w-[18px]" />
-        </span>
+        <Icon3D icon={Icon} tone={tone} size={40} />
       </div>
       <p className="mt-4 text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
         {value}
@@ -359,12 +368,14 @@ function PlatformPulse({
           value={cases.length}
           hint="Every recovery record"
           icon={FolderKanban}
+          accent="blue"
         />
         <PulseCard
           label="Open disputes"
           value={openDisputes}
           hint="Awaiting resolution"
           icon={Gavel}
+          accent="red"
           tone={openDisputes > 0 ? "warning" : "normal"}
         />
         <PulseCard
@@ -372,6 +383,7 @@ function PlatformPulse({
           value={flaggedCount}
           hint="Suspicious activity review"
           icon={Flag}
+          accent="amber"
           tone={flaggedCount > 0 ? "warning" : "normal"}
         />
         <PulseCard
@@ -379,6 +391,7 @@ function PlatformPulse({
           value={stats.activeDisputesResolved}
           hint="Release or refund outcomes"
           icon={CheckCircle2}
+          accent="emerald"
         />
       </div>
     </section>
@@ -390,12 +403,14 @@ function PulseCard({
   value,
   hint,
   icon: Icon,
+  accent,
   tone = "normal",
 }: {
   label: string;
   value: string | number;
   hint: string;
   icon: LucideIcon;
+  accent: Icon3DTone;
   tone?: "normal" | "warning";
 }) {
   return (
@@ -407,16 +422,7 @@ function PulseCard({
     >
       <div className="flex items-start justify-between gap-3">
         <p className="text-sm font-medium text-muted-foreground">{label}</p>
-        <span
-          className={cn(
-            "inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ring-1 ring-inset",
-            tone === "warning"
-              ? "bg-amber-400/[0.12] text-amber-200 ring-amber-400/25"
-              : "bg-primary/[0.12] text-primary ring-primary/25"
-          )}
-        >
-          <Icon className="h-[18px] w-[18px]" />
-        </span>
+        <Icon3D icon={Icon} tone={accent} size={40} />
       </div>
       <p className="mt-5 text-3xl font-semibold tracking-tight text-foreground">
         {value}
@@ -456,24 +462,33 @@ function SectionHeader({
 }
 
 function CommandLinks({ openDisputes }: { openDisputes: number }) {
-  const links = [
+  const links: {
+    href: string;
+    label: string;
+    hint: string;
+    icon: LucideIcon;
+    tone: Icon3DTone;
+  }[] = [
     {
       href: "/admin/cases",
       label: "Case roster",
       hint: "Create, review, assign, suspend, and close cases",
       icon: FolderKanban,
+      tone: "blue",
     },
     {
       href: "/admin#withdrawals",
       label: "Withdrawal queue",
       hint: "Conditions, approvals, payout confirmation",
       icon: CreditCard,
+      tone: "cyan",
     },
     {
       href: "/admin#kyc-review",
       label: "KYC review",
       hint: "Government ID, selfie, address, phone, email",
       icon: IdCard,
+      tone: "violet",
     },
     {
       href: "/admin/disputes",
@@ -483,30 +498,35 @@ function CommandLinks({ openDisputes }: { openDisputes: number }) {
           ? `${openDisputes} awaiting admin decision`
           : "No open disputes",
       icon: ShieldAlert,
+      tone: "red",
     },
     {
       href: "/admin#receipts",
       label: "Receipts",
       hint: "Generate and download client records",
       icon: ReceiptText,
+      tone: "amber",
     },
     {
       href: "/admin#escrow-ledger",
       label: "Escrow ledger",
       hint: "Recovered balances and provider status",
       icon: ScrollText,
+      tone: "emerald",
     },
     {
       href: "/admin#audit-logs",
       label: "Audit log",
       hint: "Reason notes and admin override history",
       icon: FileCheck2,
+      tone: "slate",
     },
     {
       href: "/admin/cases",
       label: "Release eligibility",
       hint: "Admin-reviewed release readiness only",
       icon: BadgeCheck,
+      tone: "blue",
     },
   ];
 
@@ -521,9 +541,7 @@ function CommandLinks({ openDisputes }: { openDisputes: number }) {
             Admin shortcuts
           </h3>
         </div>
-        <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-primary/15 text-primary ring-1 ring-inset ring-primary/25">
-          <Wallet className="h-5 w-5" />
-        </span>
+        <Icon3D icon={Wallet} tone="blue" size={40} />
       </div>
       <div className="mt-4 space-y-2">
         {links.map((l) => {
@@ -534,9 +552,7 @@ function CommandLinks({ openDisputes }: { openDisputes: number }) {
               href={l.href}
               className="group flex items-center gap-3 rounded-xl border border-white/10 bg-background/40 px-3 py-3 transition-colors hover:border-primary/35 hover:bg-primary/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
-              <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/[0.055] text-primary ring-1 ring-inset ring-white/10">
-                <Icon className="h-[18px] w-[18px]" />
-              </span>
+              <Icon3D icon={Icon} tone={l.tone} size={40} />
               <span className="min-w-0 flex-1">
                 <span className="block text-sm font-semibold text-foreground">
                   {l.label}

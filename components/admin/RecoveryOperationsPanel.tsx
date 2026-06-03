@@ -30,6 +30,7 @@ import type {
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Icon3D } from "@/components/shared/Icon3D";
 
 interface RecoveryOperationsPanelProps {
   operations: RecoveryOperationsCase[];
@@ -362,14 +363,6 @@ function MetricTile({
   accent: "emerald" | "blue" | "cyan" | "amber" | "violet";
   id?: string;
 }) {
-  const accentClass = {
-    emerald: "bg-emerald-400/[0.12] text-emerald-200 ring-emerald-400/25",
-    blue: "bg-blue-400/[0.12] text-blue-200 ring-blue-400/25",
-    cyan: "bg-cyan-400/[0.12] text-cyan-200 ring-cyan-400/25",
-    amber: "bg-amber-400/[0.12] text-amber-200 ring-amber-400/25",
-    violet: "bg-violet-400/[0.12] text-violet-200 ring-violet-400/25",
-  }[accent];
-
   return (
     <div
       id={id}
@@ -381,14 +374,7 @@ function MetricTile({
       />
       <div className="flex items-start justify-between gap-3">
         <p className="text-sm font-semibold text-muted-foreground">{label}</p>
-        <span
-          className={cn(
-            "inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ring-1 ring-inset",
-            accentClass
-          )}
-        >
-          <Icon className="h-5 w-5" />
-        </span>
+        <Icon3D icon={Icon} tone={accent} size={44} />
       </div>
       <p className="mt-7 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
         {value}
