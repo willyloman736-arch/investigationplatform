@@ -543,12 +543,14 @@ export function RecoveryCaseOperationsPanel({
           <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
             <Button
               variant="outline"
+              className="h-auto min-h-9 whitespace-normal py-2 leading-tight"
               onClick={() => handleWithdrawalReview("conditions_required")}
               disabled={isPending || !withdrawal || !reviewNote.trim()}
             >
               Require Conditions
             </Button>
             <Button
+              className="h-auto min-h-9 whitespace-normal py-2 leading-tight"
               onClick={() => handleWithdrawalReview("approved")}
               disabled={isPending || !withdrawal || !reviewNote.trim()}
             >
@@ -556,6 +558,7 @@ export function RecoveryCaseOperationsPanel({
             </Button>
             <Button
               variant="destructive"
+              className="h-auto min-h-9 whitespace-normal py-2 leading-tight"
               onClick={() => handleWithdrawalReview("denied")}
               disabled={isPending || !withdrawal || !reviewNote.trim()}
             >
@@ -563,6 +566,7 @@ export function RecoveryCaseOperationsPanel({
             </Button>
             <Button
               variant="secondary"
+              className="h-auto min-h-9 whitespace-normal py-2 leading-tight"
               onClick={() => handleWithdrawalReview("paid_out")}
               disabled={isPending || !withdrawal || !reviewNote.trim()}
             >

@@ -371,7 +371,7 @@ export function EscrowControlPanel({
 
       {/* Current snapshot */}
       {escrow ? (
-        <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <div className="mt-4 grid grid-cols-2 gap-3">
           <Snapshot label="Total held" value={formatCurrency(escrow.total_amount, currency)} />
           <Snapshot
             label="Net withdrawal"
@@ -410,7 +410,7 @@ export function EscrowControlPanel({
               key={def.key}
               variant={variant}
               className={cn(
-                "h-auto w-full justify-start gap-3 px-3 py-2.5 text-left",
+                "h-auto w-full justify-start gap-3 whitespace-normal px-3 py-2.5 text-left",
                 def.isRelease &&
                   "ring-1 ring-inset ring-primary/40"
               )}
@@ -418,7 +418,7 @@ export function EscrowControlPanel({
               disabled={!escrow}
             >
               <Icon className="h-4 w-4 shrink-0" />
-              <span className="flex flex-col">
+              <span className="flex min-w-0 flex-col">
                 <span className="text-sm font-medium leading-tight">
                   {def.label}
                 </span>
@@ -555,9 +555,10 @@ function Snapshot({
       </p>
       <p
         className={cn(
-          "mt-0.5 truncate text-sm font-semibold",
+          "mt-0.5 break-words text-sm font-semibold",
           accent ? "text-cyan-300" : "text-foreground"
         )}
+        title={value}
       >
         {value}
       </p>
