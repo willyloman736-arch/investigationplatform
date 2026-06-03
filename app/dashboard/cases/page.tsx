@@ -275,7 +275,7 @@ export default async function ClientCasesPage() {
   const actionItems = buildActionItems(cards);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       <RecoveryHero
         firstName={firstName(user.name)}
         primary={primary}
@@ -332,7 +332,7 @@ function RecoveryHero({
   return (
     <section
       className={cn(
-        "relative overflow-hidden rounded-3xl border bg-white/[0.055] p-5 shadow-2xl shadow-black/25 backdrop-blur-xl sm:p-6",
+        "relative overflow-hidden rounded-[1.5rem] border bg-white/[0.055] p-4 shadow-2xl shadow-black/25 backdrop-blur-xl sm:rounded-3xl sm:p-6",
         tone.border
       )}
     >
@@ -348,21 +348,21 @@ function RecoveryHero({
         className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/35 to-transparent"
       />
 
-      <div className="relative grid gap-6 xl:grid-cols-[minmax(0,1fr)_420px] xl:items-end">
+      <div className="relative grid gap-4 sm:gap-6 xl:grid-cols-[minmax(0,1fr)_420px] xl:items-end">
         <div>
-          <div className="inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-primary">
+          <div className="inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-primary sm:text-xs">
             <FileSearch className="h-3.5 w-3.5" />
             Complaint dashboard
           </div>
-          <p className="mt-5 text-sm text-muted-foreground">Good morning,</p>
-          <h1 className="mt-1 text-3xl font-semibold tracking-tight text-foreground sm:text-5xl">
+          <p className="mt-4 text-sm text-muted-foreground sm:mt-5">Good morning,</p>
+          <h1 className="mt-1 text-2xl font-semibold tracking-tight text-foreground sm:text-5xl">
             {firstName}
           </h1>
-          <p className="mt-4 max-w-3xl text-base leading-relaxed text-muted-foreground">
+          <p className="mt-3 hidden max-w-3xl text-base leading-relaxed text-muted-foreground sm:block">
             Track your crypto scam complaint from intake through admin review,
             evidence requests, KYC, recovery progress, and escrow opening.
           </p>
-          <div className="mt-5 flex flex-wrap gap-2">
+          <div className="mt-4 grid grid-cols-1 gap-2 sm:mt-5 sm:flex sm:flex-wrap">
             <Button asChild>
               <Link href="/register">
                 <Plus className="h-4 w-4" />
@@ -378,7 +378,7 @@ function RecoveryHero({
           </div>
         </div>
 
-        <div className="rounded-2xl border border-white/10 bg-background/35 p-4 backdrop-blur-xl">
+        <div className="rounded-2xl border border-white/10 bg-background/35 p-3 backdrop-blur-xl sm:p-4">
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
             Featured case
           </p>
@@ -404,7 +404,7 @@ function RecoveryHero({
         </div>
       </div>
 
-      <div className="relative mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-5">
+      <div className="relative mt-4 grid grid-cols-2 gap-2 sm:mt-6 sm:grid-cols-2 sm:gap-3 xl:grid-cols-5">
         <HeroMetric
           label="Total cases"
           value={totalCases}
@@ -468,22 +468,26 @@ function HeroMetric({
   }[accent];
 
   return (
-    <div className="min-h-[142px] rounded-2xl border border-white/10 bg-background/35 p-4 backdrop-blur-xl">
-      <div className="flex items-start justify-between gap-3">
-        <p className="text-sm font-medium text-muted-foreground">{label}</p>
+    <div className="min-h-[108px] rounded-2xl border border-white/10 bg-background/35 p-3 backdrop-blur-xl sm:min-h-[142px] sm:p-4">
+      <div className="flex items-start justify-between gap-2 sm:gap-3">
+        <p className="text-[11px] font-medium leading-tight text-muted-foreground sm:text-sm">
+          {label}
+        </p>
         <span
           className={cn(
-            "inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ring-1 ring-inset",
+            "inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-xl ring-1 ring-inset sm:h-10 sm:w-10",
             accentClass
           )}
         >
-          <Icon className="h-5 w-5" />
+          <Icon className="h-4 w-4 sm:h-5 sm:w-5" />
         </span>
       </div>
-      <p className="mt-5 text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
+      <p className="mt-3 break-words text-xl font-semibold tracking-tight text-foreground sm:mt-5 sm:text-3xl">
         {value}
       </p>
-      <p className="mt-1 text-xs text-muted-foreground">{hint}</p>
+      <p className="mt-1 line-clamp-2 text-[11px] leading-snug text-muted-foreground sm:text-xs">
+        {hint}
+      </p>
     </div>
   );
 }
@@ -1114,9 +1118,9 @@ function SectionHeader({
 
 function EmptyCases({ firstName }: { firstName: string }) {
   return (
-    <section className="rounded-3xl border border-dashed border-white/10 bg-white/[0.04] px-6 py-16 text-center backdrop-blur-xl">
-      <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/15 text-primary">
-        <FolderKanban className="h-8 w-8" />
+    <section className="rounded-[1.5rem] border border-dashed border-white/10 bg-white/[0.04] px-5 py-10 text-center backdrop-blur-xl sm:rounded-3xl sm:px-6 sm:py-16">
+      <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/15 text-primary sm:h-16 sm:w-16">
+        <FolderKanban className="h-7 w-7 sm:h-8 sm:w-8" />
       </div>
       <p className="text-sm text-muted-foreground">Good morning, {firstName}</p>
       <h1 className="mt-2 text-2xl font-semibold text-foreground">

@@ -39,6 +39,9 @@ export default async function AdminLayout({
     name: profile.full_name ?? profile.company ?? profile.email,
     email: profile.email,
     role: profile.role,
+    avatar_url: profile.avatar_url,
+    company: profile.company,
+    phone: profile.phone,
   };
 
   return (

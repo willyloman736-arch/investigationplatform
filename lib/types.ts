@@ -366,4 +366,7 @@ export interface SessionUser {
   name: string;
   email: string;
   role: UserRole;
+  avatar_url?: string | null;
+  company?: string | null;
+  phone?: string | null;
 }

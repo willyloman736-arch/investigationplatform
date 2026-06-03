@@ -5,6 +5,7 @@ import {
   ShieldAlert,
   Gauge,
   ScrollText,
+  UserRound,
   type LucideIcon,
 } from "lucide-react";
 import type {
@@ -326,6 +327,7 @@ export interface NavItem {
 export const NAV_CLIENT: NavItem[] = [
   { label: "Escrow Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { label: "Recovery Cases", href: "/dashboard/cases", icon: FolderKanban },
+  { label: "Profile & Settings", href: "/dashboard/profile", icon: UserRound },
 ];
 
 export const NAV_ADMIN: NavItem[] = [

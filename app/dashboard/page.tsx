@@ -276,7 +276,7 @@ export default async function DashboardOverviewPage() {
   const first = firstName(user.name);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       <EscrowHero
         firstName={first}
         operations={operations}
@@ -388,10 +388,10 @@ function EscrowHero({
   const tone = ESCROW_TONE[escrowStatus];
 
   return (
-    <section className="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,1.4fr)_minmax(340px,.72fr)]">
+    <section className="grid grid-cols-1 gap-4 sm:gap-5 xl:grid-cols-[minmax(0,1.4fr)_minmax(340px,.72fr)]">
       <div
         className={cn(
-          "relative overflow-hidden rounded-3xl border bg-white/[0.055] p-5 shadow-2xl shadow-black/25 backdrop-blur-xl sm:p-6",
+          "relative overflow-hidden rounded-[1.5rem] border bg-white/[0.055] p-4 shadow-2xl shadow-black/25 backdrop-blur-xl sm:rounded-3xl sm:p-6",
           tone.border
         )}
       >
@@ -407,10 +407,10 @@ function EscrowHero({
           className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/35 to-transparent"
         />
 
-        <div className="relative flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
+        <div className="relative flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
           <div>
             <div className="flex flex-wrap items-center gap-2">
-              <span className="inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-primary">
+              <span className="inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-primary sm:text-xs">
                 <ShieldCheck className="h-3.5 w-3.5" />
                 Secure escrow account
               </span>
@@ -418,17 +418,17 @@ function EscrowHero({
                 {ESCROW_STATUS_CONFIG[escrowStatus].label}
               </span>
             </div>
-            <p className="mt-5 text-sm text-muted-foreground">Good morning,</p>
-            <h1 className="mt-1 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
+            <p className="mt-4 text-sm text-muted-foreground">Good morning,</p>
+            <h1 className="mt-1 text-2xl font-semibold tracking-tight text-foreground sm:text-4xl">
               {firstName}
             </h1>
-            <p className="mt-3 max-w-2xl text-sm leading-relaxed text-muted-foreground sm:text-base">
+            <p className="mt-3 hidden max-w-2xl text-sm leading-relaxed text-muted-foreground sm:block sm:text-base">
               Monitor recovered funds, KYC, withdrawal readiness, receipts, and
               dispute status from your client escrow dashboard.
             </p>
           </div>
 
-          <div className="flex flex-wrap gap-2">
+          <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
             <Button asChild variant="outline" size="sm">
               <Link href={`/dashboard/cases/${primaryOperation.id}`}>
                 <Eye className="h-4 w-4" />
@@ -444,14 +444,14 @@ function EscrowHero({
           </div>
         </div>
 
-        <div className="relative mt-6 grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1fr)_320px]">
-          <div className="rounded-2xl border border-white/10 bg-background/35 p-4 backdrop-blur-xl">
+        <div className="relative mt-4 grid grid-cols-1 gap-3 sm:mt-6 sm:gap-4 lg:grid-cols-[minmax(0,1fr)_320px]">
+          <div className="rounded-2xl border border-white/10 bg-background/35 p-3 backdrop-blur-xl sm:p-4">
             <div className="flex items-start justify-between gap-3">
               <div>
                 <p className="text-sm font-medium text-muted-foreground">
                   Total escrow balance
                 </p>
-                <p className="mt-2 text-4xl font-semibold tracking-tight text-foreground sm:text-5xl">
+                <p className="mt-2 break-words text-[2rem] font-semibold leading-none tracking-tight text-foreground sm:text-5xl">
                   {formatCurrency(balance, currency)}
                 </p>
               </div>
@@ -459,15 +459,15 @@ function EscrowHero({
                 <Wallet className="h-5 w-5" />
               </span>
             </div>
-            <div className="mt-5">
-              <Sparkline data={trend} className="h-24 w-full" />
+            <div className="mt-4 sm:mt-5">
+              <Sparkline data={trend} className="h-16 w-full sm:h-24" />
               <p className="mt-1 text-[11px] text-muted-foreground">
                 Balance visibility is updated after admin/provider review.
               </p>
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-2 sm:gap-3">
             <HeroMetric
               label="Active escrow"
               value={activeEscrows}
@@ -499,7 +499,7 @@ function EscrowHero({
           </div>
         </div>
 
-        <div className="relative mt-5 grid grid-cols-2 gap-2 sm:grid-cols-4">
+        <div className="relative mt-4 grid grid-cols-4 gap-2 sm:mt-5">
           <QuickAction
             href={`/dashboard/cases/${primaryOperation.id}`}
             label="Message"
@@ -524,13 +524,13 @@ function EscrowHero({
       </div>
 
       <div className="grid gap-5">
-        <div className="rounded-3xl border border-white/10 bg-white/[0.055] p-5 shadow-2xl shadow-black/25 backdrop-blur-xl">
+        <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.055] p-4 shadow-2xl shadow-black/25 backdrop-blur-xl sm:rounded-3xl sm:p-5">
           <div className="flex items-center justify-between gap-3">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.22em] text-primary">
                 Withdrawal window
               </p>
-              <p className="mt-2 text-2xl font-semibold tracking-tight text-foreground">
+              <p className="mt-2 text-xl font-semibold tracking-tight text-foreground sm:text-2xl">
                 {formatCurrency(netEligibleWithdrawal, currency)}
               </p>
               <p className="mt-1 text-xs text-muted-foreground">
@@ -569,24 +569,26 @@ function HeroMetric({
   }[accent];
 
   return (
-    <div className="min-h-[132px] rounded-2xl border border-white/10 bg-background/35 p-3 backdrop-blur-xl sm:p-4">
+    <div className="min-h-[104px] rounded-2xl border border-white/10 bg-background/35 p-3 backdrop-blur-xl sm:min-h-[132px] sm:p-4">
       <div className="flex items-start justify-between gap-2">
-        <p className="text-xs font-medium text-muted-foreground sm:text-sm">
+        <p className="text-[11px] font-medium leading-tight text-muted-foreground sm:text-sm">
           {label}
         </p>
         <span
           className={cn(
-            "inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ring-1 ring-inset",
+            "inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-xl ring-1 ring-inset sm:h-9 sm:w-9",
             accentClass
           )}
         >
-          <Icon className="h-[18px] w-[18px]" />
+          <Icon className="h-4 w-4 sm:h-[18px] sm:w-[18px]" />
         </span>
       </div>
-      <p className="mt-4 text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
+      <p className="mt-2 text-xl font-semibold tracking-tight text-foreground sm:mt-4 sm:text-3xl">
         {value}
       </p>
-      <p className="mt-1 text-xs leading-snug text-muted-foreground">{hint}</p>
+      <p className="mt-1 line-clamp-2 text-[11px] leading-snug text-muted-foreground sm:text-xs">
+        {hint}
+      </p>
     </div>
   );
 }
@@ -603,10 +605,10 @@ function QuickAction({
   return (
     <Link
       href={href}
-      className="group flex min-h-[82px] flex-col items-center justify-center gap-2 rounded-2xl border border-white/10 bg-background/35 px-3 py-3 text-center text-sm font-semibold text-foreground backdrop-blur-xl transition-colors hover:border-primary/35 hover:bg-primary/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      className="group flex min-h-[66px] flex-col items-center justify-center gap-1.5 rounded-2xl border border-white/10 bg-background/35 px-1.5 py-2 text-center text-[11px] font-semibold leading-tight text-foreground backdrop-blur-xl transition-colors hover:border-primary/35 hover:bg-primary/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:min-h-[82px] sm:gap-2 sm:px-3 sm:py-3 sm:text-sm"
     >
-      <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-primary/15 text-primary ring-1 ring-inset ring-primary/25 transition-transform group-hover:-translate-y-0.5">
-        <Icon className="h-5 w-5" />
+      <span className="inline-flex h-8 w-8 items-center justify-center rounded-xl bg-primary/15 text-primary ring-1 ring-inset ring-primary/25 transition-transform group-hover:-translate-y-0.5 sm:h-10 sm:w-10">
+        <Icon className="h-4 w-4 sm:h-5 sm:w-5" />
       </span>
       <span>{label}</span>
     </Link>
@@ -629,7 +631,7 @@ function EscrowDetailsCard({
   return (
     <div
       className={cn(
-        "relative overflow-hidden rounded-3xl border bg-white/[0.055] p-5 shadow-2xl shadow-black/20 backdrop-blur-xl",
+        "relative overflow-hidden rounded-[1.5rem] border bg-white/[0.055] p-4 shadow-2xl shadow-black/20 backdrop-blur-xl sm:rounded-3xl sm:p-5",
         tone.border
       )}
     >
@@ -654,7 +656,7 @@ function EscrowDetailsCard({
 
       <div className="relative mt-5 flex flex-col items-center">
         <div
-          className="grid h-44 w-44 place-items-center rounded-full p-3"
+          className="grid h-36 w-36 place-items-center rounded-full p-2.5 sm:h-44 sm:w-44 sm:p-3"
           style={{
             background: `conic-gradient(${tone.ring} ${Math.round(
               progress * 360
@@ -663,7 +665,7 @@ function EscrowDetailsCard({
         >
           <div className="grid h-full w-full place-items-center rounded-full border border-white/10 bg-background/80 text-center backdrop-blur-xl">
             <div>
-              <Clock className={cn("mx-auto h-7 w-7", tone.text)} />
+              <Clock className={cn("mx-auto h-6 w-6 sm:h-7 sm:w-7", tone.text)} />
               <p className={cn("mt-2 text-sm font-semibold uppercase", tone.text)}>
                 {step.label}
               </p>
@@ -1219,24 +1221,33 @@ function SectionHeader({
 
 function EmptyEscrowDashboard({ firstName }: { firstName: string }) {
   return (
-    <section className="rounded-3xl border border-dashed border-white/10 bg-white/[0.04] px-6 py-16 text-center backdrop-blur-xl">
-      <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/15 text-primary">
-        <Wallet className="h-8 w-8" />
+    <section className="rounded-[1.5rem] border border-dashed border-white/10 bg-white/[0.04] px-5 py-10 text-center backdrop-blur-xl sm:rounded-3xl sm:px-6 sm:py-16">
+      <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/15 text-primary sm:h-16 sm:w-16">
+        <Wallet className="h-7 w-7 sm:h-8 sm:w-8" />
       </div>
       <p className="text-sm text-muted-foreground">Good morning, {firstName}</p>
       <h1 className="mt-2 text-2xl font-semibold text-foreground">
-        No escrow account yet
+        Escrow account pending
       </h1>
       <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
-        Open a recovery complaint first. Once admins accept the file and enter
-        recovered funds, your escrow account will appear here.
+        Your recovery file and escrow account stay in separate dashboard areas.
+        Once a case exists and admins enter recovered funds, the escrow account
+        appears here.
       </p>
-      <Button asChild className="mt-5">
-        <Link href="/dashboard/cases">
-          <FolderKanban className="h-4 w-4" />
-          Open recovery cases
-        </Link>
-      </Button>
+      <div className="mt-5 flex flex-col justify-center gap-2 sm:flex-row">
+        <Button asChild>
+          <Link href="/dashboard/cases">
+            <FolderKanban className="h-4 w-4" />
+            Open recovery cases
+          </Link>
+        </Button>
+        <Button asChild variant="outline">
+          <Link href="/dashboard/profile">
+            <IdCard className="h-4 w-4" />
+            Complete profile
+          </Link>
+        </Button>
+      </div>
     </section>
   );
 }

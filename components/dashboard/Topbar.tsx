@@ -2,6 +2,8 @@
 
 import * as React from "react";
 import { LogOut, Search, ShieldCheck, User2 } from "lucide-react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 import { cn } from "@/lib/utils";
 import type { SessionUser, UserRole } from "@/lib/types";
@@ -50,22 +52,23 @@ const ROLE_LABEL: Record<UserRole, string> = {
  * (right). The account dropdown is the canonical sign-out affordance on mobile.
  */
 export function Topbar({ user, title, showSearch = true, role }: TopbarProps) {
+  const pathname = usePathname() ?? "";
   const initials = initialsFrom(user.name, user.email);
   const activeRole = role ?? user.role;
-  const displayTitle = title ?? (activeRole === "admin" ? "Command Center" : undefined);
+  const displayTitle = title ?? titleFromPath(pathname, activeRole);
   const searchPlaceholder =
     activeRole === "admin"
       ? "Search cases, clients, receipts..."
       : "Search cases...";
 
   return (
-    <header className="sticky top-0 z-30 flex h-16 shrink-0 items-center gap-3 border-b border-white/8 bg-background/[0.72] px-4 shadow-sm shadow-black/10 backdrop-blur-xl sm:px-6">
+    <header className="sticky top-0 z-30 flex h-16 shrink-0 items-center gap-3 border-b border-white/8 bg-background/[0.72] px-3 shadow-sm shadow-black/10 backdrop-blur-xl sm:px-6">
       {/* Mobile: drawer trigger */}
       <MobileDrawer role={role ?? user.role} />
 
       {/* Title */}
       {displayTitle ? (
-        <h1 className="truncate text-base font-semibold text-foreground sm:text-lg">
+        <h1 className="truncate text-sm font-semibold text-foreground sm:text-lg">
           {displayTitle}
         </h1>
       ) : (
@@ -107,7 +110,7 @@ export function Topbar({ user, title, showSearch = true, role }: TopbarProps) {
               )}
             >
               <Avatar className="h-9 w-9 border border-white/10">
-                <AvatarImage src={undefined} alt="" />
+                <AvatarImage src={user.avatar_url ?? undefined} alt="" />
                 <AvatarFallback className="bg-primary/15 text-primary">
                   {initials}
                 </AvatarFallback>
@@ -128,10 +131,14 @@ export function Topbar({ user, title, showSearch = true, role }: TopbarProps) {
               </span>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem disabled className="text-muted-foreground">
-              <User2 className="h-4 w-4" aria-hidden="true" />
-              <span>Profile (coming soon)</span>
-            </DropdownMenuItem>
+            {activeRole === "admin" ? null : (
+              <DropdownMenuItem asChild>
+                <Link href="/dashboard/profile">
+                  <User2 className="h-4 w-4" aria-hidden="true" />
+                  <span>Profile & settings</span>
+                </Link>
+              </DropdownMenuItem>
+            )}
             <DropdownMenuSeparator />
             {/* Sign out goes through the server action, never client-side auth. */}
             <form action={signOut}>
@@ -148,6 +155,18 @@ export function Topbar({ user, title, showSearch = true, role }: TopbarProps) {
       </div>
     </header>
   );
+}
+
+function titleFromPath(pathname: string, role: UserRole): string {
+  if (role === "admin") {
+    if (pathname.startsWith("/admin/cases")) return "Recovery Cases";
+    if (pathname.startsWith("/admin/disputes")) return "Disputes";
+    return "Command Center";
+  }
+
+  if (pathname.startsWith("/dashboard/profile")) return "Profile";
+  if (pathname.startsWith("/dashboard/cases")) return "Recovery Cases";
+  return "Escrow Dashboard";
 }
 
 export default Topbar;

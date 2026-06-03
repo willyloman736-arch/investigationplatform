@@ -6,6 +6,7 @@ import { DEMO_MODE } from "@/lib/constants";
 import type { SessionUser, UserRole } from "@/lib/types";
 import { Sidebar } from "@/components/dashboard/Sidebar";
 import { Topbar } from "@/components/dashboard/Topbar";
+import { MobileBottomNav } from "@/components/dashboard/MobileBottomNav";
 import { Icon3DDefs } from "@/components/shared/Icon3D";
 
 export interface DashboardLayoutProps {
@@ -59,9 +60,10 @@ export function DashboardLayout({
 
           {DEMO_MODE ? <DemoModeBanner /> : null}
 
-          <main className="min-h-0 min-w-0 flex-1 overflow-y-auto overflow-x-hidden px-4 py-6 sm:px-6 lg:px-8">
+          <main className="min-h-0 min-w-0 flex-1 overflow-y-auto overflow-x-hidden px-3 pb-28 pt-4 sm:px-6 sm:pt-6 lg:px-8 lg:pb-8">
             <div className="mx-auto w-full max-w-7xl">{children}</div>
           </main>
+          <MobileBottomNav role={role} />
         </div>
       </div>
     </div>
