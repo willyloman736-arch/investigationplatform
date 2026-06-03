@@ -33,7 +33,7 @@ export function DashboardLayout({
   children,
 }: DashboardLayoutProps) {
   return (
-    <div className="relative min-h-svh bg-background text-foreground">
+    <div className="relative h-svh overflow-hidden bg-background text-foreground">
       {/* Subtle ambient glow — institutional, not flashy. */}
       <div
         aria-hidden="true"
@@ -43,21 +43,21 @@ export function DashboardLayout({
         <div className="absolute right-0 top-1/3 h-80 w-80 rounded-full bg-blue-500/5 blur-3xl" />
       </div>
 
-      <div className="flex min-h-svh">
+      <div className="flex h-svh overflow-hidden">
         {/* Desktop sidebar rail */}
-        <aside className="hidden w-64 shrink-0 border-r border-white/8 lg:block">
-          <div className="sticky top-0 h-svh">
+        <aside className="hidden h-svh w-64 shrink-0 border-r border-white/8 lg:block">
+          <div className="h-full">
             <Sidebar role={role} />
           </div>
         </aside>
 
         {/* Main column */}
-        <div className="flex min-w-0 flex-1 flex-col">
+        <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
           <Topbar user={user} title={title} role={role} />
 
           {DEMO_MODE ? <DemoModeBanner /> : null}
 
-          <main className="min-w-0 flex-1 overflow-x-hidden px-4 py-6 sm:px-6 lg:px-8">
+          <main className="min-h-0 min-w-0 flex-1 overflow-y-auto overflow-x-hidden px-4 py-6 sm:px-6 lg:px-8">
             <div className="mx-auto w-full max-w-7xl">{children}</div>
           </main>
         </div>
