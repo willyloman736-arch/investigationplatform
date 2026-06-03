@@ -3,6 +3,7 @@ import Link from "next/link";
 
 import { RegisterForm } from "./register-form";
 import { AuthCard } from "@/components/auth/AuthCard";
+import { Logo } from "@/components/shared/Logo";
 import { DEMO_MODE, APP_NAME, PROVIDER_DISCLAIMER } from "@/lib/constants";
 
 export const metadata: Metadata = {
@@ -13,13 +14,15 @@ export const metadata: Metadata = {
 export default function RegisterPage() {
   return (
     <AuthCard>
-      <div className="mb-6 space-y-1.5">
+      <div className="mb-6 flex flex-col items-center text-center">
+        <div className="mb-4">
+          <Logo href={null} />
+        </div>
         <h2 className="text-2xl font-semibold tracking-tight text-foreground">
           Create your account
         </h2>
-        <p className="text-sm text-muted-foreground">
-          File a recovery complaint, complete KYC, and track recovered funds in
-          your escrow account.
+        <p className="mt-1.5 text-sm text-muted-foreground">
+          Choose what you want to do, then complete the details.
         </p>
       </div>
 

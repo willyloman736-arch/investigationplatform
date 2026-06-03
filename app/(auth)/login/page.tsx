@@ -3,6 +3,7 @@ import Link from "next/link";
 
 import { LoginForm } from "./login-form";
 import { AuthCard } from "@/components/auth/AuthCard";
+import { Logo } from "@/components/shared/Logo";
 import { DEMO_MODE, APP_NAME } from "@/lib/constants";
 
 export const metadata: Metadata = {
@@ -13,13 +14,15 @@ export const metadata: Metadata = {
 export default function LoginPage() {
   return (
     <AuthCard>
-      <div className="mb-6 space-y-1.5">
+      <div className="mb-6 flex flex-col items-center text-center">
+        <div className="mb-4">
+          <Logo href={null} />
+        </div>
         <h2 className="text-2xl font-semibold tracking-tight text-foreground">
-          Sign in
+          Welcome back
         </h2>
-        <p className="text-sm text-muted-foreground">
-          Welcome back. Access your recovery cases, escrow account, and admin
-          updates.
+        <p className="mt-1.5 text-sm text-muted-foreground">
+          Sign in to your recovery &amp; escrow account.
         </p>
       </div>
 
