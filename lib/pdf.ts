@@ -274,6 +274,10 @@ export interface ReceiptPdfInput {
   issued: string;
   /** Pre-formatted amount, or null when no monetary value applies. */
   amountLabel: string | null;
+  /** Real payout method label (e.g. "Zelle"), when a withdrawal exists. */
+  payoutMethod?: string | null;
+  /** Real payout destination label, when a withdrawal exists. */
+  payoutDestination?: string | null;
   notes: string;
   /** Footer disclaimer lines (kept verbatim — honest, not embellished). */
   disclaimers: string[];
@@ -388,6 +392,13 @@ export function createReceiptPdf(input: ReceiptPdfInput): Buffer {
     ["Receipt type", input.kindLabel],
     ["Issued", input.issued],
   ];
+  // Factual payout details — only when the case actually has a withdrawal request.
+  if (input.payoutMethod) {
+    detailRows.push(["Payout method", input.payoutMethod]);
+    if (input.payoutDestination) {
+      detailRows.push(["Destination", input.payoutDestination]);
+    }
+  }
   const rowH = 24;
   const cardTop = y;
   const cardH = detailRows.length * rowH + 14;

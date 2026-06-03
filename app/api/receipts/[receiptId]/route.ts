@@ -1,7 +1,12 @@
 import { NextResponse } from "next/server";
 
-import { APP_NAME, APP_TAGLINE, PROVIDER_DISCLAIMER } from "@/lib/constants";
-import { getCaseById, getReceiptById } from "@/lib/data";
+import {
+  APP_NAME,
+  APP_TAGLINE,
+  PAYOUT_METHOD_LABELS,
+  PROVIDER_DISCLAIMER,
+} from "@/lib/constants";
+import { getCaseById, getReceiptById, getWithdrawalRequest } from "@/lib/data";
 import { createReceiptPdf } from "@/lib/pdf";
 import { formatCurrency, formatDateTime } from "@/lib/utils";
 import type { RecoveryReceipt } from "@/lib/types";
@@ -42,7 +47,10 @@ export async function GET(_request: Request, { params }: RouteContext) {
     return NextResponse.json({ error: "Receipt not found." }, { status: 404 });
   }
 
-  const caseRow = await getCaseById(receipt.case_id);
+  const [caseRow, withdrawal] = await Promise.all([
+    getCaseById(receipt.case_id),
+    getWithdrawalRequest(receipt.case_id),
+  ]);
 
   const pdf = createReceiptPdf({
     brandName: APP_NAME,
@@ -58,6 +66,8 @@ export async function GET(_request: Request, { params }: RouteContext) {
       receipt.amount !== null
         ? formatCurrency(receipt.amount, receipt.currency)
         : null,
+    payoutMethod: withdrawal ? PAYOUT_METHOD_LABELS[withdrawal.method] : null,
+    payoutDestination: withdrawal?.destination_label ?? null,
     notes: receipt.notes ?? "No notes recorded.",
     disclaimers: [
       "This receipt is a platform record. Actual fund movement must be confirmed by the secure server-side escrow or payment provider workflow.",
