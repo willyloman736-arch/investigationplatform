@@ -36,7 +36,7 @@ export function EscrowStatusDonut({
       ? `Escrow status distribution: ${segments
           .map((s) => `${s.label} ${s.value}`)
           .join(", ")}.`
-      : "No active escrow contracts yet.";
+      : "No active escrow accounts yet.";
 
   return (
     <div
@@ -112,7 +112,7 @@ export function EscrowStatusDonut({
         ))}
         {total === 0 ? (
           <li className="text-sm text-muted-foreground">
-            No active escrow contracts yet.
+            No active escrow accounts yet.
           </li>
         ) : null}
       </ul>

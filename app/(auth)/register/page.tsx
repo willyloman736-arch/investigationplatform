@@ -6,7 +6,7 @@ import { DEMO_MODE, APP_NAME, PROVIDER_DISCLAIMER } from "@/lib/constants";
 
 export const metadata: Metadata = {
   title: `Create account · ${APP_NAME}`,
-  description: `Create an ${APP_NAME} account to open cases, fund escrow, and exchange evidence securely.`,
+  description: `Create an ${APP_NAME} account to file a crypto scam recovery complaint, complete KYC, and track escrow.`,
 };
 
 export default function RegisterPage() {
@@ -17,7 +17,8 @@ export default function RegisterPage() {
           Create your account
         </h2>
         <p className="text-sm text-muted-foreground">
-          Open cases, fund escrow, and exchange evidence with confidence.
+          File a recovery complaint, complete KYC, and track recovered funds in
+          your escrow account.
         </p>
       </div>
 

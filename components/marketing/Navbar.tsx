@@ -87,7 +87,7 @@ export function Navbar() {
             <Link href="/login">Log in</Link>
           </Button>
           <Button asChild size="sm">
-            <Link href="/register">Start a Project</Link>
+            <Link href="/register">Open Recovery Case</Link>
           </Button>
         </div>
 
@@ -128,7 +128,7 @@ export function Navbar() {
                 </SheetClose>
                 <SheetClose asChild>
                   <Button asChild className="w-full">
-                    <Link href="/register">Start a Project</Link>
+                    <Link href="/register">Open Recovery Case</Link>
                   </Button>
                 </SheetClose>
               </div>

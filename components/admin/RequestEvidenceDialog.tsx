@@ -113,8 +113,8 @@ export function RequestEvidenceDialog({
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="party_a">Party A</SelectItem>
-                <SelectItem value="party_b">Party B</SelectItem>
+                <SelectItem value="party_a">Client</SelectItem>
+                <SelectItem value="party_b">Operator</SelectItem>
               </SelectContent>
             </Select>
           </div>

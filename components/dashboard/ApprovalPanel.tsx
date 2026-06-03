@@ -40,8 +40,8 @@ export interface ApprovalPanelProps {
 }
 
 const PARTY_LABELS: Record<"party_a" | "party_b", string> = {
-  party_a: "Party A",
-  party_b: "Party B",
+  party_a: "Client",
+  party_b: "Operator",
 };
 
 export function ApprovalPanel({
@@ -99,11 +99,11 @@ export function ApprovalPanel({
         <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
         <p className="text-sm text-muted-foreground">
           <span className="font-medium text-foreground">
-            Funds are released only after both parties approve
+            Withdrawal eligibility is reviewed after client/operator approval
           </span>{" "}
-          — or after an administrator resolves a dispute in favor of release.
-          Approving here records your consent; admins still control escrow
-          workflow status and provider release requests.
+          or after an administrator resolves a dispute in favor of payout.
+          Approving here records consent; admins still control escrow workflow
+          status and provider payout requests.
         </p>
       </div>
 
@@ -157,7 +157,7 @@ export function ApprovalPanel({
                       {approved ? (
                         <>
                           <CheckCircle2 className="h-3 w-3" />
-                          Approved release
+                          Approved
                         </>
                       ) : (
                         <>
@@ -193,7 +193,7 @@ export function ApprovalPanel({
                     ) : (
                       <>
                         <CheckCircle2 className="h-4 w-4" />
-                        Approve release as {PARTY_LABELS[role]}
+                        Approve as {PARTY_LABELS[role]}
                       </>
                     )}
                   </Button>
@@ -209,7 +209,7 @@ export function ApprovalPanel({
               {isYou && approved && (
                 <p className="mt-4 flex items-center gap-1.5 rounded-lg bg-emerald-500/10 px-3 py-2 text-[11px] text-emerald-400">
                   <CheckCircle2 className="h-3.5 w-3.5" />
-                  You approved release for this case.
+                  You approved this case.
                 </p>
               )}
 
@@ -230,7 +230,7 @@ export function ApprovalPanel({
           <ShieldCheck className="h-4 w-4" />
           <AlertTitle>Funds released</AlertTitle>
           <AlertDescription>
-            The licensed escrow partner has confirmed the release for this case.
+            The licensed provider has confirmed the payout or release for this case.
           </AlertDescription>
         </Alert>
       ) : isBlocked ? (
@@ -246,11 +246,11 @@ export function ApprovalPanel({
       ) : isReady || bothApproved ? (
         <Alert variant="info">
           <CheckCircle2 className="h-4 w-4" />
-          <AlertTitle>Both parties approved — awaiting admin review</AlertTitle>
+          <AlertTitle>Client/operator approved - awaiting admin review</AlertTitle>
           <AlertDescription>
-            This case has the consent needed for release. An administrator must
+            This case has the consent needed for withdrawal review. An administrator must
             review the case, record the reason note, and submit the provider
-            release request from the admin portal. No funds move from this
+            payout request from the admin portal. No funds move from this
             screen.
           </AlertDescription>
         </Alert>
@@ -260,15 +260,15 @@ export function ApprovalPanel({
           <AlertTitle>
             Waiting on{" "}
             {!partyAApproved && !partyBApproved
-              ? "both parties"
+              ? "client and operator"
               : !partyAApproved
-                ? "Party A"
-                : "Party B"}
+                ? "client"
+                : "operator"}
           </AlertTitle>
           <AlertDescription>
-            Release becomes available only when{" "}
+            Admin withdrawal review becomes available only when{" "}
             <span className="font-medium text-foreground">
-              both Party A and Party B
+              the client and operator
             </span>{" "}
             have approved.
           </AlertDescription>

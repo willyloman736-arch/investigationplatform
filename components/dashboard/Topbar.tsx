@@ -41,7 +41,7 @@ function initialsFrom(name: string, email: string): string {
 
 const ROLE_LABEL: Record<UserRole, string> = {
   client: "Client",
-  counterparty: "Counterparty",
+  counterparty: "Operator",
   admin: "Administrator",
 };
 

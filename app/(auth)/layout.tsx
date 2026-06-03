@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
-import { ShieldCheck, Lock, FileSearch, Scale } from "lucide-react";
+import { ShieldCheck, Lock, FileSearch, IdCard } from "lucide-react";
 
 import { Logo } from "@/components/shared/Logo";
 import { APP_NAME, APP_TAGLINE, PROVIDER_DISCLAIMER } from "@/lib/constants";
@@ -16,18 +16,18 @@ import { APP_NAME, APP_TAGLINE, PROVIDER_DISCLAIMER } from "@/lib/constants";
 const TRUST_POINTS = [
   {
     icon: Lock,
-    title: "Funds held by licensed partners",
-    body: "Escrow balances are confirmed by licensed payment/escrow providers — never moved from the browser.",
+    title: "Recovered funds escrow",
+    body: "Recovered balances are entered by admins and reflected in escrow while real payouts stay protected server-side.",
   },
   {
     icon: FileSearch,
-    title: "Evidence-backed cases",
-    body: "Upload receipts, logs, and transaction references to a structured, auditable case file.",
+    title: "Evidence-backed complaints",
+    body: "Upload receipts, wallet addresses, transaction hashes, screenshots, and chat logs to a structured case file.",
   },
   {
-    icon: Scale,
-    title: "Release only on mutual approval",
-    body: "Funds release only when both parties approve, or after an admin resolves a dispute.",
+    icon: IdCard,
+    title: "KYC before withdrawal",
+    body: "Government ID, selfie, proof of address, phone, and email checks are reviewed before payout approval.",
   },
 ];
 
@@ -58,14 +58,14 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
         <div className="max-w-md">
           <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-cyan-500/30 bg-cyan-500/10 px-3 py-1 text-xs font-medium text-cyan-200">
             <ShieldCheck className="h-3.5 w-3.5" />
-            Secure Escrow &amp; Investigation Management
+            Crypto Scam Recovery &amp; Secure Escrow
           </div>
           <h1 className="text-balance text-3xl font-semibold leading-tight text-foreground xl:text-4xl">
-            Trust, structured.
+            Recovery, structured.
           </h1>
           <p className="mt-4 text-pretty text-sm leading-relaxed text-muted-foreground">
-            {APP_NAME} keeps high-stakes engagements honest — fund escrow,
-            exchange evidence, and release only when everyone agrees.
+            {APP_NAME} helps clients file crypto scam complaints, complete KYC,
+            track admin review, and monitor recovered funds in escrow.
           </p>
 
           <ul className="mt-10 space-y-6">

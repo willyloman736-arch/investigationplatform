@@ -43,8 +43,8 @@ export default async function AdminCasesPage() {
         <SectionHeading
           as="h1"
           eyebrow="Case management"
-          title="Cases"
-          subtitle="Create new escrow cases, assign Party A and Party B, and manage each case's lifecycle. Status changes are admin-only and recorded in the audit log."
+          title="Recovery cases"
+          subtitle="Create and manage crypto scam recovery complaints, assign the client and operator roles, update status, and control the linked escrow workflow. Status changes are admin-only and audited."
         />
         <CreateCaseDialog />
       </div>

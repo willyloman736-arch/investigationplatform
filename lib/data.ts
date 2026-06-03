@@ -23,6 +23,14 @@ import type {
   PlatformStats,
   UserRole,
   FundsBreakdownRow,
+  KycReview,
+  RecoveredFundsEntry,
+  WithdrawalCondition,
+  WithdrawalRequest,
+  RecoveryReceipt,
+  EmailLog,
+  RecoveryOperationsCase,
+  RecoveryCaseStage,
 } from "@/lib/types";
 import {
   MOCK_PROFILES,
@@ -39,6 +47,13 @@ import {
   MOCK_CLIENT,
   MOCK_COUNTERPARTY,
   MOCK_ADMIN,
+  MOCK_RECOVERY_CASE_STAGES,
+  MOCK_KYC_REVIEWS,
+  MOCK_RECOVERED_FUNDS_ENTRIES,
+  MOCK_WITHDRAWAL_CONDITIONS,
+  MOCK_WITHDRAWAL_REQUESTS,
+  MOCK_RECOVERY_RECEIPTS,
+  MOCK_EMAIL_LOGS,
 } from "@/lib/mock-data";
 
 /** Helper: which case ids a given user participates in (party access). */
@@ -317,4 +332,109 @@ export async function getFundsBreakdownRows(
       lastUpdated: escrow?.updated_at ?? c.updated_at,
     };
   });
+}
+
+export async function getKycReview(
+  caseId: string
+): Promise<KycReview | null> {
+  return MOCK_KYC_REVIEWS.find((k) => k.case_id === caseId) ?? null;
+}
+
+export async function getRecoveredFundsEntries(
+  caseId: string
+): Promise<RecoveredFundsEntry[]> {
+  return MOCK_RECOVERED_FUNDS_ENTRIES.filter((entry) => entry.case_id === caseId)
+    .sort((a, b) => b.created_at.localeCompare(a.created_at));
+}
+
+export async function getWithdrawalConditions(
+  caseId: string
+): Promise<WithdrawalCondition[]> {
+  return MOCK_WITHDRAWAL_CONDITIONS.filter((c) => c.case_id === caseId).sort(
+    (a, b) => b.created_at.localeCompare(a.created_at)
+  );
+}
+
+export async function getWithdrawalRequest(
+  caseId: string
+): Promise<WithdrawalRequest | null> {
+  return MOCK_WITHDRAWAL_REQUESTS.find((w) => w.case_id === caseId) ?? null;
+}
+
+export async function getRecoveryReceipts(
+  caseId?: string
+): Promise<RecoveryReceipt[]> {
+  const rows = caseId
+    ? MOCK_RECOVERY_RECEIPTS.filter((r) => r.case_id === caseId)
+    : MOCK_RECOVERY_RECEIPTS;
+  return [...rows].sort((a, b) => b.issued_at.localeCompare(a.issued_at));
+}
+
+export async function getReceiptById(
+  receiptId: string
+): Promise<RecoveryReceipt | null> {
+  return MOCK_RECOVERY_RECEIPTS.find((r) => r.id === receiptId) ?? null;
+}
+
+export async function getEmailLogs(caseId?: string): Promise<EmailLog[]> {
+  const rows = caseId
+    ? MOCK_EMAIL_LOGS.filter((e) => e.case_id === caseId)
+    : MOCK_EMAIL_LOGS;
+  return [...rows].sort((a, b) => b.created_at.localeCompare(a.created_at));
+}
+
+function recoveryStageForCase(caseId: string): RecoveryCaseStage {
+  return MOCK_RECOVERY_CASE_STAGES[caseId] ?? "complaint_submitted";
+}
+
+function composeRecoveryOperationsCase(
+  caseRow: Case
+): RecoveryOperationsCase {
+  const escrow = MOCK_ESCROW_CONTRACTS.find((e) => e.case_id === caseRow.id) ?? null;
+  const recoveredFunds = MOCK_RECOVERED_FUNDS_ENTRIES.filter(
+    (entry) => entry.case_id === caseRow.id
+  ).sort((a, b) => b.created_at.localeCompare(a.created_at));
+  const withdrawalRequest =
+    MOCK_WITHDRAWAL_REQUESTS.find((w) => w.case_id === caseRow.id) ?? null;
+  const recoveredAmount = recoveredFunds
+    .filter((entry) => entry.visible_to_client)
+    .reduce((sum, entry) => sum + entry.amount, 0);
+  const escrowAvailableAmount =
+    withdrawalRequest?.status === "paid_out" ? 0 : recoveredAmount;
+
+  return {
+    ...caseRow,
+    parties: MOCK_CASE_PARTIES.filter((p) => p.case_id === caseRow.id),
+    escrow,
+    recovery_stage: recoveryStageForCase(caseRow.id),
+    kyc: MOCK_KYC_REVIEWS.find((k) => k.case_id === caseRow.id) ?? null,
+    recovered_funds: recoveredFunds,
+    withdrawal_conditions: MOCK_WITHDRAWAL_CONDITIONS.filter(
+      (condition) => condition.case_id === caseRow.id
+    ).sort((a, b) => b.created_at.localeCompare(a.created_at)),
+    withdrawal_request: withdrawalRequest,
+    receipts: MOCK_RECOVERY_RECEIPTS.filter((r) => r.case_id === caseRow.id).sort(
+      (a, b) => b.issued_at.localeCompare(a.issued_at)
+    ),
+    email_logs: MOCK_EMAIL_LOGS.filter((e) => e.case_id === caseRow.id).sort(
+      (a, b) => b.created_at.localeCompare(a.created_at)
+    ),
+    recovered_amount: recoveredAmount,
+    escrow_available_amount: escrowAvailableAmount,
+  };
+}
+
+export async function getRecoveryOperationsCases(
+  role: UserRole = "admin",
+  userId?: string
+): Promise<RecoveryOperationsCase[]> {
+  const cases = await getCasesForUser(role, userId);
+  return cases.map(composeRecoveryOperationsCase);
+}
+
+export async function getRecoveryCaseOperations(
+  caseId: string
+): Promise<RecoveryOperationsCase | null> {
+  const caseRow = MOCK_CASES.find((c) => c.id === caseId);
+  return caseRow ? composeRecoveryOperationsCase(caseRow) : null;
 }

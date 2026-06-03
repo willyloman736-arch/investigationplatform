@@ -73,7 +73,7 @@ const RESOLUTION_OPTIONS: {
     value: "resolved_release",
     label: "Resolve → Release",
     icon: CheckCircle2,
-    hint: "Funds become eligible for release to Party B. Release still runs server-side after provider confirmation.",
+    hint: "Funds become eligible for client payout. Payout still runs server-side after provider confirmation.",
   },
   {
     value: "resolved_refund",

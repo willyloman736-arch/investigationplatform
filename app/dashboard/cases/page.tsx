@@ -95,8 +95,8 @@ export default async function ClientCasesPage() {
     <div className="space-y-8">
       <SectionHeading
         eyebrow="Cases"
-        title="Your cases"
-        subtitle="Open a case to manage intake, exchange evidence, communicate securely, and track escrow."
+        title="Your recovery cases"
+        subtitle="Open a complaint file to track admin review, upload scam evidence, and monitor the escrow account created for recovered funds."
         as="h1"
       />
 
@@ -183,7 +183,7 @@ export default async function ClientCasesPage() {
                             className="h-3.5 w-3.5 shrink-0"
                             aria-hidden="true"
                           />
-                          Total escrow
+                          Escrow account
                         </span>
                         <span className="font-medium tabular-nums text-foreground">
                           {formatCurrency(escrow.total_amount, escrow.currency)}
@@ -215,9 +215,8 @@ function EmptyCases() {
         You don&apos;t have any cases yet
       </h2>
       <p className="mt-1.5 max-w-sm text-sm text-muted-foreground">
-        When an administrator creates a case and adds you as a party, it will
-        appear here. You&apos;ll be able to fund escrow, upload evidence, and
-        track release status.
+        Open a recovery complaint and it will appear here after intake. You can
+        upload evidence, complete review steps, and track escrow status.
       </p>
     </div>
   );

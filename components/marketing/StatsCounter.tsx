@@ -25,11 +25,11 @@ interface StatDef {
 }
 
 export interface StatsCounterProps {
-  /** Total value held/transacted across escrow contracts (currency). */
+  /** Total recovered value reflected across escrow accounts (currency). */
   totalTransactedPool: number;
   /** Count of disputes resolved. */
   activeDisputesResolved: number;
-  /** Count of currently active escrow contracts. */
+  /** Count of currently active escrow accounts. */
   activeEscrowContracts: number;
   /** ISO currency code for the transacted pool. */
   currency?: string;
@@ -53,7 +53,7 @@ export function StatsCounter({
   const stats: StatDef[] = [
     {
       key: "pool",
-      label: "Total Transacted Pool",
+      label: "Recovered Funds Pool",
       value: totalTransactedPool,
       format: "currency",
       icon: Wallet,
@@ -68,7 +68,7 @@ export function StatsCounter({
     },
     {
       key: "contracts",
-      label: "Active Escrow Contracts",
+      label: "Active Escrow Accounts",
       value: activeEscrowContracts,
       format: "number",
       icon: FileCheck2,

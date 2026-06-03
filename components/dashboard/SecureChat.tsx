@@ -165,7 +165,7 @@ export function SecureChat({
               const mine = message.sender_id === currentUserId;
               const name =
                 senderNames?.[message.sender_id] ??
-                (mine ? "You" : "Counterparty");
+                (mine ? "You" : "Operator");
               const isOptimistic = message.id.startsWith("optimistic-");
               return (
                 <div

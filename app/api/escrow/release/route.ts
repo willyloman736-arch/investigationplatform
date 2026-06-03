@@ -114,7 +114,7 @@ export async function POST(request: NextRequest) {
 
   if (!escrow) {
     return NextResponse.json(
-      { error: "No escrow contract for this case." },
+      { error: "No escrow account for this case." },
       { status: 404 }
     );
   }

@@ -140,7 +140,7 @@ export function CaseManagementTable({
   function handleAssign() {
     if (!assignFor) return;
     if (!emailA.trim() || !emailB.trim()) {
-      toast.error("Both Party A and Party B emails are required.");
+      toast.error("Both client and operator emails are required.");
       return;
     }
     const caseId = assignFor.id;
@@ -233,11 +233,11 @@ export function CaseManagementTable({
                       {aEmail || bEmail ? (
                         <div className="space-y-0.5">
                           <div className="truncate">
-                            <span className="text-foreground/70">A:</span>{" "}
+                            <span className="text-foreground/70">Client:</span>{" "}
                             {aEmail || "—"}
                           </div>
                           <div className="truncate">
-                            <span className="text-foreground/70">B:</span>{" "}
+                            <span className="text-foreground/70">Operator:</span>{" "}
                             {bEmail || "—"}
                           </div>
                         </div>
@@ -294,7 +294,7 @@ export function CaseManagementTable({
                           </DropdownMenuItem>
                           <DropdownMenuItem onSelect={() => openAssign(c)}>
                             <Users className="h-4 w-4" />
-                            Assign parties
+                            Assign client/operator
                           </DropdownMenuItem>
                           <DropdownMenuSeparator />
                           <DropdownMenuItem
@@ -332,11 +332,11 @@ export function CaseManagementTable({
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Users className="h-4 w-4 text-primary" />
-              Assign parties
+              Assign client/operator
             </DialogTitle>
             <DialogDescription>
               {assignFor
-                ? `Invite Party A and Party B to ${assignFor.case_number}. Existing users gain access immediately; others receive an invitation.`
+                ? `Invite the client and operator to ${assignFor.case_number}. Existing users gain access immediately; others receive an invitation.`
                 : ""}
             </DialogDescription>
           </DialogHeader>
@@ -344,26 +344,26 @@ export function CaseManagementTable({
           <div className="space-y-4 py-1">
             <div className="space-y-1.5">
               <Label htmlFor="assign-a">
-                Party A email <span className="text-destructive">*</span>
+                Client email <span className="text-destructive">*</span>
               </Label>
               <Input
                 id="assign-a"
                 type="email"
                 value={emailA}
                 onChange={(e) => setEmailA(e.target.value)}
-                placeholder="party-a@example.com"
+                placeholder="client@example.com"
               />
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="assign-b">
-                Party B email <span className="text-destructive">*</span>
+                Operator email <span className="text-destructive">*</span>
               </Label>
               <Input
                 id="assign-b"
                 type="email"
                 value={emailB}
                 onChange={(e) => setEmailB(e.target.value)}
-                placeholder="party-b@example.com"
+                placeholder="operator@example.com"
               />
             </div>
           </div>
@@ -388,7 +388,7 @@ export function CaseManagementTable({
                   Assigning…
                 </>
               ) : (
-                "Assign parties"
+                "Assign client/operator"
               )}
             </Button>
           </DialogFooter>

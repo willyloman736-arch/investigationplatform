@@ -49,7 +49,7 @@ export function HeroSection() {
                 <span className="absolute inline-flex h-1.5 w-1.5 animate-ping rounded-full bg-primary/70" />
                 <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-primary" />
               </span>
-              Secure escrow &amp; investigation management
+              Crypto scam recovery complaints &amp; secure escrow
             </span>
           </motion.div>
 
@@ -58,8 +58,8 @@ export function HeroSection() {
             variants={item}
             className="mt-5 text-balance text-[1.75rem] font-semibold leading-[1.15] tracking-tight text-foreground sm:mt-6 sm:text-5xl sm:leading-[1.05] lg:text-6xl"
           >
-            Secure Escrow &amp; Investigation Management for High-Trust Digital
-            Transactions
+            File a Crypto Scam Recovery Complaint and Track Recovered Funds in
+            Secure Escrow
           </motion.h1>
 
           {/* Subheadline */}
@@ -67,10 +67,9 @@ export function HeroSection() {
             variants={item}
             className="mt-4 max-w-xl text-pretty text-sm leading-relaxed text-muted-foreground sm:mt-6 sm:text-lg"
           >
-            Open investigation projects, secure funds in escrow, upload and
-            verify evidence, and manage disputes in one place. Funds are released
-            only after verified mutual approval — or an admin&apos;s dispute
-            resolution.
+            Submit your complaint for free review, upload evidence, complete KYC,
+            and follow admin updates. When funds are recovered, admins load them
+            into your escrow account and approve withdrawal before payout.
           </motion.p>
 
           {/* Primary CTAs */}
@@ -80,7 +79,7 @@ export function HeroSection() {
           >
             <Button asChild size="lg" className="w-full sm:w-auto">
               <Link href="/register">
-                Start an Investigation / Project
+                Open Recovery Case
                 <ArrowRight className="h-4 w-4" />
               </Link>
             </Button>
@@ -90,7 +89,7 @@ export function HeroSection() {
               variant="outline"
               className="w-full border-white/15 bg-white/5 backdrop-blur-md hover:bg-white/10 sm:w-auto"
             >
-              <Link href="/register">Open Secure Escrow</Link>
+              <Link href="/register">Open Secure Escrow Account</Link>
             </Button>
           </motion.div>
 

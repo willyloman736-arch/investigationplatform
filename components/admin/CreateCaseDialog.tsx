@@ -3,8 +3,8 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // CreateCaseDialog — admin creates a new case (client component).
 //
-// Collects the case details + an initial escrow total and (optionally) the two
-// party emails, then calls the `createCase` server action. The escrow contract
+// Collects the recovery case details + an initial escrow balance and
+// (optionally) the client/operator emails, then calls the `createCase` server action. The escrow contract
 // is seeded server-side with display-only fee math (platform + provider fees →
 // net release). NO money is moved here — this only records intent.
 //
@@ -138,7 +138,7 @@ export function CreateCaseDialog({ children }: CreateCaseDialogProps) {
         {children ?? (
           <Button>
             <Plus className="h-4 w-4" />
-            Create case
+            Create recovery case
           </Button>
         )}
       </DialogTrigger>
@@ -146,12 +146,12 @@ export function CreateCaseDialog({ children }: CreateCaseDialogProps) {
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <FilePlus2 className="h-4 w-4 text-primary" />
-            Create a new case
+            Create a recovery case
           </DialogTitle>
           <DialogDescription>
-            Open a new escrow case. You can assign parties now or later. The
-            escrow opens in PENDING DEPOSIT — no funds move until the licensed
-            provider confirms a deposit.
+            Open a crypto scam recovery complaint. You can assign the client and
+            operator now or later. The escrow account opens in PENDING DEPOSIT
+            until an admin or provider confirmation records recovered funds.
           </DialogDescription>
         </DialogHeader>
 
@@ -164,7 +164,7 @@ export function CreateCaseDialog({ children }: CreateCaseDialogProps) {
               id="case-title"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="e.g. Cross-border asset recovery — wire trace"
+              placeholder="e.g. Fake exchange wallet recovery"
             />
           </div>
 
@@ -175,7 +175,7 @@ export function CreateCaseDialog({ children }: CreateCaseDialogProps) {
                 id="case-category"
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
-                placeholder="e.g. Asset Recovery"
+                placeholder="e.g. Crypto Scam Complaint"
               />
             </div>
             <div className="space-y-1.5">
@@ -192,7 +192,7 @@ export function CreateCaseDialog({ children }: CreateCaseDialogProps) {
 
           <div className="space-y-1.5">
             <Label htmlFor="case-amount">
-              Escrow total <span className="text-destructive">*</span>
+              Initial escrow balance <span className="text-destructive">*</span>
             </Label>
             <Input
               id="case-amount"
@@ -222,7 +222,7 @@ export function CreateCaseDialog({ children }: CreateCaseDialogProps) {
                   />
                   <div className="my-1 h-px bg-white/10" />
                   <FeeRow
-                    label="Net release"
+                    label="Net withdrawal"
                     value={formatCurrency(netRelease, currency)}
                     accent
                   />
@@ -237,41 +237,41 @@ export function CreateCaseDialog({ children }: CreateCaseDialogProps) {
               id="case-description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Summary of the engagement, deliverables, and release conditions."
+              placeholder="Summary of the complaint, evidence, reported loss, and admin review notes."
               className="min-h-[80px]"
             />
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="case-terms">Contract terms</Label>
+            <Label htmlFor="case-terms">Review and withdrawal conditions</Label>
             <Textarea
               id="case-terms"
               value={contractTerms}
               onChange={(e) => setContractTerms(e.target.value)}
-              placeholder="Conditions both parties must accept before release becomes eligible."
+              placeholder="Conditions the client must satisfy before withdrawal becomes eligible."
               className="min-h-[80px]"
             />
           </div>
 
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="space-y-1.5">
-              <Label htmlFor="case-party-a">Party A email</Label>
+              <Label htmlFor="case-party-a">Client email</Label>
               <Input
                 id="case-party-a"
                 type="email"
                 value={partyAEmail}
                 onChange={(e) => setPartyAEmail(e.target.value)}
-                placeholder="party-a@example.com"
+                placeholder="client@example.com"
               />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="case-party-b">Party B email</Label>
+              <Label htmlFor="case-party-b">Operator email</Label>
               <Input
                 id="case-party-b"
                 type="email"
                 value={partyBEmail}
                 onChange={(e) => setPartyBEmail(e.target.value)}
-                placeholder="party-b@example.com"
+                placeholder="operator@example.com"
               />
             </div>
           </div>
@@ -301,7 +301,7 @@ export function CreateCaseDialog({ children }: CreateCaseDialogProps) {
             ) : (
               <>
                 <Plus className="h-4 w-4" />
-                Create case
+                Create recovery case
               </>
             )}
           </Button>

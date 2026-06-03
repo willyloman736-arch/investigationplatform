@@ -108,7 +108,7 @@ export async function adminSetEscrowStatus(
 
   const escrow = await loadEscrow(ctx, parsed.data.caseId);
   if (!escrow) {
-    return fail("No escrow contract exists for this case.");
+    return fail("No escrow account exists for this case.");
   }
 
   // Keep release_status coherent with a manual status move.
@@ -182,7 +182,7 @@ export async function confirmDeposit(
 
   const escrow = await loadEscrow(ctx, parsed.data.caseId);
   if (!escrow) {
-    return fail("No escrow contract exists for this case.");
+    return fail("No escrow account exists for this case.");
   }
 
   const { error } = await ctx.supabase
@@ -265,7 +265,7 @@ export async function freezeRelease(
 
   const escrow = await loadEscrow(ctx, parsed.data.caseId);
   if (!escrow) {
-    return fail("No escrow contract exists for this case.");
+    return fail("No escrow account exists for this case.");
   }
 
   const { error } = await ctx.supabase
@@ -335,7 +335,7 @@ export async function requestAdditionalVerification(
 
   const escrow = await loadEscrow(ctx, parsed.data.caseId);
   if (!escrow) {
-    return fail("No escrow contract exists for this case.");
+    return fail("No escrow account exists for this case.");
   }
 
   // Hold the release while verification is pending.
@@ -405,7 +405,7 @@ export async function approveReleaseEligibility(
 
   const escrow = await loadEscrow(ctx, parsed.data.caseId);
   if (!escrow) {
-    return fail("No escrow contract exists for this case.");
+    return fail("No escrow account exists for this case.");
   }
   if (escrow.escrow_status === "released") {
     return fail("This escrow has already been released.");

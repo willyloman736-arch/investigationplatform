@@ -2,10 +2,10 @@
 
 import * as React from "react";
 import {
-  FileSignature,
-  Landmark,
+  CreditCard,
+  FileText,
+  IdCard,
   SearchCheck,
-  Handshake,
   type LucideIcon,
 } from "lucide-react";
 import { motion } from "framer-motion";
@@ -31,37 +31,37 @@ interface Step {
 const STEPS: Step[] = [
   {
     number: 1,
-    title: "Contract Setup",
+    title: "Open a Complaint",
     short:
-      "Open a case and define the terms. Both parties review and sign the agreement before any funds move.",
-    long: "Open an investigation or project case, invite the counterparty, and lay out the deliverables, timeline, and contract terms. Nothing proceeds until Party A and Party B have both signed the agreement, so expectations are locked in from the start.",
-    icon: FileSignature,
+      "Submit the crypto scam complaint, evidence, transaction hashes, and contact details for free admin review.",
+    long: "Open a recovery complaint and upload the details admins need to review the file: transaction hashes, screenshots, receipts, wallet addresses, chat logs, and a clear incident summary. The initial review is free.",
+    icon: FileText,
   },
   {
     number: 2,
-    title: "Funding the Escrow",
+    title: "Verify KYC",
     short:
-      "The client funds the escrow through a licensed partner. Funds are held — never released early.",
-    long: "The client deposits funds through a licensed payment/escrow partner. Once the partner confirms the deposit, the case is marked securely escrowed. The money is held against the contract and cannot be released until the release conditions are met.",
-    icon: Landmark,
-    chip: { label: "HELD IN ESCROW", tone: "escrow" },
+      "Complete government ID, selfie, proof of address, phone, and email verification before withdrawal can be approved.",
+    long: "Admins review KYC before any withdrawal path opens. Required checks include government ID, selfie verification, proof of address, phone verification, and email verification. Admins may request more evidence or set conditions before approval.",
+    icon: IdCard,
   },
   {
     number: 3,
-    title: "Verification & Execution",
+    title: "Admin Recovery Review",
     short:
-      "Evidence is uploaded, communication is logged, and the work is verified against the agreed terms.",
-    long: "Work is carried out and documented. Parties upload evidence — receipts, CSVs, chat logs, transaction references — and communicate inside the case. Every action is recorded to an audit trail so the outcome can be verified against the contract.",
+      "Admins accept or reject the file, request more evidence, and enter recovered funds into escrow when recovery is confirmed.",
+    long: "Admins review the case file, request more evidence where needed, and update the client by email placeholder records. Once recovered money is confirmed, admins enter the recovered funds from the backend and the client sees the escrow account balance.",
     icon: SearchCheck,
+    chip: { label: "RECOVERED FUNDS", tone: "escrow" },
   },
   {
     number: 4,
-    title: "Mutual Release",
+    title: "Approve Withdrawal",
     short:
-      "Funds release only after both parties approve — or after an admin resolves a dispute.",
-    long: "Release requires explicit approval from both Party A and Party B, followed by admin review of the escrow workflow. If something goes wrong, either side can raise a dispute, which freezes release while an admin reviews the evidence and resolves it. Funds are released only after the licensed partner confirms.",
-    icon: Handshake,
-    chip: { label: "UNDER DISPUTE AUDIT", tone: "dispute" },
+      "Clients request withdrawal by card first, then other payout methods. Admin approval is required before payout.",
+    long: "Clients may request withdrawal to credit or debit card first, then crypto wallet, Zelle, Cash App, bank, PayPal, or other methods. Admins can add conditions, pause release during disputes, approve eligibility, generate receipts, and mark funds paid only after provider or internal confirmation.",
+    icon: CreditCard,
+    chip: { label: "ADMIN APPROVED", tone: "escrow" },
   },
 ];
 

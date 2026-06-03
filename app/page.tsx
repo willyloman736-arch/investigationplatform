@@ -56,9 +56,9 @@ export default async function LandingPage() {
         >
           <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
             <SectionHeading
-              eyebrow="Built for high-trust deals"
-              title="Everything a secured transaction needs"
-              subtitle="From the first signature to the final release, Digital Asset Investigations keeps funds protected, evidence organized, and every action on the record."
+              eyebrow="Built for scam recovery"
+              title="Everything a recovery complaint needs"
+              subtitle="From free intake review to KYC, recovered-funds escrow, receipts, and withdrawal approval, Digital Asset Investigations keeps the case record organized."
             />
             <div className="mt-12">
               <FeatureGrid />
@@ -75,8 +75,8 @@ export default async function LandingPage() {
           <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
             <SectionHeading
               eyebrow="How it works"
-              title="Four steps from agreement to release"
-              subtitle="A transparent escrow lifecycle. Funds stay protected until both parties agree — or a dispute is resolved."
+              title="Four steps from complaint to payout"
+              subtitle="A transparent recovery lifecycle. Admins review the complaint, verify KYC, enter recovered funds into escrow, and approve withdrawal only after conditions are met."
             />
             <div className="mt-12">
               <HowItWorksSteps variant="compact" />
@@ -84,7 +84,7 @@ export default async function LandingPage() {
             <div className="mt-10 flex justify-center">
               <Button asChild variant="outline" className="border-white/15 bg-white/5 hover:bg-white/10">
                 <Link href="/how-it-works">
-                  See the full escrow workflow
+                  See the full recovery workflow
                   <ArrowRight className="h-4 w-4" />
                 </Link>
               </Button>
@@ -116,19 +116,19 @@ export default async function LandingPage() {
                   {[
                     {
                       title: "Per-case access",
-                      body: "Clients and counterparties see only the cases they belong to. Admins oversee disputes and escrow controls.",
+                      body: "Clients see only their recovery files. Admins control review, KYC, escrow status, and withdrawal approvals.",
                     },
                     {
-                      title: "No unilateral releases",
-                      body: "Release requires mutual approval or an admin dispute resolution. Admins can never move funds from the UI.",
+                      title: "Admin-approved withdrawals",
+                      body: "Clients can request payout methods, but withdrawal options unlock only after admin approval and required conditions.",
                     },
                     {
                       title: "Evidence audit trail",
-                      body: "Uploads, messages, approvals, and status changes are recorded so outcomes can be verified later.",
+                      body: "Uploaded scam evidence, KYC review, receipts, and status changes are recorded so outcomes can be verified later.",
                     },
                     {
                       title: "Licensed partners",
-                      body: "Money is deposited, held, and released only through licensed payment/escrow partners where available.",
+                      body: "Real fund movement must happen through protected server-side provider workflows where available.",
                     },
                   ].map((card) => (
                     <li
@@ -164,16 +164,16 @@ export default async function LandingPage() {
                 className="pointer-events-none absolute left-1/2 top-0 -z-10 h-64 w-[min(680px,90%)] -translate-x-1/2 rounded-full bg-primary/20 blur-[110px]"
               />
               <h2 className="mx-auto max-w-2xl text-balance text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
-                Secure your next high-trust transaction with Digital Asset Investigations
+                Start your crypto scam recovery complaint
               </h2>
               <p className="mx-auto mt-4 max-w-xl text-pretty text-base leading-relaxed text-muted-foreground">
-                Open a case, fund escrow through a licensed partner, and release
-                funds only after verified mutual approval.
+                File a complaint for free review, complete KYC, and track any
+                recovered funds in a secure escrow account controlled by admins.
               </p>
               <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
                 <Button asChild size="lg" className="w-full sm:w-auto">
                   <Link href="/register">
-                    Start an Investigation / Project
+                    Open Recovery Case
                     <ArrowRight className="h-4 w-4" />
                   </Link>
                 </Button>
@@ -183,7 +183,7 @@ export default async function LandingPage() {
                   variant="outline"
                   className="w-full border-white/15 bg-white/5 hover:bg-white/10 sm:w-auto"
                 >
-                  <Link href="/register">Open Secure Escrow</Link>
+                  <Link href="/register">Open Secure Escrow Account</Link>
                 </Button>
               </div>
             </div>

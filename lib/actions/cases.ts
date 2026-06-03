@@ -250,8 +250,8 @@ export async function updateCaseStatus(
 
 const assignPartiesSchema = z.object({
   caseId: z.string().min(1),
-  partyAEmail: z.string().trim().email("Enter a valid Party A email."),
-  partyBEmail: z.string().trim().email("Enter a valid Party B email."),
+  partyAEmail: z.string().trim().email("Enter a valid client email."),
+  partyBEmail: z.string().trim().email("Enter a valid operator email."),
 });
 
 export interface AssignPartiesInput {

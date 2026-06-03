@@ -33,6 +33,7 @@ import {
   getFundsBreakdownRows,
   getStats,
   getProfileById,
+  getRecoveryOperationsCases,
 } from "@/lib/data";
 import type {
   AuditLog,
@@ -48,6 +49,7 @@ import { StatCard } from "@/components/shared/StatCard";
 import { StatusSummaryCards } from "@/components/dashboard/StatusSummaryCards";
 import { FundsBreakdownTable } from "@/components/dashboard/FundsBreakdownTable";
 import { AuditLogTimeline } from "@/components/shared/AuditLogTimeline";
+import { RecoveryOperationsPanel } from "@/components/admin/RecoveryOperationsPanel";
 
 export const metadata = {
   title: `Command Center · ${APP_NAME}`,
@@ -90,6 +92,7 @@ export default async function AdminOverviewPage() {
     getAuditLogs(),
     getStats(),
   ]);
+  const recoveryOperations = await getRecoveryOperationsCases("admin");
 
   const openDisputes = disputes.filter(
     (d: Dispute) => d.status === "open" || d.status === "under_review"
@@ -107,8 +110,8 @@ export default async function AdminOverviewPage() {
         <SectionHeading
           as="h1"
           eyebrow="Command Center"
-          title="Platform operations overview"
-          subtitle="Monitor every escrow, review disputes, and steward the release workflow. Administrators direct the process — funds move only through the licensed provider."
+          title="Recovery operations overview"
+          subtitle="Control crypto scam complaints, KYC review, recovered funds, escrow balances, withdrawal approvals, disputes, receipts, and audit activity from one admin command center."
         />
         <div className="flex flex-wrap gap-2">
           <Button asChild variant="outline" size="sm">
@@ -130,15 +133,18 @@ export default async function AdminOverviewPage() {
       <Alert className="border-primary/30 bg-primary/[0.06]">
         <Lock className="h-4 w-4" />
         <AlertTitle className="text-foreground">
-          Administrators never move funds directly
+          Administrators control workflow, not browser-side money movement
         </AlertTitle>
         <AlertDescription className="text-muted-foreground">
-          These controls govern case status, review, and release eligibility.
-          Release requires both parties to approve (or a dispute resolved to
-          release) and is executed server-side only after the provider confirms.
-          Every action is recorded in the audit log. {PROVIDER_DISCLAIMER}
+          Admins may enter recovered funds, mark escrow visibility, approve
+          withdrawal eligibility, and generate records. Actual payout or release
+          requests must run through protected server routes and provider
+          confirmation. Every action is recorded in the audit log.{" "}
+          {PROVIDER_DISCLAIMER}
         </AlertDescription>
       </Alert>
+
+      <RecoveryOperationsPanel operations={recoveryOperations} />
 
       {/* Platform-wide escrow posture */}
       <section className="space-y-4">
@@ -175,8 +181,8 @@ export default async function AdminOverviewPage() {
       <section className="space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <SectionHeading
-            title="Escrow ledger — all cases"
-            subtitle="Fee breakdown and live escrow status for every contract."
+            title="Escrow ledger - all cases"
+            subtitle="Fee breakdown and live escrow status for every recovery account."
           />
           <Button asChild variant="ghost" size="sm">
             <Link href="/admin/cases">
@@ -188,8 +194,8 @@ export default async function AdminOverviewPage() {
         <FundsBreakdownTable
           rows={fundsRows}
           caption={`Showing ${fundsRows.length} escrow ${
-            fundsRows.length === 1 ? "contract" : "contracts"
-          }. Amounts are display-only; no balances are computed in the app — ${PROVIDER_DISCLAIMER}`}
+            fundsRows.length === 1 ? "account" : "accounts"
+          }. Amounts are display-only; payout movement stays protected server-side. ${PROVIDER_DISCLAIMER}`}
         />
       </section>
 

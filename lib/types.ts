@@ -53,6 +53,64 @@ export type DisputeStatus =
   | "resolved_refund"
   | "rejected";
 
+export type RecoveryCaseStage =
+  | "complaint_submitted"
+  | "admin_review"
+  | "accepted"
+  | "rejected"
+  | "more_evidence_needed"
+  | "recovery_in_progress"
+  | "funds_recovered"
+  | "escrow_funded"
+  | "withdrawal_review"
+  | "paid_out";
+
+export type KycStatus =
+  | "not_started"
+  | "in_review"
+  | "verified"
+  | "rejected";
+
+export type KycDocumentStatus =
+  | "not_submitted"
+  | "submitted"
+  | "verified"
+  | "rejected";
+
+export type PayoutMethod =
+  | "card"
+  | "crypto_wallet"
+  | "zelle"
+  | "cash_app"
+  | "bank_transfer"
+  | "paypal"
+  | "other";
+
+export type WithdrawalStatus =
+  | "not_requested"
+  | "conditions_required"
+  | "requested"
+  | "approved"
+  | "denied"
+  | "paid_out";
+
+export type WithdrawalConditionGate =
+  | "before_request"
+  | "before_approval"
+  | "before_payout";
+
+export type RecoveryReceiptKind =
+  | "case_update"
+  | "recovered_funds"
+  | "withdrawal_condition"
+  | "withdrawal_approval"
+  | "withdrawal_paid";
+
+export type EmailDeliveryStatus =
+  | "queued"
+  | "sent_placeholder"
+  | "failed";
+
 // ── Row types (match table columns) ──────────────────────────────────────────
 export interface Profile {
   id: string;
@@ -181,12 +239,105 @@ export interface AuditLog {
   created_at: string;
 }
 
+export interface KycReview {
+  id: string;
+  case_id: string;
+  profile_id: string;
+  status: KycStatus;
+  government_id_status: KycDocumentStatus;
+  selfie_status: KycDocumentStatus;
+  proof_of_address_status: KycDocumentStatus;
+  phone_verified: boolean;
+  email_verified: boolean;
+  reviewer_id: string | null;
+  review_note: string | null;
+  updated_at: string;
+}
+
+export interface RecoveredFundsEntry {
+  id: string;
+  case_id: string;
+  amount: number;
+  currency: string;
+  source_label: string;
+  provider_reference: string | null;
+  visible_to_client: boolean;
+  entered_by: string;
+  notes: string | null;
+  created_at: string;
+}
+
+export interface WithdrawalCondition {
+  id: string;
+  case_id: string;
+  label: string;
+  description: string;
+  gate: WithdrawalConditionGate;
+  satisfied: boolean;
+  created_by: string;
+  created_at: string;
+  resolved_at: string | null;
+}
+
+export interface WithdrawalRequest {
+  id: string;
+  case_id: string;
+  profile_id: string;
+  amount: number;
+  currency: string;
+  method: PayoutMethod;
+  destination_label: string;
+  status: WithdrawalStatus;
+  admin_note: string | null;
+  requested_at: string | null;
+  reviewed_by: string | null;
+  reviewed_at: string | null;
+}
+
+export interface RecoveryReceipt {
+  id: string;
+  case_id: string;
+  receipt_number: string;
+  kind: RecoveryReceiptKind;
+  title: string;
+  amount: number | null;
+  currency: string;
+  recipient_email: string;
+  issued_by: string;
+  issued_at: string;
+  notes: string | null;
+}
+
+export interface EmailLog {
+  id: string;
+  case_id: string;
+  recipient_email: string;
+  subject: string;
+  status: EmailDeliveryStatus;
+  provider_reference: string | null;
+  related_receipt_id: string | null;
+  created_at: string;
+  sent_at: string | null;
+}
+
 // ── Convenience composite/view types used by the UI ─────────────────────────
 export interface CaseWithRelations extends Case {
   parties?: CaseParty[];
   escrow?: EscrowContract | null;
   created_by_profile?: Profile | null;
   assigned_admin_profile?: Profile | null;
+}
+
+export interface RecoveryOperationsCase extends CaseWithRelations {
+  recovery_stage: RecoveryCaseStage;
+  kyc: KycReview | null;
+  recovered_funds: RecoveredFundsEntry[];
+  withdrawal_conditions: WithdrawalCondition[];
+  withdrawal_request: WithdrawalRequest | null;
+  receipts: RecoveryReceipt[];
+  email_logs: EmailLog[];
+  recovered_amount: number;
+  escrow_available_amount: number;
 }
 
 /** Shape consumed by FundsBreakdownTable rows. */

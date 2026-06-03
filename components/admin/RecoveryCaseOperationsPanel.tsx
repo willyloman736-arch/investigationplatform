@@ -1,0 +1,826 @@
+"use client";
+
+import * as React from "react";
+import { useRouter } from "next/navigation";
+import {
+  BadgeCheck,
+  CreditCard,
+  FileCheck2,
+  IdCard,
+  Loader2,
+  Mail,
+  Plus,
+  ReceiptText,
+  ShieldCheck,
+  Wallet,
+} from "lucide-react";
+import { toast } from "sonner";
+
+import {
+  KYC_DOCUMENT_STATUS_LABELS,
+  KYC_STATUS_LABELS,
+  PAYOUT_METHOD_LABELS,
+  RECOVERY_STAGE_LABELS,
+  WITHDRAWAL_CONDITION_GATE_LABELS,
+  WITHDRAWAL_STATUS_LABELS,
+} from "@/lib/constants";
+import { cn, formatCurrency, formatDateTime } from "@/lib/utils";
+import type {
+  EmailLog,
+  KycStatus,
+  RecoveredFundsEntry,
+  RecoveryOperationsCase,
+  RecoveryReceipt,
+  RecoveryReceiptKind,
+  WithdrawalCondition,
+  WithdrawalConditionGate,
+  WithdrawalRequest,
+  WithdrawalStatus,
+} from "@/lib/types";
+import {
+  addWithdrawalCondition,
+  generateRecoveryReceipt,
+  recordRecoveredFunds,
+  reviewWithdrawalRequest,
+  sendReceiptEmailPlaceholder,
+  updateKycReview,
+} from "@/lib/actions/recovery-operations";
+
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Separator } from "@/components/ui/separator";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+
+interface RecoveryCaseOperationsPanelProps {
+  operation: RecoveryOperationsCase;
+  clientEmail: string;
+}
+
+const KYC_OPTIONS: KycStatus[] = [
+  "not_started",
+  "in_review",
+  "verified",
+  "rejected",
+];
+
+const CONDITION_GATES: WithdrawalConditionGate[] = [
+  "before_request",
+  "before_approval",
+  "before_payout",
+];
+
+const RECEIPT_KINDS: RecoveryReceiptKind[] = [
+  "case_update",
+  "recovered_funds",
+  "withdrawal_condition",
+  "withdrawal_approval",
+  "withdrawal_paid",
+];
+
+const KYC_VARIANT: Record<KycStatus, "secondary" | "warning" | "success" | "destructive"> = {
+  not_started: "secondary",
+  in_review: "warning",
+  verified: "success",
+  rejected: "destructive",
+};
+
+const WITHDRAWAL_VARIANT: Record<
+  WithdrawalStatus,
+  "secondary" | "warning" | "success" | "destructive" | "info"
+> = {
+  not_requested: "secondary",
+  conditions_required: "warning",
+  requested: "info",
+  approved: "success",
+  denied: "destructive",
+  paid_out: "success",
+};
+
+function receiptKindLabel(kind: RecoveryReceiptKind): string {
+  return kind
+    .split("_")
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ");
+}
+
+function sumVisibleFunds(entries: RecoveredFundsEntry[]): number {
+  return entries
+    .filter((entry) => entry.visible_to_client)
+    .reduce((sum, entry) => sum + entry.amount, 0);
+}
+
+export function RecoveryCaseOperationsPanel({
+  operation,
+  clientEmail,
+}: RecoveryCaseOperationsPanelProps) {
+  const router = useRouter();
+  const [isPending, startTransition] = React.useTransition();
+  const [busyLabel, setBusyLabel] = React.useState<string | null>(null);
+
+  const [kycStatus, setKycStatus] = React.useState<KycStatus>(
+    operation.kyc?.status ?? "not_started"
+  );
+  const [kycNote, setKycNote] = React.useState(
+    operation.kyc?.review_note ?? "Reviewed by admin."
+  );
+  const [fundEntries, setFundEntries] = React.useState<RecoveredFundsEntry[]>(
+    operation.recovered_funds
+  );
+  const [conditions, setConditions] = React.useState<WithdrawalCondition[]>(
+    operation.withdrawal_conditions
+  );
+  const [withdrawal, setWithdrawal] =
+    React.useState<WithdrawalRequest | null>(operation.withdrawal_request);
+  const [receipts, setReceipts] = React.useState<RecoveryReceipt[]>(
+    operation.receipts
+  );
+  const [emailLogs, setEmailLogs] = React.useState<EmailLog[]>(
+    operation.email_logs
+  );
+
+  const currency = operation.escrow?.currency ?? "USD";
+  const currentBalance =
+    withdrawal?.status === "paid_out" ? 0 : sumVisibleFunds(fundEntries);
+
+  const [fundAmount, setFundAmount] = React.useState("");
+  const [fundSource, setFundSource] = React.useState("Admin recovered funds entry");
+  const [providerRef, setProviderRef] = React.useState("");
+  const [fundNotes, setFundNotes] = React.useState(
+    "Recovered funds entered by admin and visible to the client."
+  );
+
+  const [conditionLabel, setConditionLabel] = React.useState("");
+  const [conditionDescription, setConditionDescription] = React.useState("");
+  const [conditionGate, setConditionGate] =
+    React.useState<WithdrawalConditionGate>("before_approval");
+
+  const [reviewNote, setReviewNote] = React.useState(
+    withdrawal?.admin_note ?? "Reviewed by admin."
+  );
+
+  const [receiptKind, setReceiptKind] =
+    React.useState<RecoveryReceiptKind>("recovered_funds");
+  const [receiptTitle, setReceiptTitle] = React.useState(
+    "Recovered funds receipt"
+  );
+  const [receiptAmount, setReceiptAmount] = React.useState(
+    withdrawal?.amount ? String(withdrawal.amount) : String(currentBalance || "")
+  );
+  const [receiptNotes, setReceiptNotes] = React.useState(
+    "Generated by admin for the client's case record."
+  );
+
+  function run(label: string, fn: () => Promise<void>) {
+    setBusyLabel(label);
+    startTransition(async () => {
+      try {
+        await fn();
+      } finally {
+        setBusyLabel(null);
+      }
+    });
+  }
+
+  function refreshAfterSuccess() {
+    router.refresh();
+  }
+
+  function handleKycUpdate() {
+    run("kyc", async () => {
+      const result = await updateKycReview({
+        caseId: operation.id,
+        status: kycStatus,
+        note: kycNote,
+      });
+      if (!result.success) {
+        toast.error(result.error ?? "Could not update KYC.");
+        return;
+      }
+      toast.success("KYC review updated.");
+      refreshAfterSuccess();
+    });
+  }
+
+  function handleRecoveredFunds() {
+    const amount = Number(fundAmount);
+    if (!Number.isFinite(amount) || amount <= 0) {
+      toast.error("Enter a recovered amount greater than zero.");
+      return;
+    }
+
+    run("funds", async () => {
+      const result = await recordRecoveredFunds({
+        caseId: operation.id,
+        amount,
+        currency,
+        sourceLabel: fundSource,
+        providerReference: providerRef,
+        notes: fundNotes,
+      });
+      if (!result.success || !result.data) {
+        toast.error(result.error ?? "Could not record recovered funds.");
+        return;
+      }
+      setFundEntries((entries) => [result.data!, ...entries]);
+      setFundAmount("");
+      setProviderRef("");
+      toast.success("Recovered funds recorded and reflected in escrow.");
+      refreshAfterSuccess();
+    });
+  }
+
+  function handleAddCondition() {
+    run("condition", async () => {
+      const result = await addWithdrawalCondition({
+        caseId: operation.id,
+        label: conditionLabel,
+        description: conditionDescription,
+        gate: conditionGate,
+      });
+      if (!result.success || !result.data) {
+        toast.error(result.error ?? "Could not add condition.");
+        return;
+      }
+      setConditions((items) => [result.data!, ...items]);
+      setConditionLabel("");
+      setConditionDescription("");
+      toast.success("Withdrawal condition added.");
+      refreshAfterSuccess();
+    });
+  }
+
+  function handleWithdrawalReview(
+    status: Extract<
+      WithdrawalStatus,
+      "conditions_required" | "approved" | "denied" | "paid_out"
+    >
+  ) {
+    if (!withdrawal) {
+      toast.error("No withdrawal request exists for this case yet.");
+      return;
+    }
+    run(`withdrawal-${status}`, async () => {
+      const result = await reviewWithdrawalRequest({
+        caseId: operation.id,
+        status,
+        note: reviewNote,
+      });
+      if (!result.success || !result.data) {
+        toast.error(result.error ?? "Could not review withdrawal.");
+        return;
+      }
+      const updatedWithdrawal = result.data;
+      setWithdrawal((current) =>
+        current ? { ...current, ...updatedWithdrawal } : current
+      );
+      toast.success("Withdrawal review updated.");
+      refreshAfterSuccess();
+    });
+  }
+
+  function handleReceipt() {
+    run("receipt", async () => {
+      const amount = receiptAmount.trim() ? Number(receiptAmount) : undefined;
+      const result = await generateRecoveryReceipt({
+        caseId: operation.id,
+        kind: receiptKind,
+        title: receiptTitle,
+        amount,
+        currency,
+        recipientEmail: clientEmail,
+        notes: receiptNotes,
+      });
+      if (!result.success || !result.data) {
+        toast.error(result.error ?? "Could not generate receipt.");
+        return;
+      }
+      setReceipts((items) => [result.data!, ...items]);
+      toast.success("Receipt generated. PDF is ready to download.");
+      refreshAfterSuccess();
+    });
+  }
+
+  function handleEmail(receipt: RecoveryReceipt) {
+    run(`email-${receipt.id}`, async () => {
+      const result = await sendReceiptEmailPlaceholder({
+        caseId: operation.id,
+        receiptId: receipt.id,
+        recipientEmail: receipt.recipient_email,
+        subject: `${receipt.title} ${receipt.receipt_number}`,
+      });
+      if (!result.success || !result.data) {
+        toast.error(result.error ?? "Could not send email placeholder.");
+        return;
+      }
+      setEmailLogs((items) => [result.data!, ...items]);
+      toast.success("Placeholder email record created.");
+      refreshAfterSuccess();
+    });
+  }
+
+  const BusyIcon = isPending ? Loader2 : null;
+
+  return (
+    <section className="space-y-4 rounded-2xl border border-white/10 bg-card/60 p-4 backdrop-blur-md sm:p-6">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h3 className="flex items-center gap-2 text-base font-semibold text-foreground">
+            <ShieldCheck className="h-4 w-4 text-primary" />
+            Recovery Operations
+          </h3>
+          <p className="mt-0.5 text-xs text-muted-foreground">
+            {RECOVERY_STAGE_LABELS[operation.recovery_stage]} for{" "}
+            {operation.case_number}
+          </p>
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <Badge variant={KYC_VARIANT[kycStatus]}>
+            KYC: {KYC_STATUS_LABELS[kycStatus]}
+          </Badge>
+          <Badge
+            variant={
+              withdrawal
+                ? WITHDRAWAL_VARIANT[withdrawal.status]
+                : "secondary"
+            }
+          >
+            {withdrawal
+              ? WITHDRAWAL_STATUS_LABELS[withdrawal.status]
+              : "No Withdrawal"}
+          </Badge>
+        </div>
+      </div>
+
+      <Alert className="border-primary/30 bg-primary/[0.06]">
+        <Wallet className="h-4 w-4" />
+        <AlertTitle className="text-foreground">
+          Admin manages escrow visibility and withdrawal approval
+        </AlertTitle>
+        <AlertDescription className="text-muted-foreground">
+          Manual recovered-funds entries update the client-facing escrow balance.
+          Withdrawal approval and payout marking remain admin-controlled and
+          must be backed by provider or internal confirmation.
+        </AlertDescription>
+      </Alert>
+
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+        <Snapshot
+          label="Client escrow balance"
+          value={formatCurrency(currentBalance, currency)}
+          accent
+        />
+        <Snapshot
+          label="Recovered entries"
+          value={String(fundEntries.length)}
+        />
+        <Snapshot
+          label="Receipts"
+          value={String(receipts.length)}
+        />
+      </div>
+
+      <Separator className="bg-white/10" />
+
+      <div className="grid grid-cols-1 gap-5 xl:grid-cols-2">
+        <PanelBlock icon={IdCard} title="KYC Review">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <div className="space-y-1.5">
+              <Label>Status</Label>
+              <Select
+                value={kycStatus}
+                onValueChange={(value) => setKycStatus(value as KycStatus)}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {KYC_OPTIONS.map((status) => (
+                    <SelectItem key={status} value={status}>
+                      {KYC_STATUS_LABELS[status]}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1.5 text-xs text-muted-foreground">
+              <p>
+                Government ID:{" "}
+                {KYC_DOCUMENT_STATUS_LABELS[
+                  operation.kyc?.government_id_status ?? "not_submitted"
+                ]}
+              </p>
+              <p>
+                Selfie:{" "}
+                {KYC_DOCUMENT_STATUS_LABELS[
+                  operation.kyc?.selfie_status ?? "not_submitted"
+                ]}
+              </p>
+              <p>
+                Address:{" "}
+                {KYC_DOCUMENT_STATUS_LABELS[
+                  operation.kyc?.proof_of_address_status ?? "not_submitted"
+                ]}
+              </p>
+              <p>
+                Phone/Email:{" "}
+                {operation.kyc?.phone_verified ? "Phone verified" : "Phone pending"}
+                {" / "}
+                {operation.kyc?.email_verified ? "Email verified" : "Email pending"}
+              </p>
+            </div>
+          </div>
+          <Textarea
+            value={kycNote}
+            onChange={(event) => setKycNote(event.target.value)}
+            className="min-h-[84px]"
+            placeholder="Reason note for KYC status change"
+          />
+          <Button
+            onClick={handleKycUpdate}
+            disabled={isPending || !kycNote.trim()}
+          >
+            {busyLabel === "kyc" && BusyIcon ? (
+              <BusyIcon className="h-4 w-4 animate-spin" />
+            ) : (
+              <BadgeCheck className="h-4 w-4" />
+            )}
+            Update KYC
+          </Button>
+        </PanelBlock>
+
+        <PanelBlock icon={Wallet} title="Recovered Funds">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <div className="space-y-1.5">
+              <Label htmlFor="fund-amount">Amount</Label>
+              <Input
+                id="fund-amount"
+                inputMode="decimal"
+                value={fundAmount}
+                onChange={(event) => setFundAmount(event.target.value)}
+                placeholder="0.00"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="provider-ref">Provider/internal ref</Label>
+              <Input
+                id="provider-ref"
+                value={providerRef}
+                onChange={(event) => setProviderRef(event.target.value)}
+                placeholder="REC-2026-..."
+              />
+            </div>
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="fund-source">Source label</Label>
+            <Input
+              id="fund-source"
+              value={fundSource}
+              onChange={(event) => setFundSource(event.target.value)}
+            />
+          </div>
+          <Textarea
+            value={fundNotes}
+            onChange={(event) => setFundNotes(event.target.value)}
+            className="min-h-[84px]"
+          />
+          <Button
+            onClick={handleRecoveredFunds}
+            disabled={isPending || !fundAmount.trim() || !fundNotes.trim()}
+          >
+            {busyLabel === "funds" && BusyIcon ? (
+              <BusyIcon className="h-4 w-4 animate-spin" />
+            ) : (
+              <Plus className="h-4 w-4" />
+            )}
+            Record Recovered Funds
+          </Button>
+          <MiniList
+            items={fundEntries.map((entry) => ({
+              key: entry.id,
+              title: formatCurrency(entry.amount, entry.currency),
+              meta: `${entry.source_label} - ${formatDateTime(entry.created_at)}`,
+            }))}
+          />
+        </PanelBlock>
+
+        <PanelBlock icon={CreditCard} title="Withdrawal Controls">
+          {withdrawal ? (
+            <div className="rounded-xl border border-white/10 bg-white/[0.03] p-3">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <Badge variant={WITHDRAWAL_VARIANT[withdrawal.status]}>
+                  {WITHDRAWAL_STATUS_LABELS[withdrawal.status]}
+                </Badge>
+                <span className="text-sm font-medium tabular-nums text-foreground">
+                  {formatCurrency(withdrawal.amount, withdrawal.currency)}
+                </span>
+              </div>
+              <p className="mt-2 text-xs text-muted-foreground">
+                {PAYOUT_METHOD_LABELS[withdrawal.method]} -{" "}
+                {withdrawal.destination_label}
+              </p>
+            </div>
+          ) : (
+            <div className="rounded-xl border border-dashed border-white/10 bg-white/[0.02] p-4 text-sm text-muted-foreground">
+              No client withdrawal request has been submitted.
+            </div>
+          )}
+          <Textarea
+            value={reviewNote}
+            onChange={(event) => setReviewNote(event.target.value)}
+            className="min-h-[84px]"
+            placeholder="Admin withdrawal review note"
+          />
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+            <Button
+              variant="outline"
+              onClick={() => handleWithdrawalReview("conditions_required")}
+              disabled={isPending || !withdrawal || !reviewNote.trim()}
+            >
+              Require Conditions
+            </Button>
+            <Button
+              onClick={() => handleWithdrawalReview("approved")}
+              disabled={isPending || !withdrawal || !reviewNote.trim()}
+            >
+              Approve Withdrawal
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={() => handleWithdrawalReview("denied")}
+              disabled={isPending || !withdrawal || !reviewNote.trim()}
+            >
+              Deny
+            </Button>
+            <Button
+              variant="secondary"
+              onClick={() => handleWithdrawalReview("paid_out")}
+              disabled={isPending || !withdrawal || !reviewNote.trim()}
+            >
+              Mark Paid After Confirmation
+            </Button>
+          </div>
+
+          <Separator className="bg-white/10" />
+
+          <div className="space-y-3">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <div className="space-y-1.5">
+                <Label htmlFor="condition-label">Condition</Label>
+                <Input
+                  id="condition-label"
+                  value={conditionLabel}
+                  onChange={(event) => setConditionLabel(event.target.value)}
+                  placeholder="e.g. Upload current proof of address"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label>Gate</Label>
+                <Select
+                  value={conditionGate}
+                  onValueChange={(value) =>
+                    setConditionGate(value as WithdrawalConditionGate)
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {CONDITION_GATES.map((gate) => (
+                      <SelectItem key={gate} value={gate}>
+                        {WITHDRAWAL_CONDITION_GATE_LABELS[gate]}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <Textarea
+              value={conditionDescription}
+              onChange={(event) =>
+                setConditionDescription(event.target.value)
+              }
+              className="min-h-[74px]"
+              placeholder="Condition details"
+            />
+            <Button
+              variant="outline"
+              onClick={handleAddCondition}
+              disabled={
+                isPending ||
+                !conditionLabel.trim() ||
+                !conditionDescription.trim()
+              }
+            >
+              <FileCheck2 className="h-4 w-4" />
+              Add Condition
+            </Button>
+          </div>
+          <MiniList
+            items={conditions.map((condition) => ({
+              key: condition.id,
+              title: condition.label,
+              meta: `${WITHDRAWAL_CONDITION_GATE_LABELS[condition.gate]} - ${
+                condition.satisfied ? "Satisfied" : "Open"
+              }`,
+            }))}
+          />
+        </PanelBlock>
+
+        <PanelBlock icon={ReceiptText} title="Receipts & Email">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <div className="space-y-1.5">
+              <Label>Receipt type</Label>
+              <Select
+                value={receiptKind}
+                onValueChange={(value) =>
+                  setReceiptKind(value as RecoveryReceiptKind)
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {RECEIPT_KINDS.map((kind) => (
+                    <SelectItem key={kind} value={kind}>
+                      {receiptKindLabel(kind)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="receipt-amount">Amount</Label>
+              <Input
+                id="receipt-amount"
+                inputMode="decimal"
+                value={receiptAmount}
+                onChange={(event) => setReceiptAmount(event.target.value)}
+                placeholder="0.00"
+              />
+            </div>
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="receipt-title">Title</Label>
+            <Input
+              id="receipt-title"
+              value={receiptTitle}
+              onChange={(event) => setReceiptTitle(event.target.value)}
+            />
+          </div>
+          <Textarea
+            value={receiptNotes}
+            onChange={(event) => setReceiptNotes(event.target.value)}
+            className="min-h-[84px]"
+          />
+          <Button
+            onClick={handleReceipt}
+            disabled={isPending || !receiptTitle.trim() || !receiptNotes.trim()}
+          >
+            {busyLabel === "receipt" && BusyIcon ? (
+              <BusyIcon className="h-4 w-4 animate-spin" />
+            ) : (
+              <ReceiptText className="h-4 w-4" />
+            )}
+            Generate Receipt
+          </Button>
+          <div className="space-y-2">
+            {receipts.length === 0 ? (
+              <p className="rounded-xl border border-dashed border-white/10 bg-white/[0.02] p-4 text-sm text-muted-foreground">
+                No receipts generated yet.
+              </p>
+            ) : (
+              receipts.map((receipt) => (
+                <div
+                  key={receipt.id}
+                  className="rounded-xl border border-white/10 bg-white/[0.03] p-3"
+                >
+                  <div className="flex flex-wrap items-start justify-between gap-2">
+                    <div>
+                      <p className="text-sm font-medium text-foreground">
+                        {receipt.receipt_number}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {receipt.title} - {formatDateTime(receipt.issued_at)}
+                      </p>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      <Button asChild size="sm" variant="outline">
+                        <a href={`/api/receipts/${receipt.id}`} download>
+                          Download PDF
+                        </a>
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        onClick={() => handleEmail(receipt)}
+                        disabled={isPending}
+                      >
+                        <Mail className="h-3.5 w-3.5" />
+                        Email
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+          {emailLogs.length > 0 ? (
+            <MiniList
+              items={emailLogs.slice(0, 3).map((email) => ({
+                key: email.id,
+                title: email.subject,
+                meta: `${email.status.replace(/_/g, " ")} - ${
+                  email.sent_at
+                    ? formatDateTime(email.sent_at)
+                    : formatDateTime(email.created_at)
+                }`,
+              }))}
+            />
+          ) : null}
+        </PanelBlock>
+      </div>
+    </section>
+  );
+}
+
+function PanelBlock({
+  icon: Icon,
+  title,
+  children,
+}: {
+  icon: React.ComponentType<{ className?: string }>;
+  title: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="space-y-3 rounded-2xl border border-white/10 bg-white/[0.03] p-4">
+      <h4 className="flex items-center gap-2 text-sm font-semibold text-foreground">
+        <Icon className="h-4 w-4 text-primary" />
+        {title}
+      </h4>
+      {children}
+    </div>
+  );
+}
+
+function Snapshot({
+  label,
+  value,
+  accent,
+}: {
+  label: string;
+  value: string;
+  accent?: boolean;
+}) {
+  return (
+    <div className="rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2.5">
+      <p className="text-[11px] uppercase tracking-wide text-muted-foreground">
+        {label}
+      </p>
+      <p
+        className={cn(
+          "mt-0.5 truncate text-lg font-semibold tabular-nums",
+          accent ? "text-cyan-300" : "text-foreground"
+        )}
+      >
+        {value}
+      </p>
+    </div>
+  );
+}
+
+function MiniList({
+  items,
+}: {
+  items: { key: string; title: string; meta: string }[];
+}) {
+  if (items.length === 0) return null;
+
+  return (
+    <div className="space-y-2">
+      {items.slice(0, 4).map((item) => (
+        <div
+          key={item.key}
+          className="rounded-xl border border-white/10 bg-white/[0.025] px-3 py-2"
+        >
+          <p className="truncate text-sm font-medium text-foreground">
+            {item.title}
+          </p>
+          <p className="truncate text-xs text-muted-foreground">{item.meta}</p>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+export default RecoveryCaseOperationsPanel;

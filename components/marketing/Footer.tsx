@@ -14,9 +14,9 @@ const COLUMNS: FooterColumn[] = [
     heading: "Product",
     links: [
       { label: "How it works", href: "/how-it-works" },
-      { label: "Escrow workflow", href: "/how-it-works#workflow" },
+      { label: "Recovery workflow", href: "/how-it-works#workflow" },
       { label: "Escrow statuses", href: "/how-it-works#statuses" },
-      { label: "Start a project", href: "/register" },
+      { label: "Open recovery case", href: "/register" },
     ],
   },
   {
@@ -24,8 +24,8 @@ const COLUMNS: FooterColumn[] = [
     links: [
       { label: "Client portal", href: "/login" },
       { label: "Operator sign-in", href: "/operator" },
-      { label: "Open secure escrow", href: "/register" },
-      { label: "Dispute resolution", href: "/how-it-works#workflow" },
+      { label: "Open secure escrow account", href: "/register" },
+      { label: "Withdrawal approval", href: "/how-it-works#workflow" },
       { label: "Evidence audit trail", href: "/how-it-works#security" },
     ],
   },
@@ -71,9 +71,9 @@ export function Footer() {
               </span>
             </Link>
             <p className="mt-4 max-w-sm text-sm leading-relaxed text-muted-foreground">
-              {APP_TAGLINE} for high-trust digital transactions. Open cases, fund
-              escrow, exchange verified evidence, and release funds only after
-              mutual approval or admin dispute resolution.
+              {APP_TAGLINE} for crypto scam recovery complaints. File a case,
+              upload evidence, complete KYC, and track recovered funds in
+              admin-controlled escrow.
             </p>
             <p className="mt-5 max-w-sm text-xs leading-relaxed text-muted-foreground/80">
               {PROVIDER_DISCLAIMER}
@@ -107,9 +107,9 @@ export function Footer() {
             &copy; {year} {APP_NAME}. All rights reserved.
           </p>
           <p className="max-w-2xl text-xs leading-relaxed text-muted-foreground/80">
-            {APP_NAME} is an escrow workflow and investigation management
-            platform. It does not itself hold, transfer, or custody funds. All
-            fund movement is performed by licensed payment/escrow partners where
+            {APP_NAME} is a recovery workflow and escrow management platform. It
+            does not itself hold, transfer, or custody funds. All fund movement
+            is performed by protected server-side provider workflows where
             available.
           </p>
         </div>

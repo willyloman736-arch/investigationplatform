@@ -56,7 +56,7 @@ export function ContractVerificationPanel({
           toast.error(result.error ?? "Could not record the signature.");
         } else {
           toast.success(
-            `Recorded ${party === "party_a" ? "Party A" : "Party B"} acceptance of the contract.`
+            `Recorded ${party === "party_a" ? "Client" : "Operator"} acceptance.`
           );
           router.refresh();
         }
@@ -85,10 +85,10 @@ export function ContractVerificationPanel({
         </div>
         <div>
           <h3 className="text-base font-semibold text-foreground">
-            Contract verification
+            Terms verification
           </h3>
           <p className="text-xs text-muted-foreground">
-            Review the agreed terms and confirm both parties have accepted.
+            Review the case terms and confirm the client/operator acceptance.
           </p>
         </div>
       </div>
@@ -96,7 +96,7 @@ export function ContractVerificationPanel({
       {/* Terms */}
       <div className="mt-4 rounded-xl border border-white/10 bg-white/5 p-3">
         <p className="text-[11px] uppercase tracking-wide text-muted-foreground">
-          Contract terms
+          Review and withdrawal conditions
         </p>
         {caseRow.contract_terms ? (
           <p className="mt-1 whitespace-pre-wrap text-sm leading-relaxed text-foreground/90">
@@ -104,7 +104,7 @@ export function ContractVerificationPanel({
           </p>
         ) : (
           <p className="mt-1 text-sm italic text-muted-foreground">
-            No contract terms recorded for this case yet.
+            No terms recorded for this case yet.
           </p>
         )}
       </div>
@@ -112,13 +112,13 @@ export function ContractVerificationPanel({
       {/* Signature state + record controls */}
       <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
         <SignatureRow
-          label="Party A"
+          label="Client"
           signed={caseRow.contract_signed_by_a}
           pending={pendingParty === "party_a"}
           onRecord={() => recordSignature("party_a")}
         />
         <SignatureRow
-          label="Party B"
+          label="Operator"
           signed={caseRow.contract_signed_by_b}
           pending={pendingParty === "party_b"}
           onRecord={() => recordSignature("party_b")}
@@ -128,11 +128,10 @@ export function ContractVerificationPanel({
       {bothSigned ? (
         <Alert variant="success" className="mt-4">
           <ShieldCheck className="h-4 w-4" />
-          <AlertTitle>Contract fully accepted</AlertTitle>
+          <AlertTitle>Terms accepted</AlertTitle>
           <AlertDescription>
-            Both parties have accepted the contract terms. Note: this is separate
-            from release approval, which also requires both parties and is handled
-            in the approvals workflow.
+            The client and operator have accepted the terms. This is separate
+            from withdrawal approval, which remains controlled by admins.
           </AlertDescription>
         </Alert>
       ) : (

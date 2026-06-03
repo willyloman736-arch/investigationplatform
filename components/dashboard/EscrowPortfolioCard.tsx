@@ -15,6 +15,10 @@ export function EscrowPortfolioCard({
   netReleasable,
   activeContracts,
   deltaLabel,
+  titleLabel = "Escrow account balance",
+  netLabel = "Eligible withdrawal",
+  activeLabel = "Open escrow accounts",
+  trendLabel = "Escrow value over time (illustrative)",
   className,
 }: {
   total: number;
@@ -23,6 +27,10 @@ export function EscrowPortfolioCard({
   netReleasable: number;
   activeContracts: number;
   deltaLabel?: string;
+  titleLabel?: string;
+  netLabel?: string;
+  activeLabel?: string;
+  trendLabel?: string;
   className?: string;
 }) {
   return (
@@ -41,7 +49,7 @@ export function EscrowPortfolioCard({
         <div>
           <p className="flex items-center gap-1.5 text-xs font-medium uppercase tracking-wider text-muted-foreground">
             <Wallet className="h-3.5 w-3.5 text-primary" aria-hidden="true" />
-            Total in escrow
+            {titleLabel}
           </p>
           <p className="mt-2 text-3xl font-semibold tracking-tight tabular-nums text-foreground sm:text-4xl">
             {formatCurrency(total, currency)}
@@ -58,19 +66,19 @@ export function EscrowPortfolioCard({
       <div className="relative mt-4">
         <Sparkline data={trend} className="h-20 w-full" />
         <p className="mt-1 text-[11px] text-muted-foreground/70">
-          Escrow value over time (illustrative)
+          {trendLabel}
         </p>
       </div>
 
       <div className="relative mt-4 grid grid-cols-2 gap-4 border-t border-white/10 pt-4">
         <div>
-          <p className="text-xs text-muted-foreground">Net releasable</p>
+          <p className="text-xs text-muted-foreground">{netLabel}</p>
           <p className="mt-0.5 text-lg font-semibold tabular-nums text-cyan-300">
             {formatCurrency(netReleasable, currency)}
           </p>
         </div>
         <div>
-          <p className="text-xs text-muted-foreground">Active contracts</p>
+          <p className="text-xs text-muted-foreground">{activeLabel}</p>
           <p className="mt-0.5 text-lg font-semibold tabular-nums text-foreground">
             {activeContracts}
           </p>

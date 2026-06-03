@@ -83,7 +83,7 @@ export async function submitApproval(
     .maybeSingle<EscrowContract>();
 
   if (!escrow) {
-    return fail("No escrow contract exists for this case yet.");
+    return fail("No escrow account exists for this case yet.");
   }
 
   // Block approvals when the escrow is frozen, under dispute audit, or already

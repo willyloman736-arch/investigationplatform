@@ -13,6 +13,12 @@ import type {
   DepositStatus,
   ReleaseStatus,
   FileCategory,
+  RecoveryCaseStage,
+  KycStatus,
+  KycDocumentStatus,
+  WithdrawalStatus,
+  PayoutMethod,
+  WithdrawalConditionGate,
 } from "@/lib/types";
 
 /**
@@ -22,7 +28,7 @@ import type {
 export const APP_NAME = "Digital Asset Investigations";
 export const APP_SHORT_NAME = "DAI";
 
-export const APP_TAGLINE = "Secure Escrow & Investigation Management";
+export const APP_TAGLINE = "Crypto Scam Recovery & Secure Escrow";
 
 /**
  * Honest, reusable disclaimer. Never claim encryption/certifications we do not
@@ -231,6 +237,61 @@ export const RELEASE_STATUS_LABELS: Record<ReleaseStatus, string> = {
   completed: "Completed",
 };
 
+export const RECOVERY_STAGE_LABELS: Record<RecoveryCaseStage, string> = {
+  complaint_submitted: "Complaint Submitted",
+  admin_review: "Admin Review",
+  accepted: "Accepted",
+  rejected: "Rejected",
+  more_evidence_needed: "More Evidence Needed",
+  recovery_in_progress: "Recovery In Progress",
+  funds_recovered: "Funds Recovered",
+  escrow_funded: "Escrow Funded",
+  withdrawal_review: "Withdrawal Review",
+  paid_out: "Paid Out",
+};
+
+export const KYC_STATUS_LABELS: Record<KycStatus, string> = {
+  not_started: "Not Started",
+  in_review: "In Review",
+  verified: "Verified",
+  rejected: "Rejected",
+};
+
+export const KYC_DOCUMENT_STATUS_LABELS: Record<KycDocumentStatus, string> = {
+  not_submitted: "Not Submitted",
+  submitted: "Submitted",
+  verified: "Verified",
+  rejected: "Rejected",
+};
+
+export const WITHDRAWAL_STATUS_LABELS: Record<WithdrawalStatus, string> = {
+  not_requested: "Not Requested",
+  conditions_required: "Conditions Required",
+  requested: "Requested",
+  approved: "Approved",
+  denied: "Denied",
+  paid_out: "Paid Out",
+};
+
+export const PAYOUT_METHOD_LABELS: Record<PayoutMethod, string> = {
+  card: "Credit/Debit Card",
+  crypto_wallet: "Crypto Wallet",
+  zelle: "Zelle",
+  cash_app: "Cash App",
+  bank_transfer: "Bank Transfer",
+  paypal: "PayPal",
+  other: "Other",
+};
+
+export const WITHDRAWAL_CONDITION_GATE_LABELS: Record<
+  WithdrawalConditionGate,
+  string
+> = {
+  before_request: "Before Request",
+  before_approval: "Before Approval",
+  before_payout: "Before Payout",
+};
+
 // ── Navigation ──────────────────────────────────────────────────────────────
 export interface NavItem {
   label: string;
@@ -240,19 +301,19 @@ export interface NavItem {
 
 export const NAV_CLIENT: NavItem[] = [
   { label: "Overview", href: "/dashboard", icon: LayoutDashboard },
-  { label: "Cases", href: "/dashboard/cases", icon: FolderKanban },
+  { label: "Recovery Cases", href: "/dashboard/cases", icon: FolderKanban },
 ];
 
 export const NAV_ADMIN: NavItem[] = [
   { label: "Command Center", href: "/admin", icon: Gauge },
-  { label: "Cases", href: "/admin/cases", icon: FolderKanban },
+  { label: "Recovery Cases", href: "/admin/cases", icon: FolderKanban },
   { label: "Disputes", href: "/admin/disputes", icon: ShieldAlert },
 ];
 
 /** Secondary in-case tab references (kept here so labels stay consistent). */
 export const CASE_TABS = {
-  intake: { label: "Intake & Case Management", icon: ScrollText },
-  ledger: { label: "Escrow Ledger", icon: Wallet },
+  intake: { label: "Complaint / Recovery Case", icon: ScrollText },
+  ledger: { label: "Escrow Account", icon: Wallet },
 } as const;
 
 // ── Currency default ────────────────────────────────────────────────────────

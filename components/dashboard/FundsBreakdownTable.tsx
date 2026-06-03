@@ -47,11 +47,11 @@ export function FundsBreakdownTable({
           <Wallet className="h-6 w-6" />
         </div>
         <p className="text-sm font-medium text-foreground">
-          No escrow contracts yet
+          No escrow accounts yet
         </p>
         <p className="mt-1 max-w-xs text-xs text-muted-foreground">
-          When a case is funded, its fee breakdown and escrow status will appear
-          here.
+          When recovered funds are recorded, the fee breakdown and escrow status
+          will appear here.
         </p>
       </div>
     );
@@ -71,7 +71,7 @@ export function FundsBreakdownTable({
             <TableRow className="border-white/10 hover:bg-transparent">
               <TableHead className="whitespace-nowrap">Case ID</TableHead>
               <TableHead className="whitespace-nowrap">Client</TableHead>
-              <TableHead className="whitespace-nowrap">Counterparty</TableHead>
+              <TableHead className="whitespace-nowrap">Operator</TableHead>
               <TableHead className="whitespace-nowrap text-right">Total</TableHead>
               <TableHead className="whitespace-nowrap text-right">
                 Platform Fee
@@ -80,7 +80,7 @@ export function FundsBreakdownTable({
                 Provider Fee
               </TableHead>
               <TableHead className="whitespace-nowrap text-right">
-                Net Release
+                Net Withdrawal
               </TableHead>
               <TableHead className="whitespace-nowrap">Deposit</TableHead>
               <TableHead className="whitespace-nowrap">Escrow Status</TableHead>

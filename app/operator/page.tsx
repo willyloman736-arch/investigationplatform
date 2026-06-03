@@ -67,7 +67,7 @@ export default function OperatorLoginPage() {
             Need operator access? Contact your administrator.
           </p>
           <p className="text-sm text-muted-foreground">
-            Client or counterparty?{" "}
+            Client or invited operator?{" "}
             <Link
               href="/login"
               className="font-medium text-cyan-300 underline-offset-4 transition-colors hover:text-cyan-200 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded"

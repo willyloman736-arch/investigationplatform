@@ -41,13 +41,13 @@ const ROLE_OPTIONS: {
 }[] = [
   {
     value: "client",
-    label: "Client",
-    hint: "You open and fund cases.",
+    label: "Recovery Client",
+    hint: "You file a complaint and complete KYC before withdrawal.",
   },
   {
     value: "counterparty",
-    label: "Counterparty",
-    hint: "You are invited to a case to respond and approve.",
+    label: "Invited Operator",
+    hint: "You are invited by the platform to support a recovery file.",
   },
 ];
 
@@ -198,6 +198,10 @@ export function RegisterForm() {
       <p className="text-center text-xs leading-relaxed text-muted-foreground/70">
         On the next step you&apos;ll get a one-time recovery phrase — save it to
         regain access if you forget your password.
+      </p>
+
+      <p className="text-center text-xs leading-relaxed text-muted-foreground/70">
+        KYC review is required before any withdrawal method can be approved.
       </p>
 
       <p className="text-center text-xs leading-relaxed text-muted-foreground/70">

@@ -2,11 +2,11 @@
 
 import {
   FolderKanban,
-  Landmark,
+  IdCard,
   FileSearch,
-  MessagesSquare,
-  Scale,
-  ScrollText,
+  CreditCard,
+  ReceiptText,
+  Wallet,
   type LucideIcon,
 } from "lucide-react";
 import { motion } from "framer-motion";
@@ -19,40 +19,40 @@ interface Feature {
 
 const FEATURES: Feature[] = [
   {
-    title: "Case & project management",
+    title: "Complaint intake",
     description:
-      "Open structured investigation or transaction cases, invite counterparties, and keep every party, document, and decision in one organized workspace.",
+      "File a crypto scam complaint, upload transaction hashes, receipts, screenshots, and messages, then track admin review in one workspace.",
     icon: FolderKanban,
   },
   {
-    title: "Escrow held by licensed partners",
+    title: "KYC verification",
     description:
-      "Funds are deposited and held through licensed payment/escrow partners. Digital Asset Investigations tracks status — it never custodies or moves money itself.",
-    icon: Landmark,
+      "Clients complete government ID, selfie, proof of address, phone, and email checks before withdrawal approval.",
+    icon: IdCard,
   },
   {
-    title: "Verified evidence vault",
+    title: "Evidence review",
     description:
-      "Upload receipts, CSVs, chat logs, and transaction references with type and size validation. Everything is attributed and timestamped.",
+      "Admins review the file, request more evidence when needed, accept or reject the complaint, and keep every decision timestamped.",
     icon: FileSearch,
   },
   {
-    title: "Logged secure messaging",
+    title: "Recovered-funds escrow",
     description:
-      "Communicate inside each case. Messages are logged for dispute review so the record is complete if a disagreement arises.",
-    icon: MessagesSquare,
+      "When funds are recovered, admins enter them from the backend so the client sees the escrow account balance immediately.",
+    icon: Wallet,
   },
   {
-    title: "Mutual-approval release",
+    title: "Admin-controlled withdrawals",
     description:
-      "Funds release only when both parties approve, or when an admin resolves a dispute. Admins manage the workflow and request release server-side; no one moves funds unilaterally.",
-    icon: Scale,
+      "Clients can request card first, then crypto wallet, Zelle, Cash App, bank, PayPal, or other methods, but admins approve the payout path.",
+    icon: CreditCard,
   },
   {
-    title: "Tamper-evident audit trail",
+    title: "Receipts & audit trail",
     description:
-      "Every important action writes an append-only audit log entry, giving you and reviewers a defensible history of the entire case.",
-    icon: ScrollText,
+      "Admins generate downloadable PDF receipts, send placeholder email updates, and preserve actions in an append-only audit trail.",
+    icon: ReceiptText,
   },
 ];
 

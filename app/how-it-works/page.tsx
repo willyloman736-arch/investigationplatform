@@ -13,9 +13,9 @@ import { TrustBanner } from "@/components/marketing/TrustBanner";
 import { Footer } from "@/components/marketing/Footer";
 
 export const metadata: Metadata = {
-  title: "How escrow works — Digital Asset Investigations",
+  title: "How recovery escrow works — Digital Asset Investigations",
   description:
-    "A transparent walkthrough of the Digital Asset Investigations escrow lifecycle: contract setup, funding, verification, and mutual release — plus what every escrow status means.",
+    "A transparent walkthrough of the Digital Asset Investigations recovery lifecycle: complaint review, KYC, recovered-funds escrow, admin withdrawal approval, and escrow status meanings.",
 };
 
 /**
@@ -51,8 +51,8 @@ export default function HowItWorksPage() {
           <div className="mx-auto w-full max-w-7xl px-4 pb-12 pt-16 sm:px-6 sm:pt-20 lg:px-8">
             <SectionHeading
               eyebrow="Transparency"
-              title="How escrow works on Digital Asset Investigations"
-              subtitle="No black boxes. Here is exactly how funds are protected, how evidence is handled, and the conditions that must be met before money is ever released."
+              title="How recovery escrow works on Digital Asset Investigations"
+              subtitle="No black boxes. Here is how complaints are reviewed, KYC is checked, recovered funds are reflected in escrow, and withdrawal approval is controlled by admins."
             />
           </div>
         </section>
@@ -78,7 +78,7 @@ export default function HowItWorksPage() {
             <SectionHeading
               eyebrow="Escrow status reference"
               title="What each escrow status means"
-              subtitle="Every case displays one of these statuses at all times, so both parties always know precisely where the funds stand."
+              subtitle="Every recovery case displays an escrow status so the client knows whether recovered funds are pending, secured, frozen, eligible, or paid."
             />
 
             <div className="mt-12 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -112,39 +112,39 @@ export default function HowItWorksPage() {
               <SectionHeading
                 align="left"
                 eyebrow="The rule that protects everyone"
-                title="Funds release only after verified approval — or a resolved dispute"
-                subtitle="There are exactly two paths to a release, and an administrator can never move funds directly from the interface."
+                title="Withdrawal opens only after admin approval"
+                subtitle="Admins can mark eligibility and request server-side provider actions, but they never move money directly from the browser."
               />
               <div className="mt-8 grid grid-cols-1 gap-4 md:grid-cols-2">
                 <div className="rounded-2xl border border-emerald-500/20 bg-emerald-500/5 p-6">
                   <h3 className="text-sm font-semibold text-emerald-300">
-                    Path 1 — Mutual approval
+                    Path 1 - KYC and conditions cleared
                   </h3>
                   <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                    When both Party A and Party B approve the outcome, the case
-                    moves to admin review before the escrow is marked{" "}
+                    When KYC is verified and all custom withdrawal conditions are
+                    cleared, the case moves to admin review before escrow is marked{" "}
                     <span className="font-medium text-foreground">
                       Ready for Release
                     </span>
-                    . An administrator records the review reason and requests
-                    release through the licensed partner.
+                    . An administrator records the review reason, generates any
+                    required receipt, and requests payout only through protected
+                    backend workflow.
                   </p>
                 </div>
                 <div className="rounded-2xl border border-blue-500/20 bg-blue-500/5 p-6">
                   <h3 className="text-sm font-semibold text-blue-300">
-                    Path 2 — Resolved dispute
+                    Path 2 - Resolved dispute or verification hold
                   </h3>
                   <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                    If a dispute is raised, release is frozen while an admin
-                    reviews the evidence. Only a documented resolution can make
-                    the escrow eligible again, with the reason recorded to the
-                    audit trail.
+                    If a dispute, KYC hold, or suspicious activity flag is raised,
+                    release is frozen while an admin reviews evidence. Only a
+                    documented resolution can make the escrow eligible again.
                   </p>
                 </div>
               </div>
               <p className="mt-6 text-xs leading-relaxed text-muted-foreground/80">
-                Funds are marked released only after the licensed payment/escrow
-                partner confirms. {PROVIDER_DISCLAIMER}
+                Funds are marked paid or released only after server-side provider
+                or internal confirmation. {PROVIDER_DISCLAIMER}
               </p>
             </div>
           </div>
@@ -160,16 +160,16 @@ export default function HowItWorksPage() {
           <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="relative isolate overflow-hidden rounded-3xl border border-primary/20 bg-gradient-to-b from-primary/10 to-background px-6 py-14 text-center sm:px-12">
               <h2 className="mx-auto max-w-2xl text-balance text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
-                Ready to open your first secured case?
+                Ready to open your recovery complaint?
               </h2>
               <p className="mx-auto mt-4 max-w-xl text-pretty text-base leading-relaxed text-muted-foreground">
-                Set up a contract, fund escrow through a licensed partner, and
-                release only after verified approval.
+                Submit your complaint for free review, complete KYC, and track
+                recovered funds in a secure escrow account.
               </p>
               <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
                 <Button asChild size="lg" className="w-full sm:w-auto">
                   <Link href="/register">
-                    Start an Investigation / Project
+                    Open Recovery Case
                     <ArrowRight className="h-4 w-4" />
                   </Link>
                 </Button>

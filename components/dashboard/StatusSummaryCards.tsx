@@ -113,7 +113,7 @@ export function StatusSummaryCards({
         label="Total Value"
         value={formatCurrency(d.totalValue, d.currency)}
         icon={Wallet}
-        hint="Aggregate escrow contract value"
+        hint="Aggregate escrow account value"
       />
     </div>
   );

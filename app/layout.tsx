@@ -11,25 +11,25 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Digital Asset Investigations — Secure Escrow & Investigation Management",
+  title: "Digital Asset Investigations - Crypto Scam Recovery & Secure Escrow",
   description:
-    "Digital Asset Investigations is a trust-heavy platform to open investigation projects, fund escrow, upload evidence, communicate securely, and release funds only after mutual approval or admin dispute resolution. Funds are processed only through licensed payment/escrow partners where available.",
+    "Digital Asset Investigations helps clients file crypto scam recovery complaints, complete KYC, track recovered funds in escrow, and request admin-approved withdrawals.",
   applicationName: "Digital Asset Investigations",
   metadataBase: new URL(
     process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"
   ),
   openGraph: {
-    title: "Digital Asset Investigations — Secure Escrow & Investigation Management",
+    title: "Digital Asset Investigations - Crypto Scam Recovery & Secure Escrow",
     description:
-      "Open cases, fund escrow, exchange evidence, and release funds only after mutual approval or admin dispute resolution.",
+      "Open recovery complaints, upload evidence, complete KYC, and track recovered funds in admin-controlled escrow.",
     type: "website",
     siteName: "Digital Asset Investigations",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Digital Asset Investigations — Secure Escrow & Investigation Management",
+    title: "Digital Asset Investigations - Crypto Scam Recovery & Secure Escrow",
     description:
-      "Open cases, fund escrow, exchange evidence, and release funds only after mutual approval or admin dispute resolution.",
+      "Open recovery complaints, upload evidence, complete KYC, and track recovered funds in admin-controlled escrow.",
   },
   robots: {
     index: true,

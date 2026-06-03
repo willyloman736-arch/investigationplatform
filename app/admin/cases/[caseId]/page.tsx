@@ -51,6 +51,7 @@ import {
   getDisputes,
   getAuditLogs,
   getProfileById,
+  getRecoveryCaseOperations,
 } from "@/lib/data";
 import type {
   AuditLog,
@@ -80,6 +81,7 @@ import { AdminDisputePanel } from "@/components/admin/AdminDisputePanel";
 import { RequestEvidenceDialog } from "@/components/admin/RequestEvidenceDialog";
 import { FlagActivityDialog } from "@/components/admin/FlagActivityDialog";
 import { ContractVerificationPanel } from "@/components/admin/ContractVerificationPanel";
+import { RecoveryCaseOperationsPanel } from "@/components/admin/RecoveryCaseOperationsPanel";
 
 interface PageProps {
   params: { caseId: string };
@@ -116,8 +118,16 @@ export default async function AdminCaseDetailPage({ params }: PageProps) {
   const caseRow = await getCaseById(caseId);
   if (!caseRow) notFound();
 
-  const [escrow, files, transactions, approvals, parties, disputes, auditLogs] =
-    await Promise.all([
+  const [
+    escrow,
+    files,
+    transactions,
+    approvals,
+    parties,
+    disputes,
+    auditLogs,
+    recoveryOperation,
+  ] = await Promise.all([
       getEscrow(caseId),
       getFiles(caseId),
       getTransactions(caseId),
@@ -125,6 +135,7 @@ export default async function AdminCaseDetailPage({ params }: PageProps) {
       getCaseParties(caseId),
       getDisputes(),
       getAuditLogs(caseId),
+      getRecoveryCaseOperations(caseId),
     ]);
 
   // Resolve profiles referenced by parties, files, transactions, and audit logs.
@@ -150,6 +161,11 @@ export default async function AdminCaseDetailPage({ params }: PageProps) {
 
   const partyA = parties.find((p) => p.party_role === "party_a");
   const partyB = parties.find((p) => p.party_role === "party_b");
+  const partyAProfile = partyA?.profile_id
+    ? profiles.get(partyA.profile_id)
+    : null;
+  const clientEmail =
+    partyAProfile?.email ?? partyA?.invited_email ?? "client@example.com";
   const caseDispute =
     disputes.find((d) => d.case_id === caseId) ?? null;
 
@@ -249,7 +265,7 @@ export default async function AdminCaseDetailPage({ params }: PageProps) {
       <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <InfoCard
           icon={Users}
-          label="Party A"
+          label="Client"
           value={partyDisplay(partyA, profiles)}
           sub={
             partyA?.accepted
@@ -261,7 +277,7 @@ export default async function AdminCaseDetailPage({ params }: PageProps) {
         />
         <InfoCard
           icon={Users}
-          label="Party B"
+          label="Operator"
           value={partyDisplay(partyB, profiles)}
           sub={
             partyB?.accepted
@@ -278,12 +294,12 @@ export default async function AdminCaseDetailPage({ params }: PageProps) {
           sub={
             approvedCount === 2
               ? "Both parties approved"
-              : "Both required for release"
+              : "Admin review required"
           }
         />
         <InfoCard
           icon={Wallet}
-          label="Net release"
+          label="Net withdrawal"
           value={
             escrow
               ? formatCurrency(escrow.net_release_amount, escrow.currency)
@@ -298,6 +314,14 @@ export default async function AdminCaseDetailPage({ params }: PageProps) {
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         {/* Main column */}
         <div className="space-y-6 lg:col-span-2">
+          {/* Recovery operations */}
+          {recoveryOperation ? (
+            <RecoveryCaseOperationsPanel
+              operation={recoveryOperation}
+              clientEmail={clientEmail}
+            />
+          ) : null}
+
           {/* Contract verification */}
           <ContractVerificationPanel case={caseRow} />
 
@@ -320,9 +344,9 @@ export default async function AdminCaseDetailPage({ params }: PageProps) {
             ) : (
               <Alert variant="warning">
                 <Wallet className="h-4 w-4" />
-                <AlertTitle>No escrow contract</AlertTitle>
+                <AlertTitle>No escrow account</AlertTitle>
                 <AlertDescription>
-                  This case has no escrow contract yet.
+                  This case has no escrow account yet.
                 </AlertDescription>
               </Alert>
             )}

@@ -421,10 +421,10 @@ export default async function CaseWorkspacePage({
                 <Wallet className="h-7 w-7" />
               </div>
               <h2 className="text-base font-semibold text-foreground">
-                No escrow contract yet
+                No escrow account yet
               </h2>
               <p className="mt-1.5 max-w-sm text-sm text-muted-foreground">
-                Once an escrow contract is created for this case, its fee
+                Once an escrow account is created for this case, its fee
                 breakdown, approvals, and ledger will appear here.
               </p>
             </div>
@@ -468,7 +468,7 @@ function CaseSummaryCard({
         <div className="space-y-2 border-t border-white/5 pt-4">
           <h3 className="flex items-center gap-2 text-sm font-semibold text-foreground">
             <ScrollText className="h-4 w-4 text-primary" aria-hidden="true" />
-            Contract terms
+            Review and withdrawal conditions
           </h3>
           <p className="rounded-xl bg-white/[0.03] px-4 py-3 text-sm leading-relaxed text-foreground/90">
             {contractTerms}
@@ -476,8 +476,8 @@ function CaseSummaryCard({
 
           {/* Signature status */}
           <div className="flex flex-wrap gap-3 pt-1">
-            <SignatureChip label={partyAName} signed={signedByA} party="Party A" />
-            <SignatureChip label={partyBName} signed={signedByB} party="Party B" />
+            <SignatureChip label={partyAName} signed={signedByA} party="Client" />
+            <SignatureChip label={partyBName} signed={signedByB} party="Operator" />
           </div>
         </div>
       ) : null}
@@ -524,17 +524,17 @@ function EscrowOverviewStrip({ escrow }: { escrow: EscrowContract }) {
       <Metric label="Escrow status">
         <EscrowStatusBadge status={escrow.escrow_status} />
       </Metric>
-      <Metric label="Total in escrow">
+      <Metric label="Escrow account">
         <span className="text-lg font-semibold tabular-nums text-foreground">
           {formatCurrency(escrow.total_amount, escrow.currency)}
         </span>
       </Metric>
-      <Metric label="Net release">
+      <Metric label="Net withdrawal">
         <span className="text-lg font-semibold tabular-nums text-cyan-300">
           {formatCurrency(escrow.net_release_amount, escrow.currency)}
         </span>
       </Metric>
-      <Metric label="Deposit / Release">
+      <Metric label="Deposit / Withdrawal">
         <span className="text-xs text-muted-foreground">
           {DEPOSIT_STATUS_LABELS[escrow.deposit_status]}
           <span className="px-1">·</span>

@@ -374,7 +374,7 @@ export function EscrowControlPanel({
         <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
           <Snapshot label="Total held" value={formatCurrency(escrow.total_amount, currency)} />
           <Snapshot
-            label="Net release"
+            label="Net withdrawal"
             value={formatCurrency(escrow.net_release_amount, currency)}
             accent
           />
@@ -390,9 +390,9 @@ export function EscrowControlPanel({
       ) : (
         <Alert variant="warning" className="mt-4">
           <Info className="h-4 w-4" />
-          <AlertTitle>No escrow contract</AlertTitle>
+          <AlertTitle>No escrow account</AlertTitle>
           <AlertDescription>
-            This case has no escrow contract yet, so escrow controls are
+            This case has no escrow account yet, so escrow controls are
             unavailable.
           </AlertDescription>
         </Alert>
@@ -464,8 +464,8 @@ export function EscrowControlPanel({
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="party_a">Party A</SelectItem>
-                    <SelectItem value="party_b">Party B</SelectItem>
+                    <SelectItem value="party_a">Client</SelectItem>
+                    <SelectItem value="party_b">Operator</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
