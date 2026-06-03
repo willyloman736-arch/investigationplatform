@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 
-import { APP_NAME } from "@/lib/constants";
+import { APP_NAME, APP_TAGLINE, PROVIDER_DISCLAIMER } from "@/lib/constants";
 import { getCaseById, getReceiptById } from "@/lib/data";
-import { createSimplePdf } from "@/lib/pdf";
+import { createReceiptPdf } from "@/lib/pdf";
 import { formatCurrency, formatDateTime } from "@/lib/utils";
 import type { RecoveryReceipt } from "@/lib/types";
 
@@ -12,6 +12,14 @@ interface RouteContext {
 
 function safeFileName(value: string): string {
   return value.replace(/[^a-zA-Z0-9._-]/g, "_");
+}
+
+/** "withdrawal_approval" → "Withdrawal Approval" */
+function titleCaseKind(kind: string): string {
+  return kind
+    .split("_")
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ");
 }
 
 function previewReceiptFromId(receiptId: string): RecoveryReceipt | null {
@@ -35,24 +43,25 @@ export async function GET(_request: Request, { params }: RouteContext) {
   }
 
   const caseRow = await getCaseById(receipt.case_id);
-  const amount =
-    receipt.amount !== null
-      ? formatCurrency(receipt.amount, receipt.currency)
-      : "No amount recorded";
 
-  const pdf = createSimplePdf({
-    title: `${APP_NAME} Receipt`,
-    lines: [
-      `Receipt number: ${receipt.receipt_number}`,
-      `Receipt title: ${receipt.title}`,
-      `Case: ${caseRow?.case_number ?? receipt.case_id}`,
-      `Case title: ${caseRow?.title ?? "Unknown case"}`,
-      `Recipient: ${receipt.recipient_email}`,
-      `Amount: ${amount}`,
-      `Issued: ${formatDateTime(receipt.issued_at)}`,
-      `Receipt type: ${receipt.kind.replace(/_/g, " ")}`,
-      `Notes: ${receipt.notes ?? "No notes recorded."}`,
+  const pdf = createReceiptPdf({
+    brandName: APP_NAME,
+    brandTagline: APP_TAGLINE,
+    receiptNumber: receipt.receipt_number,
+    title: receipt.title,
+    kindLabel: titleCaseKind(receipt.kind),
+    caseNumber: caseRow?.case_number ?? receipt.case_id,
+    caseTitle: caseRow?.title ?? "Unknown case",
+    recipientEmail: receipt.recipient_email,
+    issued: formatDateTime(receipt.issued_at),
+    amountLabel:
+      receipt.amount !== null
+        ? formatCurrency(receipt.amount, receipt.currency)
+        : null,
+    notes: receipt.notes ?? "No notes recorded.",
+    disclaimers: [
       "This receipt is a platform record. Actual fund movement must be confirmed by the secure server-side escrow or payment provider workflow.",
+      PROVIDER_DISCLAIMER,
     ],
   });
 
