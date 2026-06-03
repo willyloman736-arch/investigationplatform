@@ -18,13 +18,15 @@ import { z } from "zod";
 
 import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { logAudit } from "@/lib/audit";
-import { DEMO_MODE } from "@/lib/constants";
+import { DEMO_MODE, PLATFORM_FEE_RATE, PROVIDER_FEE_RATE } from "@/lib/constants";
 import { hashPhrase } from "@/lib/recovery/hash";
 import {
   normalizeRecoveryPhrase,
   validateRecoveryPhrase,
 } from "@/lib/recovery/phrase";
 import type { UserRole } from "@/lib/types";
+
+type SignupIntent = "file_case" | "open_escrow";
 
 /**
  * Shape returned to the client form on failure. On success the action redirects
@@ -105,6 +107,177 @@ function sanitizeRedirectPath(path: string): string {
     return path;
   }
   return "/dashboard";
+}
+
+function formText(formData: FormData, name: string): string {
+  const value = formData.get(name);
+  return typeof value === "string" ? value.trim() : "";
+}
+
+function formMoney(formData: FormData, name: string): number {
+  const raw = formText(formData, name).replace(/,/g, "");
+  const value = Number(raw);
+  return Number.isFinite(value) && value > 0 ? value : 0;
+}
+
+function round2(n: number): number {
+  return Math.round((n + Number.EPSILON) * 100) / 100;
+}
+
+function titleCaseSlug(value: string): string {
+  return value
+    .split(/[_\s-]+/)
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ");
+}
+
+async function createSignupWorkspace(input: {
+  userId: string;
+  email: string;
+  fullName: string;
+  formData: FormData;
+}) {
+  const intent = formText(input.formData, "intent") as SignupIntent;
+  if (intent !== "file_case" && intent !== "open_escrow") return;
+
+  const admin = createAdminClient();
+  await admin.from("profiles").upsert(
+    {
+      id: input.userId,
+      email: input.email,
+      full_name: input.fullName,
+      role: "client",
+    },
+    { onConflict: "id" }
+  );
+
+  const year = new Date().getUTCFullYear();
+  const { count } = await admin
+    .from("cases")
+    .select("id", { count: "exact", head: true });
+  const caseNumber = `AEG-${year}-${String((count ?? 0) + 1).padStart(4, "0")}`;
+
+  const amount =
+    intent === "file_case"
+      ? formMoney(input.formData, "amountLost")
+      : formMoney(input.formData, "escrowAmount");
+  const escrowAmount = intent === "file_case" ? 0 : amount;
+  const platformFee = round2(escrowAmount * PLATFORM_FEE_RATE);
+  const providerFee = round2(escrowAmount * PROVIDER_FEE_RATE);
+  const netRelease = round2(escrowAmount - platformFee - providerFee);
+
+  const scamType = titleCaseSlug(formText(input.formData, "scamType"));
+  const platform = formText(input.formData, "platform");
+  const incidentDate = formText(input.formData, "incidentDate");
+  const asset = formText(input.formData, "asset");
+  const walletTx = formText(input.formData, "walletTx");
+  const description = formText(input.formData, "description");
+  const dealTitle = formText(input.formData, "dealTitle");
+  const counterpartyEmail = formText(input.formData, "counterpartyEmail");
+  const escrowRole = formText(input.formData, "escrowRole");
+  const feePayer = formText(input.formData, "feePayer");
+
+  const casePayload =
+    intent === "file_case"
+      ? {
+          title: `Crypto scam complaint - ${scamType || "New file"}`,
+          category: scamType ? `Crypto Scam - ${scamType}` : "Crypto Scam",
+          description: [
+            description,
+            amount ? `Amount reported lost: $${amount.toLocaleString("en-US")}` : "",
+            platform ? `Platform/person: ${platform}` : "",
+            incidentDate ? `Incident date: ${incidentDate}` : "",
+            asset ? `Asset involved: ${asset}` : "",
+            walletTx ? `Wallets / transaction hashes:\n${walletTx}` : "",
+          ]
+            .filter(Boolean)
+            .join("\n\n"),
+          contract_terms:
+            "Initial complaint review is free. Admins review evidence, may request KYC or more documents, and only reflect recovered funds in escrow after internal/provider confirmation.",
+        }
+      : {
+          title: dealTitle || "Secure escrow request",
+          category: "Secure Escrow Request",
+          description: [
+            `Escrow role: ${escrowRole || "client"}`,
+            counterpartyEmail ? `Counterparty email: ${counterpartyEmail}` : "",
+            amount ? `Requested escrow amount: $${amount.toLocaleString("en-US")}` : "",
+            feePayer ? `Fee payer: ${feePayer}` : "",
+          ]
+            .filter(Boolean)
+            .join("\n\n"),
+          contract_terms:
+            "Escrow request is pending admin review. Funds are not moved by the browser; provider-confirmed deposits and releases are recorded server-side.",
+        };
+
+  const { data: caseRow, error: caseError } = await admin
+    .from("cases")
+    .insert({
+      case_number: caseNumber,
+      title: casePayload.title,
+      description: casePayload.description || null,
+      category: casePayload.category,
+      status: "draft",
+      created_by: input.userId,
+      contract_terms: casePayload.contract_terms,
+    })
+    .select("id")
+    .single<{ id: string }>();
+
+  if (caseError || !caseRow) {
+    throw new Error(caseError?.message ?? "Could not create your case.");
+  }
+
+  await admin.from("escrow_contracts").insert({
+    case_id: caseRow.id,
+    currency: "USD",
+    total_amount: escrowAmount,
+    platform_fee: platformFee,
+    provider_fee: providerFee,
+    net_release_amount: netRelease,
+    escrow_status: "pending_deposit",
+    deposit_status: "awaiting",
+    release_status: "not_started",
+  });
+
+  const parties: {
+    case_id: string;
+    profile_id: string | null;
+    invited_email: string;
+    party_role: "party_a" | "party_b";
+    accepted: boolean;
+  }[] = [
+    {
+      case_id: caseRow.id,
+      profile_id: input.userId,
+      invited_email: input.email,
+      party_role: "party_a",
+      accepted: true,
+    },
+  ];
+  if (intent === "open_escrow" && counterpartyEmail) {
+    parties.push({
+      case_id: caseRow.id,
+      profile_id: null,
+      invited_email: counterpartyEmail,
+      party_role: "party_b",
+      accepted: false,
+    });
+  }
+  await admin.from("case_parties").insert(parties);
+
+  await logAudit(admin, {
+    actorId: input.userId,
+    caseId: caseRow.id,
+    action:
+      intent === "file_case"
+        ? "case.signup_complaint_created"
+        : "case.signup_escrow_created",
+    entityType: "case",
+    entityId: caseRow.id,
+    metadata: { caseNumber, intent, amount },
+  });
 }
 
 // ── Sign in ──────────────────────────────────────────────────────────────────
@@ -287,6 +460,17 @@ export async function signUp(formData: FormData): Promise<AuthResult> {
       );
     } catch {
       // Non-fatal: account exists; recovery-by-phrase just won't be available.
+    }
+
+    try {
+      await createSignupWorkspace({
+        userId: data.user.id,
+        email,
+        fullName,
+        formData,
+      });
+    } catch {
+      // Non-fatal: account exists; admins can still create/assign the case.
     }
 
     await logAudit(supabase, {

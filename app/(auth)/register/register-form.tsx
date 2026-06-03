@@ -142,8 +142,8 @@ export function RegisterForm() {
     const generated = generateRecoveryPhrase();
     formData.set("recoveryPhrase", generated);
 
-    // TODO(server): persist the case / escrow record from these fields after the
-    // account is created. In DEMO mode signUp succeeds without a database.
+    // In production, signUp persists the selected case / escrow intent after the
+    // account is created. In DEMO mode it succeeds without a database.
     const result = await signUp(formData);
     if (result?.error) return fail(result.error);
     if (result?.success) {
@@ -160,7 +160,9 @@ export function RegisterForm() {
     return (
       <RecoveryPhraseReveal
         phrase={phrase}
-        onConfirmed={() => router.push("/dashboard")}
+        onConfirmed={() =>
+          router.push(intent === "file_case" ? "/dashboard/cases" : "/dashboard")
+        }
       />
     );
   }

@@ -32,6 +32,8 @@ import type {
   RecoveryOperationsCase,
   RecoveryCaseStage,
 } from "@/lib/types";
+import { DEMO_MODE } from "@/lib/constants";
+import { createClient } from "@/lib/supabase/server";
 import {
   MOCK_PROFILES,
   MOCK_CASES,
@@ -55,6 +57,10 @@ import {
   MOCK_RECOVERY_RECEIPTS,
   MOCK_EMAIL_LOGS,
 } from "@/lib/mock-data";
+
+function sortByCreatedDesc<T extends { created_at: string }>(rows: T[]): T[] {
+  return [...rows].sort((a, b) => b.created_at.localeCompare(a.created_at));
+}
 
 /** Helper: which case ids a given user participates in (party access). */
 function caseIdsForUser(userId: string): string[] {
@@ -103,16 +109,21 @@ export async function getCasesForUser(
   role: UserRole,
   userId?: string
 ): Promise<Case[]> {
+  if (!DEMO_MODE) {
+    const supabase = await createClient();
+    const { data } = await supabase
+      .from("cases")
+      .select("*")
+      .order("created_at", { ascending: false });
+    return (data ?? []) as Case[];
+  }
+
   if (role === "admin") {
-    return [...MOCK_CASES].sort((a, b) =>
-      b.created_at.localeCompare(a.created_at)
-    );
+    return sortByCreatedDesc(MOCK_CASES);
   }
   const id = userId ?? MOCK_CLIENT.id;
   const ids = new Set(caseIdsForUser(id));
-  return MOCK_CASES.filter((c) => ids.has(c.id)).sort((a, b) =>
-    b.created_at.localeCompare(a.created_at)
-  );
+  return sortByCreatedDesc(MOCK_CASES.filter((c) => ids.has(c.id)));
 }
 
 /**
@@ -124,6 +135,16 @@ export async function getCasesForUser(
  *   return data ?? null;  // RLS ensures the user can only read permitted cases.
  */
 export async function getCaseById(id: string): Promise<Case | null> {
+  if (!DEMO_MODE) {
+    const supabase = await createClient();
+    const { data } = await supabase
+      .from("cases")
+      .select("*")
+      .eq("id", id)
+      .maybeSingle<Case>();
+    return data ?? null;
+  }
+
   return MOCK_CASES.find((c) => c.id === id) ?? null;
 }
 
@@ -136,6 +157,16 @@ export async function getCaseById(id: string): Promise<Case | null> {
  *   return data ?? [];
  */
 export async function getCaseParties(caseId: string): Promise<CaseParty[]> {
+  if (!DEMO_MODE) {
+    const supabase = await createClient();
+    const { data } = await supabase
+      .from("case_parties")
+      .select("*")
+      .eq("case_id", caseId)
+      .order("created_at", { ascending: true });
+    return (data ?? []) as CaseParty[];
+  }
+
   return MOCK_CASE_PARTIES.filter((p) => p.case_id === caseId);
 }
 
@@ -150,9 +181,17 @@ export async function getCaseParties(caseId: string): Promise<CaseParty[]> {
  *   return data ?? [];
  */
 export async function getFiles(caseId: string): Promise<UploadedFile[]> {
-  return MOCK_UPLOADED_FILES.filter((f) => f.case_id === caseId).sort((a, b) =>
-    b.created_at.localeCompare(a.created_at)
-  );
+  if (!DEMO_MODE) {
+    const supabase = await createClient();
+    const { data } = await supabase
+      .from("uploaded_files")
+      .select("*")
+      .eq("case_id", caseId)
+      .order("created_at", { ascending: false });
+    return (data ?? []) as UploadedFile[];
+  }
+
+  return sortByCreatedDesc(MOCK_UPLOADED_FILES.filter((f) => f.case_id === caseId));
 }
 
 /**
@@ -166,8 +205,18 @@ export async function getFiles(caseId: string): Promise<UploadedFile[]> {
  *   return data ?? [];
  */
 export async function getMessages(caseId: string): Promise<ChatMessage[]> {
-  return MOCK_CHAT_MESSAGES.filter((m) => m.case_id === caseId).sort((a, b) =>
-    a.created_at.localeCompare(b.created_at)
+  if (!DEMO_MODE) {
+    const supabase = await createClient();
+    const { data } = await supabase
+      .from("chat_messages")
+      .select("*")
+      .eq("case_id", caseId)
+      .order("created_at", { ascending: true });
+    return (data ?? []) as ChatMessage[];
+  }
+
+  return [...MOCK_CHAT_MESSAGES.filter((m) => m.case_id === caseId)].sort(
+    (a, b) => a.created_at.localeCompare(b.created_at)
   );
 }
 
@@ -180,6 +229,15 @@ export async function getMessages(caseId: string): Promise<ChatMessage[]> {
  *   return data ?? [];
  */
 export async function getApprovals(caseId: string): Promise<Approval[]> {
+  if (!DEMO_MODE) {
+    const supabase = await createClient();
+    const { data } = await supabase
+      .from("approvals")
+      .select("*")
+      .eq("case_id", caseId);
+    return (data ?? []) as Approval[];
+  }
+
   return MOCK_APPROVALS.filter((a) => a.case_id === caseId);
 }
 
@@ -193,6 +251,16 @@ export async function getApprovals(caseId: string): Promise<Approval[]> {
  *   return data ?? null;
  */
 export async function getEscrow(caseId: string): Promise<EscrowContract | null> {
+  if (!DEMO_MODE) {
+    const supabase = await createClient();
+    const { data } = await supabase
+      .from("escrow_contracts")
+      .select("*")
+      .eq("case_id", caseId)
+      .maybeSingle<EscrowContract>();
+    return data ?? null;
+  }
+
   return MOCK_ESCROW_CONTRACTS.find((e) => e.case_id === caseId) ?? null;
 }
 
@@ -209,8 +277,18 @@ export async function getEscrow(caseId: string): Promise<EscrowContract | null> 
 export async function getTransactions(
   caseId: string
 ): Promise<EscrowTransaction[]> {
-  return MOCK_ESCROW_TRANSACTIONS.filter((t) => t.case_id === caseId).sort(
-    (a, b) => b.created_at.localeCompare(a.created_at)
+  if (!DEMO_MODE) {
+    const supabase = await createClient();
+    const { data } = await supabase
+      .from("escrow_transactions")
+      .select("*")
+      .eq("case_id", caseId)
+      .order("created_at", { ascending: false });
+    return (data ?? []) as EscrowTransaction[];
+  }
+
+  return sortByCreatedDesc(
+    MOCK_ESCROW_TRANSACTIONS.filter((t) => t.case_id === caseId)
   );
 }
 
@@ -226,10 +304,21 @@ export async function getTransactions(
  *   return data ?? [];
  */
 export async function getAuditLogs(caseId?: string): Promise<AuditLog[]> {
+  if (!DEMO_MODE) {
+    const supabase = await createClient();
+    let query = supabase
+      .from("audit_logs")
+      .select("*")
+      .order("created_at", { ascending: false });
+    if (caseId) query = query.eq("case_id", caseId);
+    const { data } = await query;
+    return (data ?? []) as AuditLog[];
+  }
+
   const rows = caseId
     ? MOCK_AUDIT_LOGS.filter((l) => l.case_id === caseId)
     : MOCK_AUDIT_LOGS;
-  return [...rows].sort((a, b) => b.created_at.localeCompare(a.created_at));
+  return sortByCreatedDesc(rows);
 }
 
 /**
@@ -242,7 +331,16 @@ export async function getAuditLogs(caseId?: string): Promise<AuditLog[]> {
  *   return data ?? [];  // RLS: admins only.
  */
 export async function getAllCasesForAdmin(): Promise<Case[]> {
-  return [...MOCK_CASES].sort((a, b) => b.created_at.localeCompare(a.created_at));
+  if (!DEMO_MODE) {
+    const supabase = await createClient();
+    const { data } = await supabase
+      .from("cases")
+      .select("*")
+      .order("created_at", { ascending: false });
+    return (data ?? []) as Case[];
+  }
+
+  return sortByCreatedDesc(MOCK_CASES);
 }
 
 /**
@@ -255,9 +353,16 @@ export async function getAllCasesForAdmin(): Promise<Case[]> {
  *   return data ?? [];
  */
 export async function getDisputes(): Promise<Dispute[]> {
-  return [...MOCK_DISPUTES].sort((a, b) =>
-    b.created_at.localeCompare(a.created_at)
-  );
+  if (!DEMO_MODE) {
+    const supabase = await createClient();
+    const { data } = await supabase
+      .from("disputes")
+      .select("*")
+      .order("created_at", { ascending: false });
+    return (data ?? []) as Dispute[];
+  }
+
+  return sortByCreatedDesc(MOCK_DISPUTES);
 }
 
 /**
@@ -283,6 +388,16 @@ export async function getCurrentUserMock(
 
 /** Look up a profile by id (mock). */
 export async function getProfileById(id: string): Promise<Profile | null> {
+  if (!DEMO_MODE) {
+    const supabase = await createClient();
+    const { data } = await supabase
+      .from("profiles")
+      .select("*")
+      .eq("id", id)
+      .maybeSingle<Profile>();
+    return data ?? null;
+  }
+
   return MOCK_PROFILES.find((p) => p.id === id) ?? null;
 }
 
@@ -299,50 +414,67 @@ export async function getFundsBreakdownRows(
 ): Promise<FundsBreakdownRow[]> {
   const cases = await getCasesForUser(role, userId);
 
-  return cases.map((c) => {
-    const escrow = MOCK_ESCROW_CONTRACTS.find((e) => e.case_id === c.id);
-    const parties = MOCK_CASE_PARTIES.filter((p) => p.case_id === c.id);
-    const partyA = parties.find((p) => p.party_role === "party_a");
-    const partyB = parties.find((p) => p.party_role === "party_b");
+  return Promise.all(
+    cases.map(async (c) => {
+      const [escrow, parties] = DEMO_MODE
+        ? [
+            MOCK_ESCROW_CONTRACTS.find((e) => e.case_id === c.id) ?? null,
+            MOCK_CASE_PARTIES.filter((p) => p.case_id === c.id),
+          ]
+        : await Promise.all([getEscrow(c.id), getCaseParties(c.id)]);
+      const partyA = parties.find((p) => p.party_role === "party_a");
+      const partyB = parties.find((p) => p.party_role === "party_b");
 
-    const nameFor = (party?: CaseParty): string => {
-      if (!party) return "—";
-      if (party.profile_id) {
-        const profile = MOCK_PROFILES.find((p) => p.id === party.profile_id);
-        if (profile) {
-          return profile.full_name ?? profile.company ?? profile.email;
+      const nameFor = async (party?: CaseParty): Promise<string> => {
+        if (!party) return "—";
+        if (party.profile_id) {
+          const profile = DEMO_MODE
+            ? MOCK_PROFILES.find((p) => p.id === party.profile_id) ?? null
+            : await getProfileById(party.profile_id);
+          if (profile) {
+            return profile.full_name ?? profile.company ?? profile.email;
+          }
         }
-      }
-      return party.invited_email ?? "Invited";
-    };
+        return party.invited_email ?? "Invited";
+      };
 
-    return {
-      caseId: c.id,
-      caseNumber: c.case_number,
-      client: nameFor(partyA),
-      counterparty: nameFor(partyB),
-      total: escrow?.total_amount ?? 0,
-      platformFee: escrow?.platform_fee ?? 0,
-      providerFee: escrow?.provider_fee ?? 0,
-      netRelease: escrow?.net_release_amount ?? 0,
-      currency: escrow?.currency ?? "USD",
-      depositStatus: escrow?.deposit_status ?? "awaiting",
-      escrowStatus: escrow?.escrow_status ?? "pending_deposit",
-      releaseStatus: escrow?.release_status ?? "not_started",
-      lastUpdated: escrow?.updated_at ?? c.updated_at,
-    };
-  });
+      const [partyAName, partyBName] = await Promise.all([
+        nameFor(partyA),
+        nameFor(partyB),
+      ]);
+
+      return {
+        caseId: c.id,
+        caseNumber: c.case_number,
+        client: partyAName,
+        counterparty: partyBName,
+        total: escrow?.total_amount ?? 0,
+        platformFee: escrow?.platform_fee ?? 0,
+        providerFee: escrow?.provider_fee ?? 0,
+        netRelease: escrow?.net_release_amount ?? 0,
+        currency: escrow?.currency ?? "USD",
+        depositStatus: escrow?.deposit_status ?? "awaiting",
+        escrowStatus: escrow?.escrow_status ?? "pending_deposit",
+        releaseStatus: escrow?.release_status ?? "not_started",
+        lastUpdated: escrow?.updated_at ?? c.updated_at,
+      };
+    })
+  );
 }
 
 export async function getKycReview(
   caseId: string
 ): Promise<KycReview | null> {
+  if (!DEMO_MODE) return null;
+
   return MOCK_KYC_REVIEWS.find((k) => k.case_id === caseId) ?? null;
 }
 
 export async function getRecoveredFundsEntries(
   caseId: string
 ): Promise<RecoveredFundsEntry[]> {
+  if (!DEMO_MODE) return [];
+
   return MOCK_RECOVERED_FUNDS_ENTRIES.filter((entry) => entry.case_id === caseId)
     .sort((a, b) => b.created_at.localeCompare(a.created_at));
 }
@@ -350,6 +482,8 @@ export async function getRecoveredFundsEntries(
 export async function getWithdrawalConditions(
   caseId: string
 ): Promise<WithdrawalCondition[]> {
+  if (!DEMO_MODE) return [];
+
   return MOCK_WITHDRAWAL_CONDITIONS.filter((c) => c.case_id === caseId).sort(
     (a, b) => b.created_at.localeCompare(a.created_at)
   );
@@ -358,12 +492,16 @@ export async function getWithdrawalConditions(
 export async function getWithdrawalRequest(
   caseId: string
 ): Promise<WithdrawalRequest | null> {
+  if (!DEMO_MODE) return null;
+
   return MOCK_WITHDRAWAL_REQUESTS.find((w) => w.case_id === caseId) ?? null;
 }
 
 export async function getRecoveryReceipts(
   caseId?: string
 ): Promise<RecoveryReceipt[]> {
+  if (!DEMO_MODE) return [];
+
   const rows = caseId
     ? MOCK_RECOVERY_RECEIPTS.filter((r) => r.case_id === caseId)
     : MOCK_RECOVERY_RECEIPTS;
@@ -373,10 +511,14 @@ export async function getRecoveryReceipts(
 export async function getReceiptById(
   receiptId: string
 ): Promise<RecoveryReceipt | null> {
+  if (!DEMO_MODE) return null;
+
   return MOCK_RECOVERY_RECEIPTS.find((r) => r.id === receiptId) ?? null;
 }
 
 export async function getEmailLogs(caseId?: string): Promise<EmailLog[]> {
+  if (!DEMO_MODE) return [];
+
   const rows = caseId
     ? MOCK_EMAIL_LOGS.filter((e) => e.case_id === caseId)
     : MOCK_EMAIL_LOGS;
@@ -387,15 +529,81 @@ function recoveryStageForCase(caseId: string): RecoveryCaseStage {
   return MOCK_RECOVERY_CASE_STAGES[caseId] ?? "complaint_submitted";
 }
 
-function composeRecoveryOperationsCase(
+function deriveRecoveryStage(
+  caseRow: Case,
+  escrow: EscrowContract | null,
+  recoveredFunds: RecoveredFundsEntry[],
+  withdrawalRequest: WithdrawalRequest | null
+): RecoveryCaseStage {
+  if (withdrawalRequest?.status === "paid_out" || escrow?.escrow_status === "released") {
+    return "paid_out";
+  }
+  if (
+    withdrawalRequest?.status === "requested" ||
+    withdrawalRequest?.status === "approved" ||
+    withdrawalRequest?.status === "conditions_required"
+  ) {
+    return "withdrawal_review";
+  }
+  if (escrow?.deposit_status === "received") {
+    return "escrow_funded";
+  }
+  if (recoveredFunds.length > 0) {
+    return "funds_recovered";
+  }
+  if (caseRow.status === "suspended") {
+    return "more_evidence_needed";
+  }
+  if (caseRow.status === "closed") {
+    return "accepted";
+  }
+  if (caseRow.status === "under_dispute" || caseRow.status === "active") {
+    return "admin_review";
+  }
+  return "complaint_submitted";
+}
+
+async function composeRecoveryOperationsCase(
   caseRow: Case
-): RecoveryOperationsCase {
-  const escrow = MOCK_ESCROW_CONTRACTS.find((e) => e.case_id === caseRow.id) ?? null;
-  const recoveredFunds = MOCK_RECOVERED_FUNDS_ENTRIES.filter(
-    (entry) => entry.case_id === caseRow.id
-  ).sort((a, b) => b.created_at.localeCompare(a.created_at));
-  const withdrawalRequest =
-    MOCK_WITHDRAWAL_REQUESTS.find((w) => w.case_id === caseRow.id) ?? null;
+): Promise<RecoveryOperationsCase> {
+  const [
+    parties,
+    escrow,
+    kyc,
+    recoveredFunds,
+    withdrawalConditions,
+    withdrawalRequest,
+    receipts,
+    emailLogs,
+  ] = DEMO_MODE
+    ? [
+        MOCK_CASE_PARTIES.filter((p) => p.case_id === caseRow.id),
+        MOCK_ESCROW_CONTRACTS.find((e) => e.case_id === caseRow.id) ?? null,
+        MOCK_KYC_REVIEWS.find((k) => k.case_id === caseRow.id) ?? null,
+        MOCK_RECOVERED_FUNDS_ENTRIES.filter(
+          (entry) => entry.case_id === caseRow.id
+        ).sort((a, b) => b.created_at.localeCompare(a.created_at)),
+        MOCK_WITHDRAWAL_CONDITIONS.filter(
+          (condition) => condition.case_id === caseRow.id
+        ).sort((a, b) => b.created_at.localeCompare(a.created_at)),
+        MOCK_WITHDRAWAL_REQUESTS.find((w) => w.case_id === caseRow.id) ?? null,
+        MOCK_RECOVERY_RECEIPTS.filter((r) => r.case_id === caseRow.id).sort(
+          (a, b) => b.issued_at.localeCompare(a.issued_at)
+        ),
+        MOCK_EMAIL_LOGS.filter((e) => e.case_id === caseRow.id).sort((a, b) =>
+          b.created_at.localeCompare(a.created_at)
+        ),
+      ]
+    : await Promise.all([
+        getCaseParties(caseRow.id),
+        getEscrow(caseRow.id),
+        getKycReview(caseRow.id),
+        getRecoveredFundsEntries(caseRow.id),
+        getWithdrawalConditions(caseRow.id),
+        getWithdrawalRequest(caseRow.id),
+        getRecoveryReceipts(caseRow.id),
+        getEmailLogs(caseRow.id),
+      ]);
   const recoveredAmount = recoveredFunds
     .filter((entry) => entry.visible_to_client)
     .reduce((sum, entry) => sum + entry.amount, 0);
@@ -404,21 +612,17 @@ function composeRecoveryOperationsCase(
 
   return {
     ...caseRow,
-    parties: MOCK_CASE_PARTIES.filter((p) => p.case_id === caseRow.id),
+    parties,
     escrow,
-    recovery_stage: recoveryStageForCase(caseRow.id),
-    kyc: MOCK_KYC_REVIEWS.find((k) => k.case_id === caseRow.id) ?? null,
+    recovery_stage: DEMO_MODE
+      ? recoveryStageForCase(caseRow.id)
+      : deriveRecoveryStage(caseRow, escrow, recoveredFunds, withdrawalRequest),
+    kyc,
     recovered_funds: recoveredFunds,
-    withdrawal_conditions: MOCK_WITHDRAWAL_CONDITIONS.filter(
-      (condition) => condition.case_id === caseRow.id
-    ).sort((a, b) => b.created_at.localeCompare(a.created_at)),
+    withdrawal_conditions: withdrawalConditions,
     withdrawal_request: withdrawalRequest,
-    receipts: MOCK_RECOVERY_RECEIPTS.filter((r) => r.case_id === caseRow.id).sort(
-      (a, b) => b.issued_at.localeCompare(a.issued_at)
-    ),
-    email_logs: MOCK_EMAIL_LOGS.filter((e) => e.case_id === caseRow.id).sort(
-      (a, b) => b.created_at.localeCompare(a.created_at)
-    ),
+    receipts,
+    email_logs: emailLogs,
     recovered_amount: recoveredAmount,
     escrow_available_amount: escrowAvailableAmount,
   };
@@ -429,12 +633,12 @@ export async function getRecoveryOperationsCases(
   userId?: string
 ): Promise<RecoveryOperationsCase[]> {
   const cases = await getCasesForUser(role, userId);
-  return cases.map(composeRecoveryOperationsCase);
+  return Promise.all(cases.map(composeRecoveryOperationsCase));
 }
 
 export async function getRecoveryCaseOperations(
   caseId: string
 ): Promise<RecoveryOperationsCase | null> {
-  const caseRow = MOCK_CASES.find((c) => c.id === caseId);
+  const caseRow = await getCaseById(caseId);
   return caseRow ? composeRecoveryOperationsCase(caseRow) : null;
 }
