@@ -34,17 +34,20 @@ const TRUST_POINTS = [
 export default function AuthLayout({ children }: { children: ReactNode }) {
   return (
     <main className="relative grid min-h-screen w-full grid-cols-1 overflow-hidden lg:grid-cols-2">
-      {/* Ambient background glow (decorative). */}
+      {/* Ambient stage (decorative): drifting aurora, fine grid, vignette. */}
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-0 -z-10 bg-background"
+        className="pointer-events-none absolute inset-0 -z-10 overflow-hidden bg-background"
       >
-        <div className="absolute -left-32 top-[-10%] h-[420px] w-[420px] rounded-full bg-cyan-500/10 blur-3xl" />
-        <div className="absolute bottom-[-15%] right-[-10%] h-[460px] w-[460px] rounded-full bg-blue-500/10 blur-3xl" />
+        <div className="auth-aurora-drift absolute -left-40 top-[-15%] h-[520px] w-[520px] rounded-full bg-cyan-500/12 blur-[120px]" />
+        <div className="absolute bottom-[-20%] right-[-12%] h-[560px] w-[560px] rounded-full bg-blue-600/12 blur-[130px]" />
+        <div className="auth-aurora-drift absolute left-[42%] top-[34%] h-[340px] w-[340px] rounded-full bg-cyan-400/8 blur-[120px] [animation-delay:-9s]" />
+        <div className="absolute inset-0 auth-grid" />
+        <div className="absolute inset-0 auth-vignette" />
       </div>
 
-      {/* Left: brand / trust panel */}
-      <aside className="relative hidden flex-col justify-between border-r border-white/10 bg-white/[0.02] p-10 backdrop-blur-md lg:flex xl:p-14">
+      {/* Left: brand / trust panel — sits directly on the stage (no hard seam). */}
+      <aside className="relative hidden flex-col justify-between p-10 lg:flex xl:p-14">
         <div className="flex items-center justify-between">
           <Logo />
           <Link

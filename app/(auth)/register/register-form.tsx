@@ -170,7 +170,11 @@ export function RegisterForm() {
           value={role}
           onValueChange={(value) => setRole(value as SelectableRole)}
         >
-          <SelectTrigger id="role-trigger" aria-label="Account type">
+          <SelectTrigger
+            id="role-trigger"
+            aria-label="Account type"
+            className="auth-trigger"
+          >
             <SelectValue placeholder="Select account type" />
           </SelectTrigger>
           <SelectContent>

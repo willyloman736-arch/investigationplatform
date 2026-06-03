@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 import { RecoverForm } from "./recover-form";
+import { AuthCard } from "@/components/auth/AuthCard";
 import { DEMO_MODE, APP_NAME } from "@/lib/constants";
 
 export const metadata: Metadata = {
@@ -11,7 +12,7 @@ export const metadata: Metadata = {
 
 export default function RecoverPage() {
   return (
-    <div className="rounded-2xl border border-white/10 bg-white/5 p-6 shadow-xl backdrop-blur-md sm:p-8">
+    <AuthCard>
       <div className="mb-6 space-y-1.5">
         <h2 className="text-2xl font-semibold tracking-tight text-foreground">
           Recover your account
@@ -48,6 +49,6 @@ export default function RecoverPage() {
         Your recovery phrase is never stored in readable form. {APP_NAME} staff
         cannot see it and will never ask for it.
       </p>
-    </div>
+    </AuthCard>
   );
 }

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 import { LoginForm } from "./login-form";
+import { AuthCard } from "@/components/auth/AuthCard";
 import { DEMO_MODE, APP_NAME } from "@/lib/constants";
 
 export const metadata: Metadata = {
@@ -11,7 +12,7 @@ export const metadata: Metadata = {
 
 export default function LoginPage() {
   return (
-    <div className="rounded-2xl border border-white/10 bg-white/5 p-6 shadow-xl backdrop-blur-md sm:p-8">
+    <AuthCard>
       <div className="mb-6 space-y-1.5">
         <h2 className="text-2xl font-semibold tracking-tight text-foreground">
           Sign in
@@ -54,6 +55,6 @@ export default function LoginPage() {
           Operator sign-in →
         </Link>
       </p>
-    </div>
+    </AuthCard>
   );
 }

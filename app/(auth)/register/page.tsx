@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 import { RegisterForm } from "./register-form";
+import { AuthCard } from "@/components/auth/AuthCard";
 import { DEMO_MODE, APP_NAME, PROVIDER_DISCLAIMER } from "@/lib/constants";
 
 export const metadata: Metadata = {
@@ -11,7 +12,7 @@ export const metadata: Metadata = {
 
 export default function RegisterPage() {
   return (
-    <div className="rounded-2xl border border-white/10 bg-white/5 p-6 shadow-xl backdrop-blur-md sm:p-8">
+    <AuthCard>
       <div className="mb-6 space-y-1.5">
         <h2 className="text-2xl font-semibold tracking-tight text-foreground">
           Create your account
@@ -48,6 +49,6 @@ export default function RegisterPage() {
         By creating an account you agree to use {APP_NAME} for lawful purposes.{" "}
         {PROVIDER_DISCLAIMER}
       </p>
-    </div>
+    </AuthCard>
   );
 }
