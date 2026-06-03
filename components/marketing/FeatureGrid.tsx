@@ -45,7 +45,7 @@ const FEATURES: Feature[] = [
   {
     title: "Admin-controlled withdrawals",
     description:
-      "Clients can request card first, then crypto wallet, Zelle, Cash App, bank, PayPal, or other methods, but admins approve the payout path.",
+      "Clients can request Bank Transfer, Visa/Mastercard, or PayPal withdrawal, but admins approve the payout path.",
     icon: CreditCard,
   },
   {

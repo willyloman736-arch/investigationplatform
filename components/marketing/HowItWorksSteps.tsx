@@ -58,8 +58,8 @@ const STEPS: Step[] = [
     number: 4,
     title: "Approve Withdrawal",
     short:
-      "Clients request withdrawal by card first, then other payout methods. Admin approval is required before payout.",
-    long: "Clients may request withdrawal to credit or debit card first, then crypto wallet, Zelle, Cash App, bank, PayPal, or other methods. Admins can add conditions, pause release during disputes, approve eligibility, generate receipts, and mark funds paid only after provider or internal confirmation.",
+      "Clients request withdrawal by Bank Transfer, Visa/Mastercard, or PayPal. Admin approval is required before payout.",
+    long: "Clients may request withdrawal by Bank Transfer, Visa/Mastercard card payout, or PayPal. Admins can add conditions, pause release during disputes, approve eligibility, generate receipts, and mark funds paid only after provider or internal confirmation.",
     icon: CreditCard,
     chip: { label: "ADMIN APPROVED", tone: "escrow" },
   },

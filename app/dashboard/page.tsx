@@ -67,6 +67,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { AuditLogTimeline } from "@/components/shared/AuditLogTimeline";
 import { EscrowStatusBadge } from "@/components/shared/EscrowStatusBadge";
+import { PayoutMethodStrip } from "@/components/shared/PayoutMethodStrip";
 import { FundsBreakdownTable } from "@/components/dashboard/FundsBreakdownTable";
 import { Sparkline } from "@/components/dashboard/Sparkline";
 
@@ -1047,6 +1048,8 @@ function WithdrawalReadiness({
           complete={operation.escrow?.release_status === "eligible"}
         />
       </div>
+
+      <PayoutMethodStrip className="mt-4" compact />
 
       {conditions.length > 0 ? (
         <div className="mt-4 rounded-2xl border border-white/10 bg-background/35 p-3">

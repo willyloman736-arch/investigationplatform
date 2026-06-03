@@ -3,8 +3,10 @@ import { NextResponse } from "next/server";
 import {
   APP_NAME,
   APP_TAGLINE,
+  CARD_PAYOUT_BRANDS_LABEL,
   PAYOUT_METHOD_LABELS,
   PROVIDER_DISCLAIMER,
+  SUPPORTED_PAYOUT_METHODS_LABEL,
 } from "@/lib/constants";
 import { getCaseById, getReceiptById, getWithdrawalRequest } from "@/lib/data";
 import { createReceiptPdf } from "@/lib/pdf";
@@ -68,6 +70,8 @@ export async function GET(_request: Request, { params }: RouteContext) {
         : null,
     payoutMethod: withdrawal ? PAYOUT_METHOD_LABELS[withdrawal.method] : null,
     payoutDestination: withdrawal?.destination_label ?? null,
+    supportedPayoutMethodsLabel: SUPPORTED_PAYOUT_METHODS_LABEL,
+    cardPayoutBrandsLabel: CARD_PAYOUT_BRANDS_LABEL,
     notes: receipt.notes ?? "No notes recorded.",
     disclaimers: [
       "This receipt is a platform record. Actual fund movement must be confirmed by the secure server-side escrow or payment provider workflow.",

@@ -78,13 +78,9 @@ export type KycDocumentStatus =
   | "rejected";
 
 export type PayoutMethod =
-  | "card"
-  | "crypto_wallet"
-  | "zelle"
-  | "cash_app"
   | "bank_transfer"
-  | "paypal"
-  | "other";
+  | "card"
+  | "paypal";
 
 export type WithdrawalStatus =
   | "not_requested"

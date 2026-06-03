@@ -274,14 +274,38 @@ export const WITHDRAWAL_STATUS_LABELS: Record<WithdrawalStatus, string> = {
 };
 
 export const PAYOUT_METHOD_LABELS: Record<PayoutMethod, string> = {
-  card: "Credit/Debit Card",
-  crypto_wallet: "Crypto Wallet",
-  zelle: "Zelle",
-  cash_app: "Cash App",
   bank_transfer: "Bank Transfer",
+  card: "Visa/Mastercard",
   paypal: "PayPal",
-  other: "Other",
 };
+
+export const SUPPORTED_PAYOUT_METHODS: Array<{
+  method: PayoutMethod;
+  label: string;
+  description: string;
+}> = [
+  {
+    method: "bank_transfer",
+    label: "Bank Transfer",
+    description: "Admin-approved bank payout after escrow review.",
+  },
+  {
+    method: "card",
+    label: "Visa/Mastercard",
+    description: "Card payout rail for eligible Visa or Mastercard accounts.",
+  },
+  {
+    method: "paypal",
+    label: "PayPal",
+    description: "PayPal payout when admin conditions are satisfied.",
+  },
+];
+
+export const SUPPORTED_PAYOUT_METHODS_LABEL =
+  "Bank Transfer | Visa/Mastercard | PayPal";
+
+export const CARD_PAYOUT_BRANDS_LABEL =
+  "Visa, Mastercard, American Express";
 
 export const WITHDRAWAL_CONDITION_GATE_LABELS: Record<
   WithdrawalConditionGate,

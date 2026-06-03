@@ -274,10 +274,14 @@ export interface ReceiptPdfInput {
   issued: string;
   /** Pre-formatted amount, or null when no monetary value applies. */
   amountLabel: string | null;
-  /** Real payout method label (e.g. "Zelle"), when a withdrawal exists. */
+  /** Real payout method label (e.g. "PayPal"), when a withdrawal exists. */
   payoutMethod?: string | null;
   /** Real payout destination label, when a withdrawal exists. */
   payoutDestination?: string | null;
+  /** Always printed on receipts so clients see the supported withdrawal rails. */
+  supportedPayoutMethodsLabel: string;
+  /** Card brands shown for the Visa/Mastercard payout rail. */
+  cardPayoutBrandsLabel: string;
   notes: string;
   /** Footer disclaimer lines (kept verbatim — honest, not embellished). */
   disclaimers: string[];
@@ -390,6 +394,8 @@ export function createReceiptPdf(input: ReceiptPdfInput): Buffer {
     ["Case title", input.caseTitle],
     ["Recipient", input.recipientEmail],
     ["Receipt type", input.kindLabel],
+    ["Supported withdrawal methods", input.supportedPayoutMethodsLabel],
+    ["Accepted card brands", input.cardPayoutBrandsLabel],
     ["Issued", input.issued],
   ];
   // Factual payout details — only when the case actually has a withdrawal request.
@@ -499,7 +505,7 @@ export function createReceiptPdf(input: ReceiptPdfInput): Buffer {
     charSpace: 1,
   });
   cursor += 8;
-  const noteLines = wrapText(input.notes, CW - 28, 10, false).slice(0, 6);
+  const noteLines = wrapText(input.notes, CW - 28, 10, false).slice(0, 4);
   const noteCardH = noteLines.length * 14 + 16;
   p.rect(ML, top(cursor + noteCardH), CW, noteCardH, {
     fill: COLORS.card,
