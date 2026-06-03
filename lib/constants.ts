@@ -300,7 +300,7 @@ export interface NavItem {
 }
 
 export const NAV_CLIENT: NavItem[] = [
-  { label: "Overview", href: "/dashboard", icon: LayoutDashboard },
+  { label: "Escrow Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { label: "Recovery Cases", href: "/dashboard/cases", icon: FolderKanban },
 ];
 
