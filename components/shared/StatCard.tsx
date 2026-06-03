@@ -40,8 +40,8 @@ export function StatCard({
   return (
     <Card
       className={cn(
-        "relative overflow-hidden border-white/10 bg-white/[0.04] backdrop-blur-md",
-        "p-5 transition-colors hover:border-white/20",
+        "relative overflow-hidden border-white/10 bg-white/[0.055] shadow-xl shadow-black/10 backdrop-blur-xl",
+        "min-h-[150px] p-5 transition-colors hover:border-white/20",
         className
       )}
     >
@@ -55,7 +55,7 @@ export function StatCard({
         <p className="text-sm font-medium text-muted-foreground">{label}</p>
         {Icon && (
           <span
-            className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/15 text-primary ring-1 ring-inset ring-primary/25"
+            className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/15 text-primary ring-1 ring-inset ring-primary/25"
             aria-hidden="true"
           >
             <Icon className="h-[18px] w-[18px]" />
@@ -63,7 +63,7 @@ export function StatCard({
         )}
       </div>
 
-      <div className="mt-3 flex flex-wrap items-end gap-x-2 gap-y-1">
+      <div className="mt-5 flex flex-wrap items-end gap-x-2 gap-y-1">
         <span className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
           {value}
         </span>

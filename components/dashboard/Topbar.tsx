@@ -51,16 +51,22 @@ const ROLE_LABEL: Record<UserRole, string> = {
  */
 export function Topbar({ user, title, showSearch = true, role }: TopbarProps) {
   const initials = initialsFrom(user.name, user.email);
+  const activeRole = role ?? user.role;
+  const displayTitle = title ?? (activeRole === "admin" ? "Command Center" : undefined);
+  const searchPlaceholder =
+    activeRole === "admin"
+      ? "Search cases, clients, receipts..."
+      : "Search cases...";
 
   return (
-    <header className="sticky top-0 z-30 flex h-16 shrink-0 items-center gap-3 border-b border-white/8 bg-background/80 px-4 backdrop-blur-md sm:px-6">
+    <header className="sticky top-0 z-30 flex h-16 shrink-0 items-center gap-3 border-b border-white/8 bg-background/[0.72] px-4 shadow-sm shadow-black/10 backdrop-blur-xl sm:px-6">
       {/* Mobile: drawer trigger */}
       <MobileDrawer role={role ?? user.role} />
 
       {/* Title */}
-      {title ? (
+      {displayTitle ? (
         <h1 className="truncate text-base font-semibold text-foreground sm:text-lg">
-          {title}
+          {displayTitle}
         </h1>
       ) : (
         <span className="sr-only">Dashboard</span>
@@ -76,11 +82,18 @@ export function Topbar({ user, title, showSearch = true, role }: TopbarProps) {
             />
             <Input
               type="search"
-              placeholder="Search cases…"
-              aria-label="Search cases"
-              className="h-9 w-56 bg-white/5 pl-9"
+              placeholder={searchPlaceholder}
+              aria-label={searchPlaceholder}
+              className="h-9 w-64 rounded-xl border-white/10 bg-white/[0.055] pl-9 shadow-sm shadow-black/10"
             />
           </div>
+        ) : null}
+
+        {activeRole === "admin" ? (
+          <span className="hidden items-center gap-1.5 rounded-full border border-primary/25 bg-primary/10 px-3 py-1.5 text-xs font-semibold text-primary lg:inline-flex">
+            <ShieldCheck className="h-3.5 w-3.5" aria-hidden="true" />
+            Admin control
+          </span>
         ) : null}
 
         <DropdownMenu>
