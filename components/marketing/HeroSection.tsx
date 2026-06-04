@@ -68,8 +68,8 @@ export function HeroSection() {
             className="mt-4 max-w-xl text-pretty text-sm leading-relaxed text-muted-foreground sm:mt-6 sm:text-lg"
           >
             Submit your complaint for free review, upload evidence, complete KYC,
-            and follow admin updates. When funds are recovered, admins load them
-            into your escrow account and approve withdrawal before payout.
+            and follow case updates. When funds are recovered, the escrow record
+            is updated and withdrawal remains subject to authorized release review.
           </motion.p>
 
           {/* Primary CTAs */}

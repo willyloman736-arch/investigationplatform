@@ -79,7 +79,7 @@ export function ApprovalPanel({
           toast.error(result.error ?? "Could not record your approval.");
         } else {
           toast.success(
-            "Your approval has been recorded. An admin must review the escrow before release is requested."
+            "Your approval has been recorded. The escrow will move through release review before payout is requested."
           );
         }
       } catch (err) {
@@ -101,9 +101,9 @@ export function ApprovalPanel({
           <span className="font-medium text-foreground">
             Withdrawal eligibility is reviewed after client/operator approval
           </span>{" "}
-          or after an administrator resolves a dispute in favor of payout.
-          Approving here records consent; admins still control escrow workflow
-          status and provider payout requests.
+          or after a dispute is resolved in favor of payout. Approving here
+          records consent; escrow workflow status and provider payout requests
+          remain protected server-side.
         </p>
       </div>
 
@@ -240,18 +240,17 @@ export function ApprovalPanel({
           <AlertDescription className="flex flex-wrap items-center gap-2">
             Release is currently blocked.
             <EscrowStatusBadge status={escrowStatus} />
-            An administrator must clear this before approvals can proceed.
+            Release review must clear this before approvals can proceed.
           </AlertDescription>
         </Alert>
       ) : isReady || bothApproved ? (
         <Alert variant="info">
           <CheckCircle2 className="h-4 w-4" />
-          <AlertTitle>Client/operator approved - awaiting admin review</AlertTitle>
+          <AlertTitle>Client/operator approved - awaiting release review</AlertTitle>
           <AlertDescription>
-            This case has the consent needed for withdrawal review. An administrator must
-            review the case, record the reason note, and submit the provider
-            payout request from the admin portal. No funds move from this
-            screen.
+            This case has the consent needed for withdrawal review. The release
+            reason must be recorded and any provider payout request must run
+            through a protected workflow. No funds move from this screen.
           </AlertDescription>
         </Alert>
       ) : (
@@ -266,7 +265,7 @@ export function ApprovalPanel({
                 : "operator"}
           </AlertTitle>
           <AlertDescription>
-            Admin withdrawal review becomes available only when{" "}
+            Release review becomes available only when{" "}
             <span className="font-medium text-foreground">
               the client and operator
             </span>{" "}

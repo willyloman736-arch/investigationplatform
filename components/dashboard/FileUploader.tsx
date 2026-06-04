@@ -263,7 +263,7 @@ export function FileUploader({
         <ShieldCheck className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" />
         <span>
           Uploaded evidence is associated with this case and visible to its
-          parties and assigned administrators. Every upload is recorded in the
+          parties and authorized case team. Every upload is recorded in the
           case audit log.
         </span>
       </div>

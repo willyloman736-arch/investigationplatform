@@ -33,8 +33,8 @@ const STEPS: Step[] = [
     number: 1,
     title: "Open a Complaint",
     short:
-      "Submit the crypto scam complaint, evidence, transaction hashes, and contact details for free admin review.",
-    long: "Open a recovery complaint and upload the details admins need to review the file: transaction hashes, screenshots, receipts, wallet addresses, chat logs, and a clear incident summary. The initial review is free.",
+      "Submit the crypto scam complaint, evidence, transaction hashes, and contact details for a free intake review.",
+    long: "Open a recovery complaint and upload the details needed for case review: transaction hashes, screenshots, receipts, wallet addresses, chat logs, and a clear incident summary. The initial review is free.",
     icon: FileText,
   },
   {
@@ -42,26 +42,26 @@ const STEPS: Step[] = [
     title: "Verify KYC",
     short:
       "Complete government ID, selfie, proof of address, phone, and email verification before withdrawal can be approved.",
-    long: "Admins review KYC before any withdrawal path opens. Required checks include government ID, selfie verification, proof of address, phone verification, and email verification. Admins may request more evidence or set conditions before approval.",
+    long: "KYC is reviewed before any withdrawal path opens. Required checks include government ID, selfie verification, proof of address, phone verification, and email verification. Additional evidence or release conditions may be requested before approval.",
     icon: IdCard,
   },
   {
     number: 3,
-    title: "Admin Recovery Review",
+    title: "Recovery Operations Review",
     short:
-      "Admins accept or reject the file, request more evidence, and enter recovered funds into escrow when recovery is confirmed.",
-    long: "Admins review the case file, request more evidence where needed, and update the client by email placeholder records. Once recovered money is confirmed, admins enter the recovered funds from the backend and the client sees the escrow account balance.",
+      "The case file is reviewed, evidence requests are issued when needed, and confirmed recoveries are reflected in escrow.",
+    long: "The recovery operations team reviews the case file, requests more evidence where needed, and issues client updates. Once recovered funds are confirmed, the escrow account record is updated and the client can view the balance in the portal.",
     icon: SearchCheck,
     chip: { label: "RECOVERED FUNDS", tone: "escrow" },
   },
   {
     number: 4,
-    title: "Approve Withdrawal",
+    title: "Authorize Withdrawal",
     short:
-      "Clients request withdrawal by Bank Transfer, Visa/Mastercard, or PayPal. Admin approval is required before payout.",
-    long: "Clients may request withdrawal by Bank Transfer, Visa/Mastercard card payout, or PayPal. Admins can add conditions, pause release during disputes, approve eligibility, generate receipts, and mark funds paid only after provider or internal confirmation.",
+      "Clients request withdrawal by Bank Transfer, Visa/Mastercard, or PayPal after release eligibility is authorized.",
+    long: "Clients may request withdrawal by Bank Transfer, Visa/Mastercard card payout, or PayPal. Release conditions, dispute pauses, eligibility decisions, receipts, and paid status are handled through protected review and provider-confirmed workflows.",
     icon: CreditCard,
-    chip: { label: "ADMIN APPROVED", tone: "escrow" },
+    chip: { label: "AUTHORIZED", tone: "escrow" },
   },
 ];
 

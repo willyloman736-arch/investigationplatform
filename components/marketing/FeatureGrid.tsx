@@ -21,7 +21,7 @@ const FEATURES: Feature[] = [
   {
     title: "Complaint intake",
     description:
-      "File a crypto scam complaint, upload transaction hashes, receipts, screenshots, and messages, then track admin review in one workspace.",
+      "File a crypto scam complaint, upload transaction hashes, receipts, screenshots, and messages, then track case review in one workspace.",
     icon: FolderKanban,
   },
   {
@@ -33,25 +33,25 @@ const FEATURES: Feature[] = [
   {
     title: "Evidence review",
     description:
-      "Admins review the file, request more evidence when needed, accept or reject the complaint, and keep every decision timestamped.",
+      "Recovery specialists review the file, request more evidence when needed, issue a decision, and keep every milestone timestamped.",
     icon: FileSearch,
   },
   {
     title: "Recovered-funds escrow",
     description:
-      "When funds are recovered, admins enter them from the backend so the client sees the escrow account balance immediately.",
+      "When recovered funds are confirmed, the escrow record is updated so clients can view the account balance in their portal.",
     icon: Wallet,
   },
   {
-    title: "Admin-controlled withdrawals",
+    title: "Authorized withdrawals",
     description:
-      "Clients can request Bank Transfer, Visa/Mastercard, or PayPal withdrawal, but admins approve the payout path.",
+      "Clients can request Bank Transfer, Visa/Mastercard, or PayPal withdrawal once release eligibility is authorized.",
     icon: CreditCard,
   },
   {
     title: "Receipts & audit trail",
     description:
-      "Admins generate downloadable PDF receipts, send placeholder email updates, and preserve actions in an append-only audit trail.",
+      "Downloadable PDF receipts, case notifications, and review milestones are preserved in an append-only audit trail.",
     icon: ReceiptText,
   },
 ];

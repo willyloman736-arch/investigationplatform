@@ -76,7 +76,7 @@ export default async function LandingPage() {
             <SectionHeading
               eyebrow="How it works"
               title="Four steps from complaint to payout"
-              subtitle="A transparent recovery lifecycle. Admins review the complaint, verify KYC, enter recovered funds into escrow, and approve withdrawal only after conditions are met."
+              subtitle="A transparent recovery lifecycle. Complaints move through intake review, KYC, recovered-funds escrow, and authorized withdrawal only after required conditions are met."
             />
             <div className="mt-12">
               <HowItWorksSteps variant="compact" />
@@ -116,11 +116,11 @@ export default async function LandingPage() {
                   {[
                     {
                       title: "Per-case access",
-                      body: "Clients see only their recovery files. Admins control review, KYC, escrow status, and withdrawal approvals.",
+                      body: "Clients see only their recovery files. Review, KYC, escrow status, and withdrawal eligibility are scoped to each case.",
                     },
                     {
-                      title: "Admin-approved withdrawals",
-                      body: "Clients can request payout methods, but withdrawal options unlock only after admin approval and required conditions.",
+                      title: "Authorized withdrawals",
+                      body: "Clients can request payout methods, but withdrawal options unlock only after release authorization and required conditions.",
                     },
                     {
                       title: "Evidence audit trail",
@@ -168,7 +168,7 @@ export default async function LandingPage() {
               </h2>
               <p className="mx-auto mt-4 max-w-xl text-pretty text-base leading-relaxed text-muted-foreground">
                 File a complaint for free review, complete KYC, and track any
-                recovered funds in a secure escrow account controlled by admins.
+                recovered funds in a secure escrow account with protected release controls.
               </p>
               <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
                 <Button asChild size="lg" className="w-full sm:w-auto">

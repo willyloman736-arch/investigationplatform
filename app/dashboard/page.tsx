@@ -351,8 +351,8 @@ export default async function DashboardOverviewPage() {
         <Lock className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
         <span>
           Your dashboard shows escrow workflow state only. Withdrawal requests,
-          releases, and payout confirmations are controlled by admins and
-          protected server-side provider workflows.
+          releases, and payout confirmations are handled through protected
+          review and server-side provider workflows.
         </span>
       </p>
     </div>
@@ -424,7 +424,7 @@ function EscrowHero({
             </h1>
             <p className="mt-3 hidden max-w-2xl text-sm leading-relaxed text-muted-foreground sm:block sm:text-base">
               Monitor recovered funds, KYC, withdrawal readiness, receipts, and
-              dispute status from your client escrow dashboard.
+              dispute status from your secure escrow dashboard.
             </p>
           </div>
 
@@ -462,7 +462,7 @@ function EscrowHero({
             <div className="mt-4 sm:mt-5">
               <Sparkline data={trend} className="h-16 w-full sm:h-24" />
               <p className="mt-1 text-[11px] text-muted-foreground">
-                Balance visibility is updated after admin/provider review.
+                Balance visibility is updated after review and provider confirmation.
               </p>
             </div>
           </div>
@@ -485,7 +485,7 @@ function EscrowHero({
             <HeroMetric
               label="Under review"
               value={underReviewCount}
-              hint="KYC or admin review"
+              hint="KYC or case review"
               icon={IdCard}
               accent="blue"
             />
@@ -534,7 +534,7 @@ function EscrowHero({
                 {formatCurrency(netEligibleWithdrawal, currency)}
               </p>
               <p className="mt-1 text-xs text-muted-foreground">
-                Net eligible after admin review.
+                Net eligible after release review.
               </p>
             </div>
             <span className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/15 text-primary ring-1 ring-inset ring-primary/25">
@@ -1031,7 +1031,7 @@ function WithdrawalReadiness({
           complete={kycStatus === "verified"}
         />
         <ReadinessRow
-          label="Admin conditions"
+          label="Release conditions"
           value={`${completedConditions}/${conditions.length} complete`}
           complete={allConditionsMet}
         />
@@ -1075,8 +1075,8 @@ function WithdrawalReadiness({
         )}
       >
         {withdrawalReady
-          ? "Your withdrawal is eligible for admin/provider payout review."
-          : "Admin approval is required before payout options become available."}
+          ? "Your withdrawal is eligible for release and provider payout review."
+          : "Release authorization is required before payout options become available."}
       </div>
     </section>
   );
@@ -1231,7 +1231,7 @@ function EmptyEscrowDashboard({ firstName }: { firstName: string }) {
       </h1>
       <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
         Your recovery file and escrow account stay in separate dashboard areas.
-        Once a case exists and admins enter recovered funds, the escrow account
+        Once a case exists and recovered funds are confirmed, the escrow account
         appears here.
       </p>
       <div className="mt-5 flex flex-col justify-center gap-2 sm:flex-row">

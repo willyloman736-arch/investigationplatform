@@ -176,7 +176,7 @@ export function ProfileSettingsForm({ profile }: ProfileSettingsFormProps) {
             </div>
             <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
               Your profile connects recovery cases, escrow accounts, evidence
-              uploads, receipts, and admin updates to the same verified account.
+              uploads, receipts, and case updates to the same verified account.
             </p>
           </div>
 

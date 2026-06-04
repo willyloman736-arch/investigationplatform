@@ -296,7 +296,7 @@ export default async function ClientCasesPage() {
         <aside className="space-y-5">
           <RequiredActionsPanel actions={actionItems} />
           <KycSnapshot card={primary} />
-          <AdminUpdatesPanel emails={recentEmails} />
+          <CaseUpdatesPanel emails={recentEmails} />
         </aside>
       </section>
 
@@ -359,7 +359,7 @@ function RecoveryHero({
             {firstName}
           </h1>
           <p className="mt-3 hidden max-w-3xl text-base leading-relaxed text-muted-foreground sm:block">
-            Track your crypto scam complaint from intake through admin review,
+            Track your crypto scam complaint from intake through case review,
             evidence requests, KYC, recovery progress, and escrow opening.
           </p>
           <div className="mt-4 grid grid-cols-1 gap-2 sm:mt-5 sm:flex sm:flex-wrap">
@@ -422,7 +422,7 @@ function RecoveryHero({
         <HeroMetric
           label="In review"
           value={reviewQueue}
-          hint="Admin actions"
+          hint="Review actions"
           icon={Clock}
           accent="amber"
         />
@@ -436,7 +436,7 @@ function RecoveryHero({
         <HeroMetric
           label="Recovered"
           value={formatCurrency(totalRecovered, "USD")}
-          hint={openDisputes > 0 ? `${openDisputes} dispute active` : "Admin entered"}
+          hint={openDisputes > 0 ? `${openDisputes} dispute active` : "Confirmed recovery"}
           icon={Wallet}
           accent={openDisputes > 0 ? "rose" : "emerald"}
         />
@@ -584,7 +584,7 @@ function RecoveryTimeline({ stage }: { stage: RecoveryCaseStage }) {
   const steps = [
     { label: "Complaint", icon: Inbox },
     { label: "Evidence", icon: UploadCloud },
-    { label: "Admin review", icon: FileSearch },
+    { label: "Case review", icon: FileSearch },
     { label: "KYC", icon: IdCard },
     { label: "Recovery", icon: ShieldCheck },
     { label: "Escrow", icon: Wallet },
@@ -719,7 +719,7 @@ function RequiredActionsPanel({
               No client blockers
             </p>
             <p className="mt-1 text-xs text-muted-foreground">
-              Admin review is continuing. You will see new requests here.
+              Case review is continuing. You will see new requests here.
             </p>
           </div>
         ) : (
@@ -847,13 +847,13 @@ function KycSnapshot({ card }: { card: RecoveryCaseCardData }) {
   );
 }
 
-function AdminUpdatesPanel({ emails }: { emails: EmailLog[] }) {
+function CaseUpdatesPanel({ emails }: { emails: EmailLog[] }) {
   return (
     <section className="rounded-3xl border border-white/10 bg-white/[0.055] p-5 shadow-2xl shadow-black/20 backdrop-blur-xl">
       <div className="flex items-start justify-between gap-3">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.22em] text-primary">
-            Admin updates
+            Case updates
           </p>
           <h2 className="mt-2 text-xl font-semibold text-foreground">
             Email records
@@ -865,7 +865,7 @@ function AdminUpdatesPanel({ emails }: { emails: EmailLog[] }) {
       <div className="mt-4 space-y-2">
         {emails.length === 0 ? (
           <p className="rounded-2xl border border-dashed border-white/10 bg-background/35 p-4 text-sm text-muted-foreground">
-            No admin email updates yet.
+            No case email updates yet.
           </p>
         ) : (
           emails.slice(0, 4).map((email) => (
@@ -1077,9 +1077,9 @@ function RecoveryTrustPanel() {
             Case review is separate from fund release
           </p>
           <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-            Admins review your complaint, request evidence, verify KYC, and
-            record updates. Escrow balances and withdrawals remain controlled by
-            protected admin and provider workflows. {PROVIDER_DISCLAIMER}
+            Your complaint, evidence, KYC, and case updates move through a
+            documented review workflow. Escrow balances and withdrawals remain
+            controlled by protected review and provider workflows. {PROVIDER_DISCLAIMER}
           </p>
         </div>
       </div>
@@ -1128,7 +1128,7 @@ function EmptyCases({ firstName }: { firstName: string }) {
       </h1>
       <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
         Open a recovery complaint and it will appear here after intake. You can
-        upload evidence, complete review steps, and track admin updates.
+        upload evidence, complete review steps, and track case updates.
       </p>
       <Button asChild className="mt-5">
         <Link href="/register">
@@ -1155,7 +1155,7 @@ function buildActionItems(cards: RecoveryCaseCardData[]) {
       actions.push({
         caseId: operation.id,
         label: "Upload requested evidence",
-        hint: operation.kyc?.review_note ?? "Admin needs more documents before continuing review.",
+        hint: operation.kyc?.review_note ?? "More documents are needed before review can continue.",
         icon: UploadCloud,
         urgent: true,
       });
@@ -1187,7 +1187,7 @@ function buildActionItems(cards: RecoveryCaseCardData[]) {
     if (openConditions.length > 0) {
       actions.push({
         caseId: operation.id,
-        label: `${openConditions.length} admin condition${
+        label: `${openConditions.length} release condition${
           openConditions.length === 1 ? "" : "s"
         } open`,
         hint: openConditions.map((condition) => condition.label).join(", "),
@@ -1270,7 +1270,7 @@ function decisionLabel(operation: RecoveryOperationsCase): string {
   if (operation.recovery_stage === "more_evidence_needed") {
     return "More evidence needed";
   }
-  return "Pending admin review";
+  return "Pending case review";
 }
 
 function firstName(name: string): string {

@@ -262,7 +262,7 @@ export function SecureChat({
         <p className="mt-2 flex items-center gap-1.5 text-[11px] text-muted-foreground">
           <Lock className="h-3 w-3" />
           Messages are retained as part of the case record and may be reviewed by
-          an administrator during a dispute.
+          the authorized case team during a dispute.
         </p>
       </div>
     </div>

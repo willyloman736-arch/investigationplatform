@@ -159,14 +159,14 @@ export const ESCROW_STATUS_CONFIG: Record<EscrowStatus, StatusConfig> = {
     badgeClass: "bg-red-500/10 text-red-400 border border-red-500/30",
     dotClass: "bg-red-400",
     description:
-      "A dispute is open. Release is blocked while an admin reviews evidence.",
+      "A dispute is open. Release is paused while evidence is reviewed.",
   },
   ready_for_release: {
     label: "READY FOR RELEASE",
     badgeClass: "bg-blue-500/10 text-blue-400 border border-blue-500/30",
     dotClass: "bg-blue-400",
     description:
-      "Admin review marked this escrow eligible after mutual approval or dispute resolution.",
+      "The escrow has been cleared for release after approval or documented resolution.",
   },
   release_frozen: {
     label: "RELEASE FROZEN",
@@ -174,7 +174,7 @@ export const ESCROW_STATUS_CONFIG: Record<EscrowStatus, StatusConfig> = {
       "bg-orange-500/10 text-orange-400 border border-orange-500/30",
     dotClass: "bg-orange-400",
     description:
-      "An admin has frozen release pending additional verification. No funds can move.",
+      "Release is paused pending additional verification. No funds can move.",
   },
   released: {
     label: "RELEASED",
@@ -207,7 +207,7 @@ export const CASE_STATUS_CONFIG: Record<CaseStatus, StatusConfig> = {
     badgeClass:
       "bg-orange-500/10 text-orange-400 border border-orange-500/30",
     dotClass: "bg-orange-400",
-    description: "Case is temporarily suspended by an admin.",
+    description: "Case is temporarily paused for review.",
   },
   closed: {
     label: "CLOSED",
@@ -220,7 +220,7 @@ export const CASE_STATUS_CONFIG: Record<CaseStatus, StatusConfig> = {
     label: "UNDER DISPUTE",
     badgeClass: "bg-red-500/10 text-red-400 border border-red-500/30",
     dotClass: "bg-red-400",
-    description: "Case has an open dispute under admin review.",
+    description: "Case has an open dispute under formal review.",
   },
 };
 
@@ -240,7 +240,7 @@ export const RELEASE_STATUS_LABELS: Record<ReleaseStatus, string> = {
 
 export const RECOVERY_STAGE_LABELS: Record<RecoveryCaseStage, string> = {
   complaint_submitted: "Complaint Submitted",
-  admin_review: "Admin Review",
+  admin_review: "Case Review",
   accepted: "Accepted",
   rejected: "Rejected",
   more_evidence_needed: "More Evidence Needed",
@@ -288,7 +288,7 @@ export const SUPPORTED_PAYOUT_METHODS: Array<{
   {
     method: "bank_transfer",
     label: "Bank Transfer",
-    description: "Admin-approved bank payout after escrow review.",
+    description: "Authorized bank payout after escrow review.",
   },
   {
     method: "card",
@@ -298,7 +298,7 @@ export const SUPPORTED_PAYOUT_METHODS: Array<{
   {
     method: "paypal",
     label: "PayPal",
-    description: "PayPal payout when admin conditions are satisfied.",
+    description: "PayPal payout when release conditions are satisfied.",
   },
 ];
 

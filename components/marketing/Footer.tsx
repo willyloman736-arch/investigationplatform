@@ -73,7 +73,7 @@ export function Footer() {
             <p className="mt-4 max-w-sm text-sm leading-relaxed text-muted-foreground">
               {APP_TAGLINE} for crypto scam recovery complaints. File a case,
               upload evidence, complete KYC, and track recovered funds in
-              admin-controlled escrow.
+              secure escrow with protected release controls.
             </p>
             <p className="mt-5 max-w-sm text-xs leading-relaxed text-muted-foreground/80">
               {PROVIDER_DISCLAIMER}

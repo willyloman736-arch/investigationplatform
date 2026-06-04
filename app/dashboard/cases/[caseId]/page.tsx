@@ -184,7 +184,7 @@ export default async function CaseWorkspacePage({
     const adminProfile = await getProfileById(caseRow.assigned_admin);
     if (adminProfile)
       senderNames[caseRow.assigned_admin] =
-        adminProfile.full_name ?? "Administrator";
+        adminProfile.full_name ?? "Case Team";
   }
 
   // Actor-name resolver for the audit timeline.

@@ -110,7 +110,7 @@ export function StatusSummaryCards({
         value={d.underDispute}
         icon={AlertTriangle}
         tone="red"
-        hint="Release blocked pending admin review"
+        hint="Release blocked pending case review"
       />
       <StatCard
         label="Total Value"

@@ -15,7 +15,7 @@ import { Footer } from "@/components/marketing/Footer";
 export const metadata: Metadata = {
   title: "How recovery escrow works — Digital Asset Investigations",
   description:
-    "A transparent walkthrough of the Digital Asset Investigations recovery lifecycle: complaint review, KYC, recovered-funds escrow, admin withdrawal approval, and escrow status meanings.",
+    "A transparent walkthrough of the Digital Asset Investigations recovery lifecycle: complaint review, KYC, recovered-funds escrow, authorized withdrawal review, and escrow status meanings.",
 };
 
 /**
@@ -52,7 +52,7 @@ export default function HowItWorksPage() {
             <SectionHeading
               eyebrow="Transparency"
               title="How recovery escrow works on Digital Asset Investigations"
-              subtitle="No black boxes. Here is how complaints are reviewed, KYC is checked, recovered funds are reflected in escrow, and withdrawal approval is controlled by admins."
+              subtitle="No black boxes. Here is how complaints are reviewed, KYC is checked, recovered funds are reflected in escrow, and withdrawal eligibility is authorized."
             />
           </div>
         </section>
@@ -112,8 +112,8 @@ export default function HowItWorksPage() {
               <SectionHeading
                 align="left"
                 eyebrow="The rule that protects everyone"
-                title="Withdrawal opens only after admin approval"
-                subtitle="Admins can mark eligibility and request server-side provider actions, but they never move money directly from the browser."
+                title="Withdrawal opens only after release authorization"
+                subtitle="Eligibility and provider actions are handled through protected server-side workflows. Money is never moved directly from the browser."
               />
               <div className="mt-8 grid grid-cols-1 gap-4 md:grid-cols-2">
                 <div className="rounded-2xl border border-emerald-500/20 bg-emerald-500/5 p-6">
@@ -122,13 +122,13 @@ export default function HowItWorksPage() {
                   </h3>
                   <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
                     When KYC is verified and all custom withdrawal conditions are
-                    cleared, the case moves to admin review before escrow is marked{" "}
+                    cleared, the case moves to final release review before escrow is marked{" "}
                     <span className="font-medium text-foreground">
                       Ready for Release
                     </span>
-                    . An administrator records the review reason, generates any
-                    required receipt, and requests payout only through protected
-                    backend workflow.
+                    . The review reason is recorded, required receipts are
+                    generated, and payout is requested only through protected
+                    provider workflow.
                   </p>
                 </div>
                 <div className="rounded-2xl border border-blue-500/20 bg-blue-500/5 p-6">
@@ -137,7 +137,7 @@ export default function HowItWorksPage() {
                   </h3>
                   <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
                     If a dispute, KYC hold, or suspicious activity flag is raised,
-                    release is frozen while an admin reviews evidence. Only a
+                    release is frozen while evidence is reviewed. Only a
                     documented resolution can make the escrow eligible again.
                   </p>
                 </div>
