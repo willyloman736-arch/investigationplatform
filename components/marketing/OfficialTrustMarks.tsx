@@ -1,45 +1,62 @@
+import {
+  Award,
+  ClipboardCheck,
+  FileCheck2,
+  Fingerprint,
+  Landmark,
+  Scale,
+  type LucideIcon,
+} from "lucide-react";
+
 import { cn } from "@/lib/utils";
 
 export interface OfficialTrustMark {
   label: string;
   detail: string;
-  logoSrc: string;
-  logoAlt: string;
+  icon: LucideIcon;
 }
 
 export const OFFICIAL_TRUST_MARKS: OfficialTrustMark[] = [
   {
-    label: "Visa",
-    detail: "Card payout option",
-    logoSrc: "https://cdn.simpleicons.org/visa/1A1F71",
-    logoAlt: "Visa",
+    label: "ISO 27001",
+    detail: "In progress",
+    icon: Award,
   },
   {
-    label: "Mastercard",
-    detail: "Card payout option",
-    logoSrc: "https://cdn.simpleicons.org/mastercard/EB001B",
-    logoAlt: "Mastercard",
+    label: "CJIS",
+    detail: "In progress",
+    icon: Fingerprint,
   },
   {
-    label: "American Express",
-    detail: "Card payout option",
-    logoSrc: "https://cdn.simpleicons.org/americanexpress/2E77BB",
-    logoAlt: "American Express",
+    label: "NIST 800-53",
+    detail: "In progress",
+    icon: ClipboardCheck,
   },
   {
-    label: "PayPal",
-    detail: "Digital payout option",
-    logoSrc: "https://cdn.simpleicons.org/paypal/00457C",
-    logoAlt: "PayPal",
+    label: "DFARS",
+    detail: "In progress",
+    icon: Landmark,
+  },
+  {
+    label: "GDPR",
+    detail: "In progress",
+    icon: Scale,
+  },
+  {
+    label: "SOC 2 Type II",
+    detail: "In progress",
+    icon: FileCheck2,
   },
 ];
 
 export const HERO_TRUST_MARKS: OfficialTrustMark[] = [
   OFFICIAL_TRUST_MARKS[0],
-  OFFICIAL_TRUST_MARKS[1],
   OFFICIAL_TRUST_MARKS[2],
-  OFFICIAL_TRUST_MARKS[3],
+  OFFICIAL_TRUST_MARKS[4],
+  OFFICIAL_TRUST_MARKS[5],
 ];
+
+export const COMPLIANCE_ROADMAP_MARKS: OfficialTrustMark[] = OFFICIAL_TRUST_MARKS;
 
 interface OfficialTrustLogoProps {
   mark: OfficialTrustMark;
@@ -50,24 +67,17 @@ export function OfficialTrustLogo({
   mark,
   className,
 }: OfficialTrustLogoProps) {
+  const Icon = mark.icon;
+
   return (
     <span
       className={cn(
-        "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/[0.08] p-1.5",
+        "flex h-8 w-8 shrink-0 items-center justify-center rounded-xl border border-amber-300/25 bg-amber-300/10 text-amber-300",
         className
       )}
     >
-      <img
-        src={mark.logoSrc}
-        alt=""
-        width={20}
-        height={20}
-        loading="lazy"
-        decoding="async"
-        referrerPolicy="no-referrer"
-        className="h-5 w-5 object-contain"
-      />
-      <span className="sr-only">{mark.logoAlt}</span>
+      <Icon className="h-[18px] w-[18px]" aria-hidden="true" />
+      <span className="sr-only">{mark.label}</span>
     </span>
   );
 }
