@@ -1,51 +1,72 @@
-import {
-  Award,
-  ClipboardCheck,
-  FileCheck2,
-  Fingerprint,
-  Landmark,
-  Scale,
-  type LucideIcon,
-} from "lucide-react";
+import Image from "next/image";
 
 import { cn } from "@/lib/utils";
 
 export interface OfficialTrustMark {
   label: string;
   detail: string;
-  icon: LucideIcon;
+  src: string;
+  alt: string;
+  width: number;
+  height: number;
 }
 
 export const OFFICIAL_TRUST_MARKS: OfficialTrustMark[] = [
   {
     label: "ISO 27001",
-    detail: "In progress",
-    icon: Award,
+    detail: "Security management",
+    src: "/trust-badges/iso-27001.jpeg",
+    alt: "ISO 27001 information security management badge",
+    width: 404,
+    height: 404,
   },
   {
-    label: "CJIS",
-    detail: "In progress",
-    icon: Fingerprint,
+    label: "CJIS ACE",
+    detail: "Audit commitment",
+    src: "/trust-badges/cjis-ace.jpeg",
+    alt: "CJIS ACE audit and compliance experts badge",
+    width: 980,
+    height: 746,
   },
   {
     label: "NIST 800-53",
-    detail: "In progress",
-    icon: ClipboardCheck,
+    detail: "Control mapping",
+    src: "/trust-badges/nist-800-53.jpeg",
+    alt: "NIST 800-53 Revision 5 security controls badge",
+    width: 600,
+    height: 300,
   },
   {
     label: "DFARS",
-    detail: "In progress",
-    icon: Landmark,
+    detail: "Defense controls",
+    src: "/trust-badges/dfars-dod.jpeg",
+    alt: "United States Department of Defense badge for DFARS-aligned controls",
+    width: 720,
+    height: 720,
   },
   {
     label: "GDPR",
-    detail: "In progress",
-    icon: Scale,
+    detail: "Privacy framework",
+    src: "/trust-badges/gdpr-compliant.jpeg",
+    alt: "EU GDPR compliant badge",
+    width: 392,
+    height: 400,
   },
   {
     label: "SOC 2 Type II",
-    detail: "In progress",
-    icon: FileCheck2,
+    detail: "Audit readiness",
+    src: "/trust-badges/soc2-type-ii.jpeg",
+    alt: "SOC 2 Type II compliant badge",
+    width: 800,
+    height: 800,
+  },
+  {
+    label: "SSL Secure",
+    detail: "TLS protected",
+    src: "/trust-badges/ssl-secure.jpeg",
+    alt: "SSL secure badge",
+    width: 680,
+    height: 380,
   },
 ];
 
@@ -67,16 +88,20 @@ export function OfficialTrustLogo({
   mark,
   className,
 }: OfficialTrustLogoProps) {
-  const Icon = mark.icon;
-
   return (
     <span
       className={cn(
-        "flex h-8 w-8 shrink-0 items-center justify-center rounded-xl border border-amber-300/25 bg-amber-300/10 text-amber-300",
+        "relative flex h-12 w-16 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-white/15 bg-white p-1 shadow-lg shadow-black/15",
         className
       )}
     >
-      <Icon className="h-[18px] w-[18px]" aria-hidden="true" />
+      <Image
+        src={mark.src}
+        alt={mark.alt}
+        width={mark.width}
+        height={mark.height}
+        className="h-full w-full object-contain"
+      />
       <span className="sr-only">{mark.label}</span>
     </span>
   );

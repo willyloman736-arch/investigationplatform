@@ -6,9 +6,9 @@ import {
 } from "@/components/marketing/OfficialTrustMarks";
 
 /**
- * Honest compliance roadmap badges, presented as an auto-scrolling strip under
- * the hero. These are marked "In progress" so the page does not claim completed
- * certifications before completion.
+ * Security and compliance badges, presented as an auto-scrolling strip under
+ * the hero. The detail labels describe platform alignment/readiness without
+ * turning the page into a certificate claim.
  *
  * Pure-CSS marquee: two identical tracks each translating -100% for a seamless
  * loop. Pauses on hover, fades at the edges, stops for prefers-reduced-motion.
@@ -18,14 +18,14 @@ const EDGE_FADE =
 
 function WorkflowPill(mark: OfficialTrustMark) {
   return (
-    <li className="flex shrink-0 items-center gap-3 rounded-2xl border border-white/10 bg-white/5 py-2 pl-2 pr-5 backdrop-blur-md">
-      <OfficialTrustLogo mark={mark} />
+    <li className="flex min-w-[220px] shrink-0 items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.055] py-2 pl-2 pr-5 shadow-xl shadow-black/10 backdrop-blur-md">
+      <OfficialTrustLogo mark={mark} className="h-14 w-20" />
       <span className="whitespace-nowrap">
         <span className="block text-sm font-semibold leading-tight text-foreground/90">
           {mark.label}
         </span>
-        <span className="mt-1 flex items-center gap-1.5 text-[11px] font-semibold leading-tight text-amber-300">
-          <span className="h-1.5 w-1.5 rounded-full bg-amber-300" />
+        <span className="mt-1 flex items-center gap-1.5 text-[11px] font-semibold leading-tight text-primary">
+          <span className="h-1.5 w-1.5 rounded-full bg-primary" />
           {mark.detail}
         </span>
       </span>
@@ -46,10 +46,10 @@ export function TrustBanner({ className }: TrustBannerProps) {
       <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="overflow-hidden rounded-2xl border border-white/10 bg-white/[0.04] py-4 backdrop-blur-md">
           <p className="mb-4 text-center text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground">
-            Compliance roadmap · certifications in progress
+            Security controls · compliance roadmap
           </p>
 
-          {/* Workflow trust badges — auto-scrolling */}
+          {/* Trust badges — auto-scrolling */}
           <div className={cn("group relative flex overflow-hidden", EDGE_FADE)}>
             <ul className="flex shrink-0 items-center gap-3 pr-3 animate-marquee group-hover:[animation-play-state:paused] motion-reduce:animate-none">
               {COMPLIANCE_ROADMAP_MARKS.map((b) => (
@@ -67,7 +67,9 @@ export function TrustBanner({ className }: TrustBannerProps) {
           </div>
 
           <p className="mt-4 px-5 text-center text-xs leading-relaxed text-muted-foreground">
-            Listed certifications are actively in progress and not yet completed.
+            Compliance badges identify the security frameworks and controls the
+            platform is organized around. Formal certification status should be
+            updated only when supporting documentation is issued.
           </p>
         </div>
       </div>

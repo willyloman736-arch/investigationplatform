@@ -104,7 +104,7 @@ export function HeroSection() {
                   key={badge.label}
                   className="inline-flex items-center gap-2 text-xs font-medium text-muted-foreground"
                 >
-                  <OfficialTrustLogo mark={badge} className="h-7 w-7 p-1.5" />
+                  <OfficialTrustLogo mark={badge} className="h-8 w-10 p-1" />
                   <span>{badge.label}</span>
                 </li>
               );

@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { CreditCard, Landmark } from "lucide-react";
 
 import { SUPPORTED_PAYOUT_METHODS } from "@/lib/constants";
@@ -74,17 +75,17 @@ function PayPalWordmark() {
 
 function CardBrandMarks() {
   return (
-    <div className="flex items-center gap-1.5" aria-label="Supported card brands">
-      <span className="inline-flex h-6 items-center rounded bg-[#1A1F71] px-2 text-[10px] font-bold tracking-tight text-white">
-        VISA
-      </span>
-      <span className="inline-flex h-6 items-center rounded bg-[#111827] px-1.5">
-        <span className="h-3.5 w-3.5 rounded-full bg-[#EB001B]" />
-        <span className="-ml-1.5 h-3.5 w-3.5 rounded-full bg-[#F79E1B] opacity-90" />
-      </span>
-      <span className="inline-flex h-6 items-center rounded bg-[#2E77BB] px-1.5 text-[9px] font-bold leading-none text-white">
-        AMEX
-      </span>
+    <div
+      className="relative h-10 w-40 overflow-hidden rounded-xl border border-white/15 bg-white p-1.5 shadow-lg shadow-black/15"
+      aria-label="Supported card brands"
+    >
+      <Image
+        src="/trust-badges/stripe-payments.jpeg"
+        alt="Powered by Stripe with Visa, Mastercard, Maestro, American Express, and Discover card brands"
+        width={500}
+        height={125}
+        className="h-full w-full object-contain"
+      />
     </div>
   );
 }
