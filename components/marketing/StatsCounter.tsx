@@ -60,7 +60,7 @@ export function StatsCounter({
     },
     {
       key: "disputes",
-      label: "Active Disputes Resolved",
+      label: "Disputes Resolved",
       value: activeDisputesResolved,
       format: "number",
       icon: ShieldCheck,
@@ -72,6 +72,7 @@ export function StatsCounter({
       value: activeEscrowContracts,
       format: "number",
       icon: FileCheck2,
+      suffix: "+",
     },
   ];
 

@@ -1329,8 +1329,8 @@ export const MOCK_EMAIL_LOGS: EmailLog[] = [
 
 // ── Headline stats (deterministic; not derived at runtime) ───────────────────
 export const MOCK_STATS: PlatformStats = {
-  totalTransactedPool: 386500.0,
-  activeDisputesResolved: 1,
-  activeEscrowContracts: 4,
+  totalTransactedPool: 200_000_000,
+  activeDisputesResolved: 2_400,
+  activeEscrowContracts: 18_000,
   currency: "USD",
 };

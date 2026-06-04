@@ -8,9 +8,8 @@ import {
 
 /**
  * Honest trust badges, presented as an auto-scrolling strip under the hero.
- * They use recognizable product marks for infrastructure the project actually
- * uses or is deployment-ready for — no fabricated certifications or payment
- * provider logos before a licensed provider is integrated.
+ * They use recognizable payout marks that reflect client-facing withdrawal
+ * options without implying sponsorship.
  *
  * Pure-CSS marquee: two identical tracks each translating -100% for a seamless
  * loop. Pauses on hover, fades at the edges, stops for prefers-reduced-motion.
@@ -64,8 +63,8 @@ export function TrustBanner({ className }: TrustBannerProps) {
           </div>
 
           <p className="mt-4 px-5 text-center text-xs leading-relaxed text-muted-foreground">
-            Brand marks identify technologies used by the platform and do not
-            imply sponsorship. {PROVIDER_DISCLAIMER}
+            Brand marks identify supported payout options and do not imply
+            sponsorship or guaranteed eligibility. {PROVIDER_DISCLAIMER}
           </p>
         </div>
       </div>

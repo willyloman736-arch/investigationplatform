@@ -23,7 +23,7 @@ export function PayoutMethodStrip({
             Withdrawal methods
           </p>
           <p className="mt-1 text-sm text-muted-foreground">
-            Admin-approved payout rails for eligible escrow withdrawals.
+            Authorized payout rails for eligible escrow withdrawals.
           </p>
         </div>
         <CardBrandMarks />

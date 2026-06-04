@@ -9,42 +9,36 @@ export interface OfficialTrustMark {
 
 export const OFFICIAL_TRUST_MARKS: OfficialTrustMark[] = [
   {
-    label: "Supabase Auth",
-    detail: "Role-based access",
-    logoSrc: "https://cdn.simpleicons.org/supabase/3FCF8E",
-    logoAlt: "Supabase",
+    label: "Visa",
+    detail: "Card payout option",
+    logoSrc: "https://cdn.simpleicons.org/visa/1A1F71",
+    logoAlt: "Visa",
   },
   {
-    label: "Supabase Storage",
-    detail: "Private evidence bucket",
-    logoSrc: "https://cdn.simpleicons.org/supabase/3FCF8E",
-    logoAlt: "Supabase",
+    label: "Mastercard",
+    detail: "Card payout option",
+    logoSrc: "https://cdn.simpleicons.org/mastercard/EB001B",
+    logoAlt: "Mastercard",
   },
   {
-    label: "PostgreSQL RLS",
-    detail: "Case-scoped records",
-    logoSrc: "https://cdn.simpleicons.org/postgresql/4169E1",
-    logoAlt: "PostgreSQL",
+    label: "American Express",
+    detail: "Card payout option",
+    logoSrc: "https://cdn.simpleicons.org/americanexpress/2E77BB",
+    logoAlt: "American Express",
   },
   {
-    label: "Vercel Ready",
-    detail: "Deployment hardened",
-    logoSrc: "https://cdn.simpleicons.org/vercel/FFFFFF",
-    logoAlt: "Vercel",
-  },
-  {
-    label: "Next.js App Router",
-    detail: "Server-side workflows",
-    logoSrc: "https://cdn.simpleicons.org/nextdotjs/FFFFFF",
-    logoAlt: "Next.js",
+    label: "PayPal",
+    detail: "Digital payout option",
+    logoSrc: "https://cdn.simpleicons.org/paypal/00457C",
+    logoAlt: "PayPal",
   },
 ];
 
 export const HERO_TRUST_MARKS: OfficialTrustMark[] = [
   OFFICIAL_TRUST_MARKS[0],
+  OFFICIAL_TRUST_MARKS[1],
   OFFICIAL_TRUST_MARKS[2],
   OFFICIAL_TRUST_MARKS[3],
-  OFFICIAL_TRUST_MARKS[4],
 ];
 
 interface OfficialTrustLogoProps {
@@ -77,4 +71,3 @@ export function OfficialTrustLogo({
     </span>
   );
 }
-
