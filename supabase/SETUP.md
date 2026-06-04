@@ -14,7 +14,8 @@ This folder contains the database layer for **Digital Asset Investigations — S
 | 2 | `rls-policies.sql` | Enables Row Level Security on every table; defines `is_admin()` / `has_case_access()`; adds all access policies. |
 | 3 | `storage.sql` | Creates the private **`evidence`** storage bucket and its access policies (path = `<case_id>/<file_name>`). |
 | 4 | `recovery.sql` | Creates **`account_recovery`** — service-role-only scrypt hashes of each user's recovery phrase. RLS enabled with **no policies**. |
-| 5 | `seed.sql` | **Optional.** Loads the same demo dataset the app shows in DEMO mode. Requires the five demo auth users to exist first (see below). |
+| 5 | `recovery-operations.sql` | Creates KYC review, recovered-funds, withdrawal-condition, withdrawal-request, receipt, and email-log tables used by the admin command center and client dashboards. |
+| 6 | `seed.sql` | **Optional.** Loads the same demo dataset the app shows in DEMO mode. Requires the five demo auth users to exist first (see below). |
 
 Each file is **idempotent** — safe to re-run.
 
@@ -33,7 +34,8 @@ Open **SQL Editor** (left sidebar) and run the files **in order**. For each file
 2. `rls-policies.sql`
 3. `storage.sql`
 4. `recovery.sql`
-5. `seed.sql` *(optional — see "Demo seed" below)*
+5. `recovery-operations.sql`
+6. `seed.sql` *(optional — see "Demo seed" below)*
 
 > The SQL Editor runs as the **service role**, which bypasses RLS — this is required for `seed.sql` to insert rows on behalf of multiple users.
 
@@ -43,6 +45,7 @@ supabase db execute --file supabase/schema.sql
 supabase db execute --file supabase/rls-policies.sql
 supabase db execute --file supabase/storage.sql
 supabase db execute --file supabase/recovery.sql
+supabase db execute --file supabase/recovery-operations.sql
 # optional:
 supabase db execute --file supabase/seed.sql
 ```
@@ -119,6 +122,7 @@ NEXT_PUBLIC_DEMO_MODE=true
 - **`audit_logs`:** insert by any authenticated user; select by case access or admin; **no update/delete policy** → append-only.
 - **`evidence` storage:** private bucket; objects readable/writable only under a case-id prefix the user can access; admins all.
 - **`account_recovery`:** RLS on with **no policies** → clients get zero access; only the service role can read/write it. It holds only a **scrypt hash** of each user's recovery phrase — the phrase itself is never stored, logged, or returned.
+- **Recovery operations:** KYC reviews, recovered-funds entries, withdrawal conditions, receipts, and email logs are readable by case access and written by admins. Withdrawal requests can be created by the case user and reviewed by admins.
 - **Service role bypasses RLS** and is used only on trusted server paths (webhook deposit/release confirmation, guaranteed audit writes, and `account_recovery` reads/writes for recovery-phrase signup/reset).
 
 ---

@@ -1,11 +1,17 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import { z } from "zod";
 
 import { logAudit } from "@/lib/audit";
-import { DEMO_MODE } from "@/lib/constants";
+import {
+  DEMO_MODE,
+  PLATFORM_FEE_RATE,
+  PROVIDER_FEE_RATE,
+} from "@/lib/constants";
 import type {
+  EscrowContract,
   EmailLog,
   KycReview,
   KycStatus,
@@ -121,7 +127,219 @@ function revalidateCase(caseId: string) {
   revalidatePath("/admin/cases");
   revalidatePath(`/admin/cases/${caseId}`);
   revalidatePath("/dashboard");
+  revalidatePath("/dashboard/cases");
   revalidatePath(`/dashboard/cases/${caseId}`);
+}
+
+function round2(n: number): number {
+  return Math.round((n + Number.EPSILON) * 100) / 100;
+}
+
+function asAmount(value: unknown): number {
+  if (typeof value === "number") return value;
+  if (typeof value === "string") return Number(value);
+  return 0;
+}
+
+function kycDocumentPatch(status: KycStatus) {
+  if (status === "verified") {
+    return {
+      government_id_status: "verified" as const,
+      selfie_status: "verified" as const,
+      proof_of_address_status: "verified" as const,
+      phone_verified: true,
+      email_verified: true,
+    };
+  }
+
+  if (status === "rejected") {
+    return {
+      government_id_status: "rejected" as const,
+      selfie_status: "rejected" as const,
+      proof_of_address_status: "rejected" as const,
+      phone_verified: false,
+      email_verified: false,
+    };
+  }
+
+  if (status === "in_review") {
+    return {
+      government_id_status: "submitted" as const,
+      selfie_status: "submitted" as const,
+      proof_of_address_status: "submitted" as const,
+      phone_verified: false,
+      email_verified: false,
+    };
+  }
+
+  return {
+    government_id_status: "not_submitted" as const,
+    selfie_status: "not_submitted" as const,
+    proof_of_address_status: "not_submitted" as const,
+    phone_verified: false,
+    email_verified: false,
+  };
+}
+
+async function getCaseOwnerId(
+  client: SupabaseClient,
+  caseId: string
+): Promise<string> {
+  const { data, error } = await client
+    .from("cases")
+    .select("created_by")
+    .eq("id", caseId)
+    .maybeSingle<{ created_by: string }>();
+
+  if (error || !data) {
+    throw new Error(error?.message ?? "Case not found.");
+  }
+
+  return data.created_by;
+}
+
+async function loadEscrow(
+  client: SupabaseClient,
+  caseId: string
+): Promise<EscrowContract | null> {
+  const { data, error } = await client
+    .from("escrow_contracts")
+    .select("*")
+    .eq("case_id", caseId)
+    .maybeSingle<EscrowContract>();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data ?? null;
+}
+
+async function syncEscrowFromRecoveredFunds(
+  client: SupabaseClient,
+  {
+    caseId,
+    currency,
+    providerReference,
+  }: {
+    caseId: string;
+    currency: string;
+    providerReference?: string | null;
+  }
+): Promise<EscrowContract> {
+  const existing = await loadEscrow(client, caseId);
+  const { data: entries, error } = await client
+    .from("recovered_funds_entries")
+    .select("amount")
+    .eq("case_id", caseId)
+    .eq("visible_to_client", true);
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  const totalAmount = round2(
+    (entries ?? []).reduce((sum, entry) => sum + asAmount(entry.amount), 0)
+  );
+  const platformFee = round2(totalAmount * PLATFORM_FEE_RATE);
+  const providerFee = round2(totalAmount * PROVIDER_FEE_RATE);
+  const netReleaseAmount = round2(
+    Math.max(0, totalAmount - platformFee - providerFee)
+  );
+  const preservedWorkflowStatus = existing?.escrow_status;
+  const escrowStatus =
+    totalAmount <= 0
+      ? "pending_deposit"
+      : preservedWorkflowStatus &&
+        [
+          "under_dispute_audit",
+          "ready_for_release",
+          "release_frozen",
+          "released",
+        ].includes(preservedWorkflowStatus)
+      ? preservedWorkflowStatus
+      : "securely_escrowed";
+  const releaseStatus =
+    existing?.release_status === "completed" ||
+    existing?.release_status === "eligible"
+      ? existing.release_status
+      : "not_started";
+
+  const { data, error: upsertError } = await client
+    .from("escrow_contracts")
+    .upsert(
+      {
+        case_id: caseId,
+        currency,
+        total_amount: totalAmount,
+        platform_fee: platformFee,
+        provider_fee: providerFee,
+        net_release_amount: netReleaseAmount,
+        escrow_status: escrowStatus,
+        deposit_status: totalAmount > 0 ? "received" : "awaiting",
+        release_status: releaseStatus,
+        provider_reference:
+          providerReference ?? existing?.provider_reference ?? null,
+        updated_at: nowIso(),
+      },
+      { onConflict: "case_id" }
+    )
+    .select("*")
+    .single<EscrowContract>();
+
+  if (upsertError || !data) {
+    throw new Error(upsertError?.message ?? "Could not sync escrow balance.");
+  }
+
+  return data;
+}
+
+async function updateEscrowForWithdrawalReview(
+  client: SupabaseClient,
+  caseId: string,
+  status: Extract<
+    WithdrawalStatus,
+    "conditions_required" | "approved" | "denied" | "paid_out"
+  >,
+  note: string
+): Promise<EscrowContract | null> {
+  const escrow = await loadEscrow(client, caseId);
+  if (!escrow) return null;
+
+  const patch =
+    status === "approved"
+      ? {
+          escrow_status: "ready_for_release" as const,
+          release_status: "eligible" as const,
+          release_eligibility_reason: note,
+        }
+      : status === "paid_out"
+      ? {
+          escrow_status: "released" as const,
+          release_status: "completed" as const,
+          release_eligibility_reason: note,
+        }
+      : {
+          escrow_status: "release_frozen" as const,
+          release_status: "not_started" as const,
+          release_eligibility_reason: note,
+        };
+
+  const { data, error } = await client
+    .from("escrow_contracts")
+    .update({
+      ...patch,
+      updated_at: nowIso(),
+    })
+    .eq("id", escrow.id)
+    .select("*")
+    .single<EscrowContract>();
+
+  if (error || !data) {
+    throw new Error(error?.message ?? "Could not update escrow status.");
+  }
+
+  return data;
 }
 
 export async function updateKycReview(input: {
@@ -137,22 +355,47 @@ export async function updateKycReview(input: {
   try {
     const ctx = await adminOrDemo();
     if (ctx) {
-      // TODO: update recovery_kyc_reviews once the recovery tables are deployed.
+      const profileId = await getCaseOwnerId(ctx.supabase, parsed.data.caseId);
+      const { data: review, error } = await ctx.supabase
+        .from("recovery_kyc_reviews")
+        .upsert(
+          {
+            case_id: parsed.data.caseId,
+            profile_id: profileId,
+            status: parsed.data.status,
+            ...kycDocumentPatch(parsed.data.status),
+            reviewer_id: ctx.profile.id,
+            review_note: parsed.data.note,
+            updated_at: nowIso(),
+          },
+          { onConflict: "case_id" }
+        )
+        .select("*")
+        .single<KycReview>();
+
+      if (error || !review) {
+        return fail(error?.message ?? "Could not update KYC.");
+      }
+
       await logAudit(ctx.supabase, {
         actorId: ctx.profile.id,
         caseId: parsed.data.caseId,
         action: "recovery.kyc_status_updated",
         entityType: "kyc_review",
+        entityId: review.id,
         metadata: { status: parsed.data.status },
         reason: parsed.data.note,
       });
+
+      revalidateCase(parsed.data.caseId);
+      return ok(review);
     }
 
     revalidateCase(parsed.data.caseId);
     return ok({
       status: parsed.data.status,
       review_note: parsed.data.note,
-      reviewer_id: ctx?.profile.id ?? null,
+      reviewer_id: null,
       updated_at: nowIso(),
     });
   } catch (err) {
@@ -175,10 +418,9 @@ export async function recordRecoveredFunds(input: {
 
   try {
     const ctx = await adminOrDemo();
-    const entry: RecoveredFundsEntry = {
-      id: makeId("recovered"),
+    const entryDraft = {
       case_id: parsed.data.caseId,
-      amount: parsed.data.amount,
+      amount: round2(parsed.data.amount),
       currency: parsed.data.currency.toUpperCase(),
       source_label: parsed.data.sourceLabel,
       provider_reference: parsed.data.providerReference?.trim() || null,
@@ -189,7 +431,41 @@ export async function recordRecoveredFunds(input: {
     };
 
     if (ctx) {
-      // TODO: insert into recovered_funds_entries and update escrow balance view.
+      const { data: entry, error } = await ctx.supabase
+        .from("recovered_funds_entries")
+        .insert(entryDraft)
+        .select("*")
+        .single<RecoveredFundsEntry>();
+
+      if (error || !entry) {
+        return fail(error?.message ?? "Could not record recovered funds.");
+      }
+
+      const escrow = await syncEscrowFromRecoveredFunds(ctx.supabase, {
+        caseId: parsed.data.caseId,
+        currency: entry.currency,
+        providerReference: entry.provider_reference,
+      });
+
+      const { error: txnError } = await ctx.supabase
+        .from("escrow_transactions")
+        .insert({
+          escrow_contract_id: escrow.id,
+          case_id: parsed.data.caseId,
+          type: "deposit",
+          amount: entry.amount,
+          currency: entry.currency,
+          provider_reference: entry.provider_reference,
+          provider_status: "recovered_funds_recorded",
+          status: "confirmed",
+          initiated_by: ctx.profile.id,
+          notes: parsed.data.notes,
+        });
+
+      if (txnError) {
+        return fail(txnError.message);
+      }
+
       await logAudit(ctx.supabase, {
         actorId: ctx.profile.id,
         caseId: parsed.data.caseId,
@@ -203,8 +479,30 @@ export async function recordRecoveredFunds(input: {
         },
         reason: parsed.data.notes,
       });
+
+      await logAudit(ctx.supabase, {
+        actorId: ctx.profile.id,
+        caseId: parsed.data.caseId,
+        action: "escrow.balance_synced",
+        entityType: "escrow_contract",
+        entityId: escrow.id,
+        metadata: {
+          total_amount: escrow.total_amount,
+          currency: escrow.currency,
+          deposit_status: escrow.deposit_status,
+          escrow_status: escrow.escrow_status,
+        },
+        reason: parsed.data.notes,
+      });
+
+      revalidateCase(parsed.data.caseId);
+      return ok(entry);
     }
 
+    const entry: RecoveredFundsEntry = {
+      id: makeId("recovered"),
+      ...entryDraft,
+    };
     revalidateCase(parsed.data.caseId);
     return ok(entry);
   } catch (err) {
@@ -227,8 +525,7 @@ export async function addWithdrawalCondition(input: {
 
   try {
     const ctx = await adminOrDemo();
-    const condition: WithdrawalCondition = {
-      id: makeId("condition"),
+    const conditionDraft = {
       case_id: parsed.data.caseId,
       label: parsed.data.label,
       description: parsed.data.description,
@@ -240,7 +537,23 @@ export async function addWithdrawalCondition(input: {
     };
 
     if (ctx) {
-      // TODO: insert into withdrawal_conditions.
+      const { data: condition, error } = await ctx.supabase
+        .from("withdrawal_conditions")
+        .insert(conditionDraft)
+        .select("*")
+        .single<WithdrawalCondition>();
+
+      if (error || !condition) {
+        return fail(error?.message ?? "Could not add withdrawal condition.");
+      }
+
+      await updateEscrowForWithdrawalReview(
+        ctx.supabase,
+        parsed.data.caseId,
+        "conditions_required",
+        condition.description
+      );
+
       await logAudit(ctx.supabase, {
         actorId: ctx.profile.id,
         caseId: parsed.data.caseId,
@@ -250,8 +563,15 @@ export async function addWithdrawalCondition(input: {
         metadata: { gate: condition.gate, label: condition.label },
         reason: condition.description,
       });
+
+      revalidateCase(parsed.data.caseId);
+      return ok(condition);
     }
 
+    const condition: WithdrawalCondition = {
+      id: makeId("condition"),
+      ...conditionDraft,
+    };
     revalidateCase(parsed.data.caseId);
     return ok(condition);
   } catch (err) {
@@ -277,23 +597,100 @@ export async function reviewWithdrawalRequest(input: {
   try {
     const ctx = await adminOrDemo();
     if (ctx) {
-      // TODO: update withdrawal_requests. paid_out should only be set after
-      // provider/payment confirmation is received server-side.
+      const { data: current, error: loadError } = await ctx.supabase
+        .from("withdrawal_requests")
+        .select("*")
+        .eq("case_id", parsed.data.caseId)
+        .order("requested_at", { ascending: false })
+        .limit(1)
+        .maybeSingle<WithdrawalRequest>();
+
+      if (loadError) {
+        return fail(loadError.message);
+      }
+      if (!current) {
+        return fail("No withdrawal request exists for this case yet.");
+      }
+
+      const { data: updated, error } = await ctx.supabase
+        .from("withdrawal_requests")
+        .update({
+          status: parsed.data.status,
+          admin_note: parsed.data.note,
+          reviewed_by: ctx.profile.id,
+          reviewed_at: nowIso(),
+        })
+        .eq("id", current.id)
+        .select("*")
+        .single<WithdrawalRequest>();
+
+      if (error || !updated) {
+        return fail(error?.message ?? "Could not review withdrawal.");
+      }
+
+      const escrow = await updateEscrowForWithdrawalReview(
+        ctx.supabase,
+        parsed.data.caseId,
+        parsed.data.status,
+        parsed.data.note
+      );
+
+      if (parsed.data.status === "paid_out" && escrow) {
+        const { error: releaseTxnError } = await ctx.supabase
+          .from("escrow_transactions")
+          .insert({
+            escrow_contract_id: escrow.id,
+            case_id: parsed.data.caseId,
+            type: "release",
+            amount: updated.amount,
+            currency: updated.currency,
+            provider_reference: escrow.provider_reference,
+            provider_status: "provider_confirmed_release",
+            status: "confirmed",
+            initiated_by: ctx.profile.id,
+            notes: parsed.data.note,
+          });
+
+        if (releaseTxnError) {
+          return fail(releaseTxnError.message);
+        }
+      }
+
       await logAudit(ctx.supabase, {
         actorId: ctx.profile.id,
         caseId: parsed.data.caseId,
         action: "recovery.withdrawal_reviewed",
         entityType: "withdrawal_request",
+        entityId: updated.id,
         metadata: { status: parsed.data.status },
         reason: parsed.data.note,
       });
+
+      if (escrow) {
+        await logAudit(ctx.supabase, {
+          actorId: ctx.profile.id,
+          caseId: parsed.data.caseId,
+          action: "escrow.withdrawal_status_synced",
+          entityType: "escrow_contract",
+          entityId: escrow.id,
+          metadata: {
+            withdrawal_status: parsed.data.status,
+            escrow_status: escrow.escrow_status,
+            release_status: escrow.release_status,
+          },
+          reason: parsed.data.note,
+        });
+      }
+
+      revalidateCase(parsed.data.caseId);
+      return ok(updated);
     }
 
     revalidateCase(parsed.data.caseId);
     return ok({
       status: parsed.data.status,
       admin_note: parsed.data.note,
-      reviewed_by: ctx?.profile.id ?? "demo-admin",
+      reviewed_by: "demo-admin",
       reviewed_at: nowIso(),
     });
   } catch (err) {
@@ -337,20 +734,32 @@ export async function generateRecoveryReceipt(input: {
     };
 
     if (ctx) {
-      // TODO: insert into recovery_receipts.
+      const { data: storedReceipt, error } = await ctx.supabase
+        .from("recovery_receipts")
+        .insert(draft)
+        .select("*")
+        .single<RecoveryReceipt>();
+
+      if (error || !storedReceipt) {
+        return fail(error?.message ?? "Could not generate receipt.");
+      }
+
       await logAudit(ctx.supabase, {
         actorId: ctx.profile.id,
         caseId: parsed.data.caseId,
         action: "recovery.receipt_generated",
         entityType: "recovery_receipt",
-        entityId: receipt.id,
+        entityId: storedReceipt.id,
         metadata: {
-          receipt_number: receipt.receipt_number,
-          kind: receipt.kind,
-          amount: receipt.amount,
+          receipt_number: storedReceipt.receipt_number,
+          kind: storedReceipt.kind,
+          amount: storedReceipt.amount,
         },
         reason: parsed.data.notes,
       });
+
+      revalidateCase(parsed.data.caseId);
+      return ok(storedReceipt);
     }
 
     revalidateCase(parsed.data.caseId);
@@ -375,12 +784,11 @@ export async function sendReceiptEmailPlaceholder(input: {
 
   try {
     const ctx = await adminOrDemo();
-    const email: EmailLog = {
-      id: makeId("email"),
+    const emailDraft = {
       case_id: parsed.data.caseId,
       recipient_email: parsed.data.recipientEmail,
       subject: parsed.data.subject,
-      status: "sent_placeholder",
+      status: "sent_placeholder" as const,
       provider_reference: "EMAIL-PLACEHOLDER",
       related_receipt_id: parsed.data.receiptId,
       created_at: nowIso(),
@@ -388,7 +796,16 @@ export async function sendReceiptEmailPlaceholder(input: {
     };
 
     if (ctx) {
-      // TODO: call a real email provider and store the provider response.
+      const { data: email, error } = await ctx.supabase
+        .from("email_logs")
+        .insert(emailDraft)
+        .select("*")
+        .single<EmailLog>();
+
+      if (error || !email) {
+        return fail(error?.message ?? "Could not create email record.");
+      }
+
       await logAudit(ctx.supabase, {
         actorId: ctx.profile.id,
         caseId: parsed.data.caseId,
@@ -401,8 +818,15 @@ export async function sendReceiptEmailPlaceholder(input: {
         },
         reason: "Placeholder email workflow.",
       });
+
+      revalidateCase(parsed.data.caseId);
+      return ok(email);
     }
 
+    const email: EmailLog = {
+      id: makeId("email"),
+      ...emailDraft,
+    };
     revalidateCase(parsed.data.caseId);
     return ok(email);
   } catch (err) {

@@ -465,7 +465,15 @@ export async function getFundsBreakdownRows(
 export async function getKycReview(
   caseId: string
 ): Promise<KycReview | null> {
-  if (!DEMO_MODE) return null;
+  if (!DEMO_MODE) {
+    const supabase = await createClient();
+    const { data, error } = await supabase
+      .from("recovery_kyc_reviews")
+      .select("*")
+      .eq("case_id", caseId)
+      .maybeSingle<KycReview>();
+    return error ? null : data ?? null;
+  }
 
   return MOCK_KYC_REVIEWS.find((k) => k.case_id === caseId) ?? null;
 }
@@ -473,7 +481,15 @@ export async function getKycReview(
 export async function getRecoveredFundsEntries(
   caseId: string
 ): Promise<RecoveredFundsEntry[]> {
-  if (!DEMO_MODE) return [];
+  if (!DEMO_MODE) {
+    const supabase = await createClient();
+    const { data, error } = await supabase
+      .from("recovered_funds_entries")
+      .select("*")
+      .eq("case_id", caseId)
+      .order("created_at", { ascending: false });
+    return error ? [] : ((data ?? []) as RecoveredFundsEntry[]);
+  }
 
   return MOCK_RECOVERED_FUNDS_ENTRIES.filter((entry) => entry.case_id === caseId)
     .sort((a, b) => b.created_at.localeCompare(a.created_at));
@@ -482,7 +498,15 @@ export async function getRecoveredFundsEntries(
 export async function getWithdrawalConditions(
   caseId: string
 ): Promise<WithdrawalCondition[]> {
-  if (!DEMO_MODE) return [];
+  if (!DEMO_MODE) {
+    const supabase = await createClient();
+    const { data, error } = await supabase
+      .from("withdrawal_conditions")
+      .select("*")
+      .eq("case_id", caseId)
+      .order("created_at", { ascending: false });
+    return error ? [] : ((data ?? []) as WithdrawalCondition[]);
+  }
 
   return MOCK_WITHDRAWAL_CONDITIONS.filter((c) => c.case_id === caseId).sort(
     (a, b) => b.created_at.localeCompare(a.created_at)
@@ -492,7 +516,17 @@ export async function getWithdrawalConditions(
 export async function getWithdrawalRequest(
   caseId: string
 ): Promise<WithdrawalRequest | null> {
-  if (!DEMO_MODE) return null;
+  if (!DEMO_MODE) {
+    const supabase = await createClient();
+    const { data, error } = await supabase
+      .from("withdrawal_requests")
+      .select("*")
+      .eq("case_id", caseId)
+      .order("requested_at", { ascending: false })
+      .limit(1)
+      .maybeSingle<WithdrawalRequest>();
+    return error ? null : data ?? null;
+  }
 
   return MOCK_WITHDRAWAL_REQUESTS.find((w) => w.case_id === caseId) ?? null;
 }
@@ -500,7 +534,16 @@ export async function getWithdrawalRequest(
 export async function getRecoveryReceipts(
   caseId?: string
 ): Promise<RecoveryReceipt[]> {
-  if (!DEMO_MODE) return [];
+  if (!DEMO_MODE) {
+    const supabase = await createClient();
+    let query = supabase
+      .from("recovery_receipts")
+      .select("*")
+      .order("issued_at", { ascending: false });
+    if (caseId) query = query.eq("case_id", caseId);
+    const { data, error } = await query;
+    return error ? [] : ((data ?? []) as RecoveryReceipt[]);
+  }
 
   const rows = caseId
     ? MOCK_RECOVERY_RECEIPTS.filter((r) => r.case_id === caseId)
@@ -511,13 +554,30 @@ export async function getRecoveryReceipts(
 export async function getReceiptById(
   receiptId: string
 ): Promise<RecoveryReceipt | null> {
-  if (!DEMO_MODE) return null;
+  if (!DEMO_MODE) {
+    const supabase = await createClient();
+    const { data, error } = await supabase
+      .from("recovery_receipts")
+      .select("*")
+      .eq("id", receiptId)
+      .maybeSingle<RecoveryReceipt>();
+    return error ? null : data ?? null;
+  }
 
   return MOCK_RECOVERY_RECEIPTS.find((r) => r.id === receiptId) ?? null;
 }
 
 export async function getEmailLogs(caseId?: string): Promise<EmailLog[]> {
-  if (!DEMO_MODE) return [];
+  if (!DEMO_MODE) {
+    const supabase = await createClient();
+    let query = supabase
+      .from("email_logs")
+      .select("*")
+      .order("created_at", { ascending: false });
+    if (caseId) query = query.eq("case_id", caseId);
+    const { data, error } = await query;
+    return error ? [] : ((data ?? []) as EmailLog[]);
+  }
 
   const rows = caseId
     ? MOCK_EMAIL_LOGS.filter((e) => e.case_id === caseId)
@@ -606,7 +666,7 @@ async function composeRecoveryOperationsCase(
       ]);
   const recoveredAmount = recoveredFunds
     .filter((entry) => entry.visible_to_client)
-    .reduce((sum, entry) => sum + entry.amount, 0);
+    .reduce((sum, entry) => sum + Number(entry.amount ?? 0), 0);
   const escrowAvailableAmount =
     withdrawalRequest?.status === "paid_out" ? 0 : recoveredAmount;
 
