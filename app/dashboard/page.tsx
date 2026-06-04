@@ -70,6 +70,9 @@ import { EscrowStatusBadge } from "@/components/shared/EscrowStatusBadge";
 import { PayoutMethodStrip } from "@/components/shared/PayoutMethodStrip";
 import { FundsBreakdownTable } from "@/components/dashboard/FundsBreakdownTable";
 import { Sparkline } from "@/components/dashboard/Sparkline";
+import { WithdrawalRequestDialog } from "@/components/dashboard/WithdrawalRequestDialog";
+
+export const dynamic = "force-dynamic";
 
 type EscrowTone = {
   accent: string;
@@ -464,6 +467,29 @@ function EscrowHero({
               <p className="mt-1 text-[11px] text-muted-foreground">
                 Balance visibility is updated after review and provider confirmation.
               </p>
+              <div className="mt-4">
+                <WithdrawalRequestDialog
+                  caseId={primaryOperation.id}
+                  availableAmount={
+                    primaryOperation.escrow?.net_release_amount ?? balance
+                  }
+                  currency={currency}
+                  kycStatus={primaryOperation.kyc?.status ?? "not_started"}
+                  releaseStatus={
+                    primaryOperation.escrow?.release_status ?? "not_started"
+                  }
+                  openConditions={
+                    primaryOperation.withdrawal_conditions.filter(
+                      (condition) => !condition.satisfied
+                    ).length
+                  }
+                  existingStatus={
+                    primaryOperation.withdrawal_request?.status ??
+                    "not_requested"
+                  }
+                  fullWidth
+                />
+              </div>
             </div>
           </div>
 

@@ -62,6 +62,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { EscrowStatusBadge } from "@/components/shared/EscrowStatusBadge";
 
+export const dynamic = "force-dynamic";
+
 type StageTone = {
   border: string;
   bg: string;
@@ -728,7 +730,7 @@ function RequiredActionsPanel({
             return (
               <Link
                 key={`${action.caseId}-${action.label}`}
-                href={`/dashboard/cases/${action.caseId}`}
+                href={action.href ?? `/dashboard/cases/${action.caseId}`}
                 className="group flex items-start gap-3 rounded-2xl border border-white/10 bg-background/35 p-3 transition-colors hover:border-primary/35 hover:bg-primary/10"
               >
                 <span
@@ -1149,6 +1151,7 @@ function buildActionItems(cards: RecoveryCaseCardData[]) {
       hint: string;
       icon: LucideIcon;
       urgent: boolean;
+      href?: string;
     }> = [];
 
     if (operation.recovery_stage === "more_evidence_needed") {
@@ -1178,6 +1181,7 @@ function buildActionItems(cards: RecoveryCaseCardData[]) {
         hint: operation.kyc?.review_note ?? "Identity verification is required before withdrawal approval.",
         icon: IdCard,
         urgent: operation.kyc?.status === "rejected",
+        href: "/dashboard/profile",
       });
     }
 

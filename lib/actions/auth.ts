@@ -241,6 +241,22 @@ async function createSignupWorkspace(input: {
     release_status: "not_started",
   });
 
+  await admin.from("recovery_kyc_reviews").upsert(
+    {
+      case_id: caseRow.id,
+      profile_id: input.userId,
+      status: "not_started",
+      government_id_status: "not_submitted",
+      selfie_status: "not_submitted",
+      proof_of_address_status: "not_submitted",
+      phone_verified: false,
+      email_verified: true,
+      review_note: "KYC required automatically after case intake.",
+      updated_at: new Date().toISOString(),
+    },
+    { onConflict: "case_id" }
+  );
+
   const parties: {
     case_id: string;
     profile_id: string | null;

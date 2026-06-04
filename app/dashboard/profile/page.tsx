@@ -2,10 +2,13 @@ import { redirect } from "next/navigation";
 import { Mail, Settings, ShieldCheck, UserRound } from "lucide-react";
 
 import { DEMO_MODE } from "@/lib/constants";
-import { getCurrentUserMock } from "@/lib/data";
+import { getCurrentUserMock, getRecoveryOperationsCases } from "@/lib/data";
 import { createClient } from "@/lib/supabase/server";
 import type { Profile } from "@/lib/types";
+import { KycVerificationPanel } from "@/components/dashboard/KycVerificationPanel";
 import { ProfileSettingsForm } from "@/components/dashboard/ProfileSettingsForm";
+
+export const dynamic = "force-dynamic";
 
 async function resolveProfile(): Promise<Profile> {
   if (DEMO_MODE) {
@@ -32,6 +35,7 @@ async function resolveProfile(): Promise<Profile> {
 
 export default async function DashboardProfilePage() {
   const profile = await resolveProfile();
+  const operations = await getRecoveryOperationsCases(profile.role, profile.id);
 
   return (
     <div className="space-y-5">
@@ -74,6 +78,8 @@ export default async function DashboardProfilePage() {
           </div>
         </div>
       </section>
+
+      <KycVerificationPanel profile={profile} operations={operations} />
 
       <ProfileSettingsForm profile={profile} />
     </div>

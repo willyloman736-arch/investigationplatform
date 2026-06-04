@@ -51,6 +51,7 @@ import {
   getFiles,
   getMessages,
   getProfileById,
+  getRecoveryCaseOperations,
   getTransactions,
 } from "@/lib/data";
 import { createClient } from "@/lib/supabase/server";
@@ -60,6 +61,7 @@ import type {
   FundsBreakdownRow,
   PartyRole,
   Profile,
+  RecoveryOperationsCase,
   UserRole,
 } from "@/lib/types";
 
@@ -79,6 +81,7 @@ import { FundsBreakdownTable } from "@/components/dashboard/FundsBreakdownTable"
 import { FileUploader } from "@/components/dashboard/FileUploader";
 import { SecureChat } from "@/components/dashboard/SecureChat";
 import { ApprovalPanel } from "@/components/dashboard/ApprovalPanel";
+import { WithdrawalRequestDialog } from "@/components/dashboard/WithdrawalRequestDialog";
 
 async function resolveUser(): Promise<{ id?: string; role: UserRole }> {
   if (DEMO_MODE) {
@@ -149,7 +152,7 @@ export default async function CaseWorkspacePage({
   }
 
   // Fetch every related slice in parallel.
-  const [parties, escrow, files, messages, approvals, transactions, audit] =
+  const [parties, escrow, files, messages, approvals, transactions, audit, operation] =
     await Promise.all([
       getCaseParties(caseId),
       getEscrow(caseId),
@@ -158,6 +161,7 @@ export default async function CaseWorkspacePage({
       getApprovals(caseId),
       getTransactions(caseId),
       getAuditLogs(caseId),
+      getRecoveryCaseOperations(caseId),
     ]);
 
   // Resolve party display names + the signed-in user's party role.
@@ -365,7 +369,7 @@ export default async function CaseWorkspacePage({
           {escrow ? (
             <>
               {/* Status overview strip */}
-              <EscrowOverviewStrip escrow={escrow} />
+              <EscrowOverviewStrip escrow={escrow} operation={operation} />
 
               {/* Per-case funds breakdown */}
               <section className="space-y-3">
@@ -518,7 +522,13 @@ function SignatureChip({
   );
 }
 
-function EscrowOverviewStrip({ escrow }: { escrow: EscrowContract }) {
+function EscrowOverviewStrip({
+  escrow,
+  operation,
+}: {
+  escrow: EscrowContract;
+  operation: RecoveryOperationsCase | null;
+}) {
   return (
     <div className="grid grid-cols-2 gap-3 rounded-2xl border border-white/10 bg-card/60 p-5 backdrop-blur-md sm:grid-cols-4 sm:p-6">
       <Metric label="Escrow status">
@@ -541,6 +551,26 @@ function EscrowOverviewStrip({ escrow }: { escrow: EscrowContract }) {
           {RELEASE_STATUS_LABELS[escrow.release_status]}
         </span>
       </Metric>
+      {operation ? (
+        <div className="col-span-2 sm:col-span-4">
+          <WithdrawalRequestDialog
+            caseId={operation.id}
+            availableAmount={escrow.net_release_amount}
+            currency={escrow.currency}
+            kycStatus={operation.kyc?.status ?? "not_started"}
+            releaseStatus={escrow.release_status}
+            openConditions={
+              operation.withdrawal_conditions.filter(
+                (condition) => !condition.satisfied
+              ).length
+            }
+            existingStatus={
+              operation.withdrawal_request?.status ?? "not_requested"
+            }
+            fullWidth
+          />
+        </div>
+      ) : null}
     </div>
   );
 }

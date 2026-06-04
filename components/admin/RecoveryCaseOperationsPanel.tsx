@@ -3,10 +3,8 @@
 import * as React from "react";
 import { useRouter } from "next/navigation";
 import {
-  BadgeCheck,
   CreditCard,
   FileCheck2,
-  IdCard,
   Loader2,
   Mail,
   Plus,
@@ -17,7 +15,6 @@ import {
 import { toast } from "sonner";
 
 import {
-  KYC_DOCUMENT_STATUS_LABELS,
   KYC_STATUS_LABELS,
   PAYOUT_METHOD_LABELS,
   RECOVERY_STAGE_LABELS,
@@ -43,7 +40,6 @@ import {
   recordRecoveredFunds,
   reviewWithdrawalRequest,
   sendReceiptEmailPlaceholder,
-  updateKycReview,
 } from "@/lib/actions/recovery-operations";
 
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -65,13 +61,6 @@ interface RecoveryCaseOperationsPanelProps {
   operation: RecoveryOperationsCase;
   clientEmail: string;
 }
-
-const KYC_OPTIONS: KycStatus[] = [
-  "not_started",
-  "in_review",
-  "verified",
-  "rejected",
-];
 
 const CONDITION_GATES: WithdrawalConditionGate[] = [
   "before_request",
@@ -127,12 +116,7 @@ export function RecoveryCaseOperationsPanel({
   const [isPending, startTransition] = React.useTransition();
   const [busyLabel, setBusyLabel] = React.useState<string | null>(null);
 
-  const [kycStatus, setKycStatus] = React.useState<KycStatus>(
-    operation.kyc?.status ?? "not_started"
-  );
-  const [kycNote, setKycNote] = React.useState(
-    operation.kyc?.review_note ?? "Reviewed by admin."
-  );
+  const kycStatus = operation.kyc?.status ?? "not_started";
   const [fundEntries, setFundEntries] = React.useState<RecoveredFundsEntry[]>(
     operation.recovered_funds
   );
@@ -193,22 +177,6 @@ export function RecoveryCaseOperationsPanel({
 
   function refreshAfterSuccess() {
     router.refresh();
-  }
-
-  function handleKycUpdate() {
-    run("kyc", async () => {
-      const result = await updateKycReview({
-        caseId: operation.id,
-        status: kycStatus,
-        note: kycNote,
-      });
-      if (!result.success) {
-        toast.error(result.error ?? "Could not update KYC.");
-        return;
-      }
-      toast.success("KYC review updated.");
-      refreshAfterSuccess();
-    });
   }
 
   function handleRecoveredFunds() {
@@ -392,72 +360,6 @@ export function RecoveryCaseOperationsPanel({
       <Separator className="bg-white/10" />
 
       <div className="grid grid-cols-1 gap-5 xl:grid-cols-2">
-        <PanelBlock icon={IdCard} title="KYC Review">
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-            <div className="space-y-1.5">
-              <Label>Status</Label>
-              <Select
-                value={kycStatus}
-                onValueChange={(value) => setKycStatus(value as KycStatus)}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {KYC_OPTIONS.map((status) => (
-                    <SelectItem key={status} value={status}>
-                      {KYC_STATUS_LABELS[status]}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-1.5 text-xs text-muted-foreground">
-              <p>
-                Government ID:{" "}
-                {KYC_DOCUMENT_STATUS_LABELS[
-                  operation.kyc?.government_id_status ?? "not_submitted"
-                ]}
-              </p>
-              <p>
-                Selfie:{" "}
-                {KYC_DOCUMENT_STATUS_LABELS[
-                  operation.kyc?.selfie_status ?? "not_submitted"
-                ]}
-              </p>
-              <p>
-                Address:{" "}
-                {KYC_DOCUMENT_STATUS_LABELS[
-                  operation.kyc?.proof_of_address_status ?? "not_submitted"
-                ]}
-              </p>
-              <p>
-                Phone/Email:{" "}
-                {operation.kyc?.phone_verified ? "Phone verified" : "Phone pending"}
-                {" / "}
-                {operation.kyc?.email_verified ? "Email verified" : "Email pending"}
-              </p>
-            </div>
-          </div>
-          <Textarea
-            value={kycNote}
-            onChange={(event) => setKycNote(event.target.value)}
-            className="min-h-[84px]"
-            placeholder="Reason note for KYC status change"
-          />
-          <Button
-            onClick={handleKycUpdate}
-            disabled={isPending || !kycNote.trim()}
-          >
-            {busyLabel === "kyc" && BusyIcon ? (
-              <BusyIcon className="h-4 w-4 animate-spin" />
-            ) : (
-              <BadgeCheck className="h-4 w-4" />
-            )}
-            Update KYC
-          </Button>
-        </PanelBlock>
-
         <PanelBlock icon={Wallet} title="Recovered Funds">
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div className="space-y-1.5">

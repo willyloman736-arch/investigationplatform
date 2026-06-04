@@ -15,6 +15,7 @@ import { z } from "zod";
 
 import { logAudit } from "@/lib/audit";
 import { PLATFORM_FEE_RATE, PROVIDER_FEE_RATE } from "@/lib/constants";
+import { createAdminClient } from "@/lib/supabase/server";
 import type { CaseStatus, PartyRole } from "@/lib/types";
 import {
   getAuthContext,
@@ -138,6 +139,25 @@ export async function createCase(
     })
     .select("id")
     .maybeSingle<{ id: string }>();
+
+  if (profile.role !== "admin") {
+    const admin = createAdminClient();
+    await admin.from("recovery_kyc_reviews").upsert(
+      {
+        case_id: caseRow.id,
+        profile_id: profile.id,
+        status: "not_started",
+        government_id_status: "not_submitted",
+        selfie_status: "not_submitted",
+        proof_of_address_status: "not_submitted",
+        phone_verified: false,
+        email_verified: Boolean(profile.email),
+        review_note: "KYC required automatically after case intake.",
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: "case_id" }
+    );
+  }
 
   // Seed party invitations when provided.
   const parties: {

@@ -6,7 +6,6 @@ import { usePathname } from "next/navigation";
 import {
   CreditCard,
   FileCheck2,
-  IdCard,
   LogOut,
   ReceiptText,
   ScrollText,
@@ -40,7 +39,6 @@ interface NavGroup {
 }
 
 const ADMIN_OPERATIONS_NAV: NavItem[] = [
-  { label: "KYC Review", href: "/admin#kyc-review", icon: IdCard },
   { label: "Withdrawal Queue", href: "/admin#withdrawals", icon: CreditCard },
   { label: "Receipts", href: "/admin#receipts", icon: ReceiptText },
   { label: "Escrow Ledger", href: "/admin#escrow-ledger", icon: Wallet },
