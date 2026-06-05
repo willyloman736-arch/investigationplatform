@@ -14,7 +14,9 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
 import { logAudit } from "@/lib/audit";
+import { notifyCaseClient, notifyUser } from "@/lib/notifications";
 import type {
+  AccountStatus,
   DisputeStatus,
   EscrowContract,
   CaseStatus,
@@ -250,6 +252,20 @@ export async function resolveDispute(
     reason: parsed.data.reason,
   });
 
+  await notifyCaseClient({
+    caseId: dispute.case_id,
+    actorId: profile.id,
+    type: "dispute_resolved",
+    title: "Dispute resolved",
+    body:
+      parsed.data.resolution === "release"
+        ? "The dispute on your case was resolved and your funds are now eligible for release."
+        : parsed.data.resolution === "refund"
+        ? "The dispute on your case was resolved in favor of a refund."
+        : "The dispute on your case was reviewed and rejected; your case is active again.",
+    link: "/dashboard/cases",
+  });
+
   revalidatePath(`/admin/cases/${dispute.case_id}`);
   revalidatePath(`/dashboard/cases/${dispute.case_id}`);
   revalidatePath("/admin/disputes");
@@ -318,6 +334,15 @@ export async function flagActivity(
     reason: parsed.data.reason,
   });
 
+  await notifyCaseClient({
+    caseId: parsed.data.caseId,
+    actorId: profile.id,
+    type: "case_status",
+    title: "Your case is under review",
+    body: "An administrator placed your case under review and temporarily paused any release while it is investigated.",
+    link: "/dashboard/cases",
+  });
+
   revalidatePath(`/admin/cases/${parsed.data.caseId}`);
   revalidatePath(`/dashboard/cases/${parsed.data.caseId}`);
   revalidatePath("/admin/cases");
@@ -381,7 +406,102 @@ export async function requestEvidence(
     reason: parsed.data.note,
   });
 
+  await notifyCaseClient({
+    caseId: parsed.data.caseId,
+    actorId: profile.id,
+    type: "evidence_requested",
+    title: "Additional evidence requested",
+    body: `An administrator requested more evidence on your case: ${parsed.data.note}`,
+    link: "/dashboard/cases",
+  });
+
   revalidatePath(`/admin/cases/${parsed.data.caseId}`);
   revalidatePath(`/dashboard/cases/${parsed.data.caseId}`);
+  return ok();
+}
+
+// ── setAccountStatus (suspend / reactivate an account) ───────────────────────
+
+const setAccountStatusSchema = z.object({
+  profileId: z.string().min(1),
+  status: z.enum(["active", "suspended"]),
+  reason: z.string().trim().min(1, "A reason is required."),
+});
+
+export interface SetAccountStatusInput {
+  profileId: string;
+  status: AccountStatus;
+  reason: string;
+}
+
+/**
+ * Suspend or reactivate a user's ACCOUNT (admin-only). Reason REQUIRED. Updates
+ * profiles.account_status, audits the change, and notifies the affected user
+ * (in-app + email + push). Enforcing the suspension at sign-in is a separate
+ * middleware/auth concern.
+ */
+export async function setAccountStatus(
+  input: SetAccountStatusInput
+): Promise<ActionResult> {
+  if (!input.reason || input.reason.trim().length === 0) {
+    throw new Error("A reason is required to change an account's status.");
+  }
+
+  const parsed = setAccountStatusSchema.safeParse(input);
+  if (!parsed.success) {
+    return fail(parsed.error.issues[0]?.message ?? "Invalid request.");
+  }
+
+  const ctx = await getAuthContext();
+  if (!ctx) {
+    // DEMO mode no-op.
+    return ok();
+  }
+  const { supabase, profile } = ctx;
+  requireAdmin(profile);
+
+  const { error } = await supabase
+    .from("profiles")
+    .update({ account_status: parsed.data.status })
+    .eq("id", parsed.data.profileId);
+
+  if (error) {
+    return fail(error.message);
+  }
+
+  await logAudit(supabase, {
+    actorId: profile.id,
+    action:
+      parsed.data.status === "suspended"
+        ? "account.suspended"
+        : "account.reactivated",
+    entityType: "profile",
+    entityId: parsed.data.profileId,
+    metadata: { status: parsed.data.status },
+    reason: parsed.data.reason,
+  });
+
+  await notifyUser(
+    parsed.data.status === "suspended"
+      ? {
+          recipientId: parsed.data.profileId,
+          actorId: profile.id,
+          type: "account_suspended",
+          title: "Your account has been suspended",
+          body: "An administrator has suspended your account. Contact support if you believe this is a mistake.",
+          link: "/dashboard",
+        }
+      : {
+          recipientId: parsed.data.profileId,
+          actorId: profile.id,
+          type: "account_reactivated",
+          title: "Your account has been reactivated",
+          body: "Your account is active again — you can sign in and continue where you left off.",
+          link: "/dashboard",
+        }
+  );
+
+  revalidatePath("/admin");
+  revalidatePath("/admin/cases");
   return ok();
 }

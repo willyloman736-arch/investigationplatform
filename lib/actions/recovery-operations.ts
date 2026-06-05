@@ -5,6 +5,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { z } from "zod";
 
 import { logAudit } from "@/lib/audit";
+import { notifyCaseClient } from "@/lib/notifications";
 import {
   DEMO_MODE,
   PLATFORM_FEE_RATE,
@@ -15,6 +16,7 @@ import type {
   EmailLog,
   KycReview,
   KycStatus,
+  NotificationType,
   RecoveredFundsEntry,
   RecoveryReceipt,
   RecoveryReceiptKind,
@@ -354,6 +356,69 @@ async function updateEscrowForWithdrawalReview(
   return data;
 }
 
+function kycNotification(
+  status: KycStatus
+): { type: NotificationType; title: string; body: string } | null {
+  switch (status) {
+    case "verified":
+      return {
+        type: "kyc_verified",
+        title: "Identity verified",
+        body: "Your KYC verification was approved. Your recovery case can now proceed.",
+      };
+    case "rejected":
+    case "declined":
+      return {
+        type: "kyc_declined",
+        title: "KYC verification declined",
+        body: "Your identity verification was not approved. Please review the reviewer notes.",
+      };
+    case "resubmission_required":
+      return {
+        type: "kyc_resubmission",
+        title: "KYC resubmission needed",
+        body: "We need clearer or additional documents to verify your identity. Please resubmit.",
+      };
+    default:
+      return null;
+  }
+}
+
+function withdrawalNotification(
+  status: Extract<
+    WithdrawalStatus,
+    "conditions_required" | "approved" | "denied" | "paid_out"
+  >
+): { type: NotificationType; title: string; body: string } {
+  switch (status) {
+    case "approved":
+      return {
+        type: "withdrawal_approved",
+        title: "Withdrawal approved",
+        body: "Your withdrawal request was approved and your funds are ready for release.",
+      };
+    case "denied":
+      return {
+        type: "withdrawal_denied",
+        title: "Withdrawal not approved",
+        body: "Your withdrawal request was not approved. Please review the notes for details.",
+      };
+    case "paid_out":
+      return {
+        type: "withdrawal_paid",
+        title: "Funds released",
+        body: "Your recovered funds have been released. A payout receipt is available on your case.",
+      };
+    case "conditions_required":
+    default:
+      return {
+        type: "withdrawal_conditions",
+        title: "Withdrawal conditions required",
+        body: "Some conditions must be met before your withdrawal can proceed.",
+      };
+  }
+}
+
 export async function updateKycReview(input: {
   caseId: string;
   status: KycStatus;
@@ -398,6 +463,18 @@ export async function updateKycReview(input: {
         metadata: { status: parsed.data.status },
         reason: parsed.data.note,
       });
+
+      const kycNotice = kycNotification(parsed.data.status);
+      if (kycNotice) {
+        await notifyCaseClient({
+          caseId: parsed.data.caseId,
+          actorId: ctx.profile.id,
+          type: kycNotice.type,
+          title: kycNotice.title,
+          body: kycNotice.body,
+          link: "/dashboard/kyc",
+        });
+      }
 
       revalidateCase(parsed.data.caseId);
       return ok(review);
@@ -507,6 +584,16 @@ export async function recordRecoveredFunds(input: {
         reason: parsed.data.notes,
       });
 
+      await notifyCaseClient({
+        caseId: parsed.data.caseId,
+        actorId: ctx.profile.id,
+        type: "recovered_funds",
+        title: "Recovered funds recorded",
+        body: `${entry.currency} ${entry.amount.toLocaleString()} in recovered funds was added to your secure escrow record.`,
+        link: "/dashboard/cases",
+        metadata: { amount: entry.amount, currency: entry.currency },
+      });
+
       revalidateCase(parsed.data.caseId);
       return ok(entry);
     }
@@ -574,6 +661,15 @@ export async function addWithdrawalCondition(input: {
         entityId: condition.id,
         metadata: { gate: condition.gate, label: condition.label },
         reason: condition.description,
+      });
+
+      await notifyCaseClient({
+        caseId: parsed.data.caseId,
+        actorId: ctx.profile.id,
+        type: "withdrawal_conditions",
+        title: "Action needed before withdrawal",
+        body: `A new condition was added to your case: ${condition.label}. Complete it to proceed with your withdrawal.`,
+        link: "/dashboard/cases",
       });
 
       revalidateCase(parsed.data.caseId);
@@ -693,6 +789,16 @@ export async function reviewWithdrawalRequest(input: {
           reason: parsed.data.note,
         });
       }
+
+      const withdrawalNotice = withdrawalNotification(parsed.data.status);
+      await notifyCaseClient({
+        caseId: parsed.data.caseId,
+        actorId: ctx.profile.id,
+        type: withdrawalNotice.type,
+        title: withdrawalNotice.title,
+        body: withdrawalNotice.body,
+        link: "/dashboard/cases",
+      });
 
       revalidateCase(parsed.data.caseId);
       return ok(updated);

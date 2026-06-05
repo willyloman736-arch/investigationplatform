@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
 import { logAudit } from "@/lib/audit";
+import { notifyUser } from "@/lib/notifications";
 import {
   ACCEPTED_KYC_FILE_TYPES,
   DEMO_MODE,
@@ -528,6 +529,35 @@ export async function reviewKycSubmission(input: {
     metadata: { status: parsed.data.status, user_id: current.user_id },
     reason: note,
   });
+
+  await notifyUser(
+    parsed.data.status === "verified"
+      ? {
+          recipientId: current.user_id,
+          actorId: ctx.profile.id,
+          type: "kyc_verified",
+          title: "Identity verified",
+          body: "Your KYC verification was approved. You're all set to continue.",
+          link: "/dashboard/kyc",
+        }
+      : parsed.data.status === "declined"
+      ? {
+          recipientId: current.user_id,
+          actorId: ctx.profile.id,
+          type: "kyc_declined",
+          title: "KYC verification declined",
+          body: "Your identity verification was not approved. Please review the notes and contact support.",
+          link: "/dashboard/kyc",
+        }
+      : {
+          recipientId: current.user_id,
+          actorId: ctx.profile.id,
+          type: "kyc_resubmission",
+          title: "KYC resubmission needed",
+          body: "We need clearer or additional documents to verify your identity. Please resubmit.",
+          link: "/dashboard/kyc",
+        }
+  );
 
   revalidateKycSurfaces(current.user_id, current.id);
   return ok(updated);

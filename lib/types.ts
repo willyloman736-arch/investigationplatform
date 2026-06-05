@@ -129,6 +129,27 @@ export type EmailDeliveryStatus =
   | "sent_placeholder"
   | "failed";
 
+export type AccountStatus = "active" | "suspended";
+
+export type NotificationType =
+  | "kyc_verified"
+  | "kyc_declined"
+  | "kyc_resubmission"
+  | "recovered_funds"
+  | "withdrawal_conditions"
+  | "withdrawal_approved"
+  | "withdrawal_denied"
+  | "withdrawal_paid"
+  | "escrow_released"
+  | "escrow_update"
+  | "dispute_opened"
+  | "dispute_resolved"
+  | "evidence_requested"
+  | "case_status"
+  | "account_suspended"
+  | "account_reactivated"
+  | "general";
+
 // ── Row types (match table columns) ──────────────────────────────────────────
 export interface Profile {
   id: string;
@@ -140,6 +161,10 @@ export interface Profile {
   avatar_url: string | null;
   kyc_status: KycStatus;
   is_verified: boolean;
+  // Added by notifications.sql; optional so existing Profile constructors
+  // (mock data, demo fallbacks) keep compiling. Always present on real rows.
+  account_status?: AccountStatus;
+  email_notifications?: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -256,6 +281,30 @@ export interface AuditLog {
   entity_id: string | null;
   metadata: Record<string, unknown>;
   reason: string | null;
+  created_at: string;
+}
+
+export interface Notification {
+  id: string;
+  recipient_id: string;
+  actor_id: string | null;
+  type: NotificationType;
+  title: string;
+  body: string;
+  case_id: string | null;
+  link: string | null;
+  metadata: Record<string, unknown>;
+  read_at: string | null;
+  created_at: string;
+}
+
+export interface PushSubscriptionRow {
+  id: string;
+  profile_id: string;
+  endpoint: string;
+  p256dh: string;
+  auth: string;
+  user_agent: string | null;
   created_at: string;
 }
 

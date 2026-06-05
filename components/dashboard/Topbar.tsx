@@ -19,6 +19,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { MobileDrawer } from "@/components/dashboard/MobileDrawer";
+import { NotificationBell } from "@/components/dashboard/NotificationBell";
 
 export interface TopbarProps {
   user: SessionUser;
@@ -98,6 +99,8 @@ export function Topbar({ user, title, showSearch = true, role }: TopbarProps) {
             Admin control
           </span>
         ) : null}
+
+        <NotificationBell />
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>

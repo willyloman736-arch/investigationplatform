@@ -16,7 +16,8 @@ This folder contains the database layer for **Digital Asset Investigations — S
 | 4 | `recovery.sql` | Creates **`account_recovery`** — service-role-only scrypt hashes of each user's recovery phrase. RLS enabled with **no policies**. |
 | 5 | `recovery-operations.sql` | Creates KYC review, recovered-funds, withdrawal-condition, withdrawal-request, receipt, and email-log tables used by the admin command center and client dashboards. |
 | 6 | `kyc.sql` | Creates the full identity-verification flow: profile KYC fields, KYC submissions, KYC audit logs, and private **`kyc-documents`** storage policies. |
-| 7 | `seed.sql` | **Optional.** Loads the same demo dataset the app shows in DEMO mode. Requires the five demo auth users to exist first (see below). |
+| 7 | `notifications.sql` | Adds `profiles.account_status` + `email_notifications`; creates **`notifications`** (Realtime-enabled) and **`push_subscriptions`** with RLS; adds notifications to the `supabase_realtime` publication. |
+| 8 | `seed.sql` | **Optional.** Loads the same demo dataset the app shows in DEMO mode. Requires the five demo auth users to exist first (see below). |
 
 Each file is **idempotent** — safe to re-run.
 
@@ -37,7 +38,8 @@ Open **SQL Editor** (left sidebar) and run the files **in order**. For each file
 4. `recovery.sql`
 5. `recovery-operations.sql`
 6. `kyc.sql`
-7. `seed.sql` *(optional — see "Demo seed" below)*
+7. `notifications.sql`
+8. `seed.sql` *(optional — see "Demo seed" below)*
 
 > The SQL Editor runs as the **service role**, which bypasses RLS — this is required for `seed.sql` to insert rows on behalf of multiple users.
 
@@ -49,6 +51,7 @@ supabase db execute --file supabase/storage.sql
 supabase db execute --file supabase/recovery.sql
 supabase db execute --file supabase/recovery-operations.sql
 supabase db execute --file supabase/kyc.sql
+supabase db execute --file supabase/notifications.sql
 # optional:
 supabase db execute --file supabase/seed.sql
 ```
