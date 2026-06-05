@@ -15,7 +15,8 @@ This folder contains the database layer for **Digital Asset Investigations — S
 | 3 | `storage.sql` | Creates the private **`evidence`** storage bucket and its access policies (path = `<case_id>/<file_name>`). |
 | 4 | `recovery.sql` | Creates **`account_recovery`** — service-role-only scrypt hashes of each user's recovery phrase. RLS enabled with **no policies**. |
 | 5 | `recovery-operations.sql` | Creates KYC review, recovered-funds, withdrawal-condition, withdrawal-request, receipt, and email-log tables used by the admin command center and client dashboards. |
-| 6 | `seed.sql` | **Optional.** Loads the same demo dataset the app shows in DEMO mode. Requires the five demo auth users to exist first (see below). |
+| 6 | `kyc.sql` | Creates the full identity-verification flow: profile KYC fields, KYC submissions, KYC audit logs, and private **`kyc-documents`** storage policies. |
+| 7 | `seed.sql` | **Optional.** Loads the same demo dataset the app shows in DEMO mode. Requires the five demo auth users to exist first (see below). |
 
 Each file is **idempotent** — safe to re-run.
 
@@ -35,7 +36,8 @@ Open **SQL Editor** (left sidebar) and run the files **in order**. For each file
 3. `storage.sql`
 4. `recovery.sql`
 5. `recovery-operations.sql`
-6. `seed.sql` *(optional — see "Demo seed" below)*
+6. `kyc.sql`
+7. `seed.sql` *(optional — see "Demo seed" below)*
 
 > The SQL Editor runs as the **service role**, which bypasses RLS — this is required for `seed.sql` to insert rows on behalf of multiple users.
 
@@ -46,6 +48,7 @@ supabase db execute --file supabase/rls-policies.sql
 supabase db execute --file supabase/storage.sql
 supabase db execute --file supabase/recovery.sql
 supabase db execute --file supabase/recovery-operations.sql
+supabase db execute --file supabase/kyc.sql
 # optional:
 supabase db execute --file supabase/seed.sql
 ```
@@ -59,6 +62,14 @@ To create it manually instead (if you skipped `storage.sql`):
 **Storage → New bucket** → name `evidence`, leave **Public** OFF, set the file size limit to **15 MB**, then re-run the policy portion of `storage.sql`.
 
 > The upload path convention is `<case_id>/<file_name>` (see `lib/actions/files.ts` and `lib/mock-data.ts`). Access is granted only when the signed-in user has access to the case id in the **first path segment**.
+
+### 3b. Confirm the `kyc-documents` bucket
+`kyc.sql` creates the private bucket used by the identity verification wizard. Verify under **Storage**:
+- A bucket named **`kyc-documents`** exists and is **Private**.
+- Its limit is **10 MB** and accepted MIME types are JPG, PNG, and PDF.
+- Object paths follow `<user_id>/<submission_id>/<file_name>`.
+
+Administrators should review KYC documents through the app only. The admin review page generates short-lived signed URLs from a server-side route; the service role key is never exposed in the browser.
 
 ### 4. Create the first admin
 New sign-ups default to role **`client`** (via the `handle_new_user()` trigger). To promote a user to admin, run in the SQL Editor:
@@ -123,6 +134,7 @@ NEXT_PUBLIC_DEMO_MODE=true
 - **`evidence` storage:** private bucket; objects readable/writable only under a case-id prefix the user can access; admins all.
 - **`account_recovery`:** RLS on with **no policies** → clients get zero access; only the service role can read/write it. It holds only a **scrypt hash** of each user's recovery phrase — the phrase itself is never stored, logged, or returned.
 - **Recovery operations:** KYC reviews, recovered-funds entries, withdrawal conditions, receipts, and email logs are readable by case access and written by admins. Withdrawal requests can be created by the case user and reviewed by admins.
+- **Full KYC verification:** Clients can submit their own identity package; admins can approve, decline, or request resubmission. KYC documents stay in the private `kyc-documents` bucket and are reviewed with signed URLs only. KYC audit logs are append-only.
 - **Service role bypasses RLS** and is used only on trusted server paths (webhook deposit/release confirmation, guaranteed audit writes, and `account_recovery` reads/writes for recovery-phrase signup/reset).
 
 ---

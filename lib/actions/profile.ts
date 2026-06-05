@@ -50,6 +50,8 @@ export async function updateProfile(input: {
       company: parsed.data.company?.trim() || null,
       phone: parsed.data.phone?.trim() || null,
       avatar_url: parsed.data.avatarUrl || null,
+      kyc_status: "not_started",
+      is_verified: false,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     });

@@ -6,6 +6,7 @@ import {
   Gauge,
   ScrollText,
   UserRound,
+  IdCard,
   type LucideIcon,
 } from "lucide-react";
 import type {
@@ -20,6 +21,8 @@ import type {
   WithdrawalStatus,
   PayoutMethod,
   WithdrawalConditionGate,
+  KycIdType,
+  KycProofType,
 } from "@/lib/types";
 
 /**
@@ -56,6 +59,7 @@ export const PROVIDER_FEE_RATE = 0.015; // 1.5%
 
 // ── Upload constraints ──────────────────────────────────────────────────────
 export const MAX_FILE_SIZE = 15 * 1024 * 1024; // 15 MB
+export const MAX_KYC_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
 
 /**
  * Accepted file types per evidence category, keyed by FileCategory.
@@ -114,6 +118,12 @@ export const ACCEPTED_FILE_TYPES_COMBINED: Record<string, string[]> = {
   "text/plain": [".txt", ".log", ".md"],
   "application/json": [".json"],
   "application/zip": [".zip"],
+};
+
+export const ACCEPTED_KYC_FILE_TYPES: Record<string, string[]> = {
+  "image/png": [".png"],
+  "image/jpeg": [".jpg", ".jpeg"],
+  "application/pdf": [".pdf"],
 };
 
 /** Human-readable labels for file categories (used in selects/badges). */
@@ -254,8 +264,37 @@ export const RECOVERY_STAGE_LABELS: Record<RecoveryCaseStage, string> = {
 export const KYC_STATUS_LABELS: Record<KycStatus, string> = {
   not_started: "Not Started",
   in_review: "In Review",
+  pending_review: "Pending Review",
   verified: "Verified",
   rejected: "Rejected",
+  declined: "Declined",
+  resubmission_required: "Resubmission Required",
+};
+
+export const KYC_STATUS_BADGE_VARIANTS: Record<
+  KycStatus,
+  "secondary" | "warning" | "success" | "destructive" | "info"
+> = {
+  not_started: "secondary",
+  in_review: "warning",
+  pending_review: "warning",
+  verified: "success",
+  rejected: "destructive",
+  declined: "destructive",
+  resubmission_required: "info",
+};
+
+export const KYC_ID_TYPE_LABELS: Record<KycIdType, string> = {
+  passport: "Passport",
+  drivers_license: "Driver's License",
+  national_id: "National ID",
+};
+
+export const KYC_PROOF_TYPE_LABELS: Record<KycProofType, string> = {
+  utility_bill: "Utility Bill",
+  bank_statement: "Bank Statement",
+  lease_agreement: "Lease Agreement",
+  tax_document: "Tax Document",
 };
 
 export const KYC_DOCUMENT_STATUS_LABELS: Record<KycDocumentStatus, string> = {
@@ -327,12 +366,14 @@ export interface NavItem {
 export const NAV_CLIENT: NavItem[] = [
   { label: "Escrow Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { label: "Recovery Cases", href: "/dashboard/cases", icon: FolderKanban },
+  { label: "KYC Verification", href: "/dashboard/kyc", icon: IdCard },
   { label: "Profile & Settings", href: "/dashboard/profile", icon: UserRound },
 ];
 
 export const NAV_ADMIN: NavItem[] = [
   { label: "Command Center", href: "/admin", icon: Gauge },
   { label: "Recovery Cases", href: "/admin/cases", icon: FolderKanban },
+  { label: "KYC Queue", href: "/admin/kyc", icon: IdCard },
   { label: "Disputes", href: "/admin/disputes", icon: ShieldAlert },
 ];
 

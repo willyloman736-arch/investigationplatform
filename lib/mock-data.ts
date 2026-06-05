@@ -25,6 +25,8 @@ import type {
   PlatformStats,
   RecoveryCaseStage,
   KycReview,
+  KycSubmission,
+  KycAuditLog,
   RecoveredFundsEntry,
   WithdrawalCondition,
   WithdrawalRequest,
@@ -42,6 +44,8 @@ export const MOCK_PROFILES: Profile[] = [
     company: "Northwind Capital",
     phone: "+1 415 555 0142",
     avatar_url: null,
+    kyc_status: "pending_review",
+    is_verified: false,
     created_at: "2026-01-04T09:00:00.000Z",
     updated_at: "2026-01-04T09:00:00.000Z",
   },
@@ -53,6 +57,8 @@ export const MOCK_PROFILES: Profile[] = [
     company: "Halcyon Recovery LLC",
     phone: "+1 312 555 0188",
     avatar_url: null,
+    kyc_status: "not_started",
+    is_verified: false,
     created_at: "2026-01-05T11:30:00.000Z",
     updated_at: "2026-01-05T11:30:00.000Z",
   },
@@ -64,6 +70,8 @@ export const MOCK_PROFILES: Profile[] = [
     company: "Digital Asset Investigations Trust Operations",
     phone: "+1 206 555 0117",
     avatar_url: null,
+    kyc_status: "verified",
+    is_verified: true,
     created_at: "2025-12-20T08:00:00.000Z",
     updated_at: "2025-12-20T08:00:00.000Z",
   },
@@ -75,6 +83,8 @@ export const MOCK_PROFILES: Profile[] = [
     company: "Meridian Holdings",
     phone: "+1 646 555 0173",
     avatar_url: null,
+    kyc_status: "verified",
+    is_verified: true,
     created_at: "2026-01-09T14:10:00.000Z",
     updated_at: "2026-01-09T14:10:00.000Z",
   },
@@ -86,6 +96,8 @@ export const MOCK_PROFILES: Profile[] = [
     company: "Summit Forensics",
     phone: "+1 503 555 0150",
     avatar_url: null,
+    kyc_status: "not_started",
+    is_verified: false,
     created_at: "2026-01-12T10:45:00.000Z",
     updated_at: "2026-01-12T10:45:00.000Z",
   },
@@ -94,6 +106,89 @@ export const MOCK_PROFILES: Profile[] = [
 export const MOCK_CLIENT = MOCK_PROFILES[0];
 export const MOCK_COUNTERPARTY = MOCK_PROFILES[1];
 export const MOCK_ADMIN = MOCK_PROFILES[2];
+
+export const MOCK_KYC_SUBMISSIONS: KycSubmission[] = [
+  {
+    id: "99999999-9999-9999-9999-999999999901",
+    user_id: "00000000-0000-0000-0000-000000000001",
+    full_legal_name: "Jordan Avery",
+    date_of_birth: "1990-04-18",
+    nationality: "United States",
+    residential_address: "215 Market Street, San Francisco, CA 94105",
+    phone: "+1 415 555 0142",
+    email: "client@dai.demo",
+    id_type: "passport",
+    id_number: "P00000001",
+    issuing_country: "United States",
+    id_expiry_date: "2031-04-18",
+    id_front_url:
+      "00000000-0000-0000-0000-000000000001/99999999-9999-9999-9999-999999999901/id-front-demo.pdf",
+    id_back_url: null,
+    selfie_url:
+      "00000000-0000-0000-0000-000000000001/99999999-9999-9999-9999-999999999901/selfie-demo.jpg",
+    proof_type: "utility_bill",
+    proof_of_address_url:
+      "00000000-0000-0000-0000-000000000001/99999999-9999-9999-9999-999999999901/proof-demo.pdf",
+    status: "pending_review",
+    admin_notes: null,
+    reviewed_by: null,
+    reviewed_at: null,
+    created_at: "2026-02-24T15:35:00.000Z",
+    updated_at: "2026-02-24T15:35:00.000Z",
+  },
+  {
+    id: "99999999-9999-9999-9999-999999999902",
+    user_id: "00000000-0000-0000-0000-000000000004",
+    full_legal_name: "Taylor Brooks",
+    date_of_birth: "1988-10-09",
+    nationality: "United States",
+    residential_address: "48 Hudson Yards, New York, NY 10001",
+    phone: "+1 646 555 0173",
+    email: "taylor@meridian.demo",
+    id_type: "drivers_license",
+    id_number: "D00000002",
+    issuing_country: "United States",
+    id_expiry_date: "2030-10-09",
+    id_front_url:
+      "00000000-0000-0000-0000-000000000004/99999999-9999-9999-9999-999999999902/id-front-demo.pdf",
+    id_back_url:
+      "00000000-0000-0000-0000-000000000004/99999999-9999-9999-9999-999999999902/id-back-demo.pdf",
+    selfie_url:
+      "00000000-0000-0000-0000-000000000004/99999999-9999-9999-9999-999999999902/selfie-demo.jpg",
+    proof_type: "bank_statement",
+    proof_of_address_url:
+      "00000000-0000-0000-0000-000000000004/99999999-9999-9999-9999-999999999902/proof-demo.pdf",
+    status: "verified",
+    admin_notes: "Identity verified after document review.",
+    reviewed_by: "00000000-0000-0000-0000-000000000003",
+    reviewed_at: "2026-02-22T16:45:00.000Z",
+    created_at: "2026-02-20T11:15:00.000Z",
+    updated_at: "2026-02-22T16:45:00.000Z",
+  },
+];
+
+export const MOCK_KYC_AUDIT_LOGS: KycAuditLog[] = [
+  {
+    id: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaa01",
+    user_id: "00000000-0000-0000-0000-000000000001",
+    submission_id: "99999999-9999-9999-9999-999999999901",
+    action: "submitted",
+    actor_id: "00000000-0000-0000-0000-000000000001",
+    actor_role: "client",
+    notes: "Client submitted a complete KYC package.",
+    created_at: "2026-02-24T15:35:00.000Z",
+  },
+  {
+    id: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaa02",
+    user_id: "00000000-0000-0000-0000-000000000004",
+    submission_id: "99999999-9999-9999-9999-999999999902",
+    action: "approved",
+    actor_id: "00000000-0000-0000-0000-000000000003",
+    actor_role: "admin",
+    notes: "Identity verified after document review.",
+    created_at: "2026-02-22T16:45:00.000Z",
+  },
+];
 
 // ── Cases (5, spanning escrow statuses) ──────────────────────────────────────
 export const MOCK_CASES: Case[] = [

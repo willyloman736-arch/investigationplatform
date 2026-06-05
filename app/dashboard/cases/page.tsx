@@ -171,8 +171,11 @@ const KYC_VARIANT: Record<
 > = {
   not_started: "secondary",
   in_review: "warning",
+  pending_review: "warning",
   verified: "success",
   rejected: "destructive",
+  declined: "destructive",
+  resubmission_required: "warning",
 };
 
 async function resolveUser(): Promise<{
@@ -268,7 +271,9 @@ export default async function ClientCasesPage() {
     )
   ).length;
   const kycInReview = operations.filter(
-    (operation) => operation.kyc?.status === "in_review"
+    (operation) =>
+      operation.kyc?.status === "in_review" ||
+      operation.kyc?.status === "pending_review"
   ).length;
   const openDisputes = cards.filter((card) => card.openDispute).length;
   const recentEmails = operations
@@ -1180,7 +1185,10 @@ function buildActionItems(cards: RecoveryCaseCardData[]) {
         label: "Complete KYC review",
         hint: operation.kyc?.review_note ?? "Identity verification is required before withdrawal approval.",
         icon: IdCard,
-        urgent: operation.kyc?.status === "rejected",
+        urgent:
+          operation.kyc?.status === "rejected" ||
+          operation.kyc?.status === "declined" ||
+          operation.kyc?.status === "resubmission_required",
         href: "/dashboard/profile",
       });
     }

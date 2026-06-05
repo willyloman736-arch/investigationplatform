@@ -68,14 +68,36 @@ export type RecoveryCaseStage =
 export type KycStatus =
   | "not_started"
   | "in_review"
+  | "pending_review"
   | "verified"
-  | "rejected";
+  | "rejected"
+  | "declined"
+  | "resubmission_required";
 
 export type KycDocumentStatus =
   | "not_submitted"
   | "submitted"
   | "verified"
   | "rejected";
+
+export type KycIdType =
+  | "passport"
+  | "drivers_license"
+  | "national_id";
+
+export type KycProofType =
+  | "utility_bill"
+  | "bank_statement"
+  | "lease_agreement"
+  | "tax_document";
+
+export type KycAuditAction =
+  | "submitted"
+  | "approved"
+  | "declined"
+  | "resubmission_requested"
+  | "document_viewed"
+  | "status_synced";
 
 export type PayoutMethod =
   | "bank_transfer"
@@ -116,6 +138,8 @@ export interface Profile {
   company: string | null;
   phone: string | null;
   avatar_url: string | null;
+  kyc_status: KycStatus;
+  is_verified: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -248,6 +272,55 @@ export interface KycReview {
   reviewer_id: string | null;
   review_note: string | null;
   updated_at: string;
+}
+
+export interface KycSubmission {
+  id: string;
+  user_id: string;
+  full_legal_name: string;
+  date_of_birth: string;
+  nationality: string;
+  residential_address: string;
+  phone: string;
+  email: string;
+  id_type: KycIdType;
+  id_number: string;
+  issuing_country: string;
+  id_expiry_date: string;
+  id_front_url: string;
+  id_back_url: string | null;
+  selfie_url: string;
+  proof_type: KycProofType;
+  proof_of_address_url: string;
+  status: KycStatus;
+  admin_notes: string | null;
+  reviewed_by: string | null;
+  reviewed_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface KycAuditLog {
+  id: string;
+  user_id: string;
+  submission_id: string | null;
+  action: KycAuditAction;
+  actor_id: string | null;
+  actor_role: UserRole;
+  notes: string | null;
+  created_at: string;
+}
+
+export interface KycDocumentSignedUrls {
+  id_front_url: string | null;
+  id_back_url: string | null;
+  selfie_url: string | null;
+  proof_of_address_url: string | null;
+}
+
+export interface KycSubmissionWithProfile extends KycSubmission {
+  profile?: Profile | null;
+  signed_urls?: KycDocumentSignedUrls;
 }
 
 export interface RecoveredFundsEntry {

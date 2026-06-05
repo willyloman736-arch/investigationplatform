@@ -56,8 +56,11 @@ const KYC_VARIANT: Record<
 > = {
   not_started: "secondary",
   in_review: "warning",
+  pending_review: "warning",
   verified: "success",
   rejected: "destructive",
+  declined: "destructive",
+  resubmission_required: "warning",
 };
 
 const WITHDRAWAL_VARIANT: Record<
@@ -160,7 +163,8 @@ export function RecoveryOperationsPanel({
     0
   );
   const kycInReview = operations.filter(
-    (item) => item.kyc?.status === "in_review"
+    (item) =>
+      item.kyc?.status === "in_review" || item.kyc?.status === "pending_review"
   ).length;
   const withdrawalQueue = operations.filter((item) =>
     ["conditions_required", "requested", "approved"].includes(

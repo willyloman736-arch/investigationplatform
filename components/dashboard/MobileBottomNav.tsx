@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import {
   FolderKanban,
   Gauge,
+  IdCard,
   LayoutDashboard,
   Menu,
   ShieldAlert,
@@ -19,12 +20,14 @@ import { MobileDrawer } from "@/components/dashboard/MobileDrawer";
 const CLIENT_ITEMS = [
   { label: "Escrow", href: "/dashboard", icon: LayoutDashboard },
   { label: "Cases", href: "/dashboard/cases", icon: FolderKanban },
+  { label: "KYC", href: "/dashboard/kyc", icon: IdCard },
   { label: "Profile", href: "/dashboard/profile", icon: UserRound },
 ];
 
 const ADMIN_ITEMS = [
   { label: "Command", href: "/admin", icon: Gauge },
   { label: "Cases", href: "/admin/cases", icon: FolderKanban },
+  { label: "KYC", href: "/admin/kyc", icon: IdCard },
   { label: "Disputes", href: "/admin/disputes", icon: ShieldAlert },
 ];
 
@@ -34,7 +37,7 @@ export function MobileBottomNav({ role }: { role: UserRole }) {
 
   return (
     <div className="fixed inset-x-0 bottom-0 z-40 border-t border-white/10 bg-background/85 px-2 pb-[max(env(safe-area-inset-bottom),0.5rem)] pt-2 shadow-2xl shadow-black/40 backdrop-blur-2xl lg:hidden">
-      <nav className="mx-auto grid max-w-md grid-cols-4 gap-1" aria-label="Mobile dashboard">
+      <nav className="mx-auto grid max-w-lg grid-cols-5 gap-1" aria-label="Mobile dashboard">
         {items.map((item) => {
           const Icon = item.icon;
           const active =

@@ -79,8 +79,11 @@ const RECEIPT_KINDS: RecoveryReceiptKind[] = [
 const KYC_VARIANT: Record<KycStatus, "secondary" | "warning" | "success" | "destructive"> = {
   not_started: "secondary",
   in_review: "warning",
+  pending_review: "warning",
   verified: "success",
   rejected: "destructive",
+  declined: "destructive",
+  resubmission_required: "warning",
 };
 
 const WITHDRAWAL_VARIANT: Record<

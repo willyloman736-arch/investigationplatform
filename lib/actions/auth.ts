@@ -148,6 +148,8 @@ async function createSignupWorkspace(input: {
       email: input.email,
       full_name: input.fullName,
       role: "client",
+      kyc_status: "not_started",
+      is_verified: false,
     },
     { onConflict: "id" }
   );
@@ -453,7 +455,14 @@ export async function signUp(formData: FormData): Promise<AuthResult> {
     // RLS must allow a user to upsert their own profile row (id = auth.uid()).
     try {
       await supabase.from("profiles").upsert(
-        { id: data.user.id, email, full_name: fullName, role },
+        {
+          id: data.user.id,
+          email,
+          full_name: fullName,
+          role,
+          kyc_status: "not_started",
+          is_verified: false,
+        },
         { onConflict: "id" }
       );
     } catch {

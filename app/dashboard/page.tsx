@@ -261,6 +261,7 @@ export default async function DashboardOverviewPage() {
     const kycStatus = operation.kyc?.status ?? "not_started";
     return (
       kycStatus === "in_review" ||
+      kycStatus === "pending_review" ||
       operation.recovery_stage === "admin_review" ||
       operation.recovery_stage === "more_evidence_needed" ||
       operation.recovery_stage === "withdrawal_review" ||

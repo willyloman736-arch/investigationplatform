@@ -180,7 +180,9 @@ function CommandHero({
     )
   ).length;
   const kycQueue = operations.filter(
-    (operation) => operation.kyc?.status === "in_review"
+    (operation) =>
+      operation.kyc?.status === "in_review" ||
+      operation.kyc?.status === "pending_review"
   ).length;
 
   const heroStats: {
@@ -484,7 +486,7 @@ function CommandLinks({ openDisputes }: { openDisputes: number }) {
       tone: "cyan",
     },
     {
-      href: "/admin#kyc-review",
+      href: "/admin/kyc",
       label: "KYC review",
       hint: "Government ID, selfie, address, phone, email",
       icon: IdCard,

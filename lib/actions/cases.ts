@@ -142,6 +142,15 @@ export async function createCase(
 
   if (profile.role !== "admin") {
     const admin = createAdminClient();
+    await admin
+      .from("profiles")
+      .update({
+        kyc_status: "not_started",
+        is_verified: false,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", profile.id);
+
     await admin.from("recovery_kyc_reviews").upsert(
       {
         case_id: caseRow.id,

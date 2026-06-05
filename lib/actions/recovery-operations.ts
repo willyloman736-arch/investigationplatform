@@ -36,7 +36,15 @@ const noteSchema = z.string().trim().min(1, "A reason note is required.");
 
 const updateKycSchema = z.object({
   caseId: caseIdSchema,
-  status: z.enum(["not_started", "in_review", "verified", "rejected"]),
+  status: z.enum([
+    "not_started",
+    "in_review",
+    "pending_review",
+    "verified",
+    "rejected",
+    "declined",
+    "resubmission_required",
+  ]),
   note: noteSchema,
 });
 
@@ -152,7 +160,11 @@ function kycDocumentPatch(status: KycStatus) {
     };
   }
 
-  if (status === "rejected") {
+  if (
+    status === "rejected" ||
+    status === "declined" ||
+    status === "resubmission_required"
+  ) {
     return {
       government_id_status: "rejected" as const,
       selfie_status: "rejected" as const,
@@ -162,7 +174,7 @@ function kycDocumentPatch(status: KycStatus) {
     };
   }
 
-  if (status === "in_review") {
+  if (status === "in_review" || status === "pending_review") {
     return {
       government_id_status: "submitted" as const,
       selfie_status: "submitted" as const,

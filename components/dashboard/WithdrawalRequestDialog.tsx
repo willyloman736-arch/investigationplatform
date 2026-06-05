@@ -215,7 +215,7 @@ export function WithdrawalRequestDialog({
             </div>
             {kycStatus !== "verified" ? (
               <Button asChild className="w-full">
-                <Link href="/dashboard/profile">
+                <Link href="/dashboard/kyc">
                   Complete KYC
                   <ArrowRight className="h-4 w-4" aria-hidden="true" />
                 </Link>

@@ -1,12 +1,18 @@
 import { redirect } from "next/navigation";
-import { Mail, Settings, ShieldCheck, UserRound } from "lucide-react";
+import Link from "next/link";
+import { ArrowRight, BadgeCheck, Mail, Settings, ShieldCheck, UserRound } from "lucide-react";
 
-import { DEMO_MODE } from "@/lib/constants";
-import { getCurrentUserMock, getRecoveryOperationsCases } from "@/lib/data";
+import {
+  DEMO_MODE,
+  KYC_STATUS_BADGE_VARIANTS,
+  KYC_STATUS_LABELS,
+} from "@/lib/constants";
+import { getCurrentUserMock } from "@/lib/data";
 import { createClient } from "@/lib/supabase/server";
 import type { Profile } from "@/lib/types";
-import { KycVerificationPanel } from "@/components/dashboard/KycVerificationPanel";
 import { ProfileSettingsForm } from "@/components/dashboard/ProfileSettingsForm";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 
 export const dynamic = "force-dynamic";
 
@@ -35,7 +41,7 @@ async function resolveProfile(): Promise<Profile> {
 
 export default async function DashboardProfilePage() {
   const profile = await resolveProfile();
-  const operations = await getRecoveryOperationsCases(profile.role, profile.id);
+  const kycStatus = profile.kyc_status ?? "not_started";
 
   return (
     <div className="space-y-5">
@@ -62,7 +68,7 @@ export default async function DashboardProfilePage() {
           <div className="grid grid-cols-3 gap-2 sm:gap-3 lg:w-[520px]">
             <ProfileMiniStat
               label="Identity"
-              value={profile.full_name ? "Named" : "Needed"}
+              value={profile.is_verified ? "Verified" : KYC_STATUS_LABELS[kycStatus]}
               icon={UserRound}
             />
             <ProfileMiniStat
@@ -79,10 +85,52 @@ export default async function DashboardProfilePage() {
         </div>
       </section>
 
-      <KycVerificationPanel profile={profile} operations={operations} />
+      <KycStatusCard profile={profile} />
 
       <ProfileSettingsForm profile={profile} />
     </div>
+  );
+}
+
+function KycStatusCard({ profile }: { profile: Profile }) {
+  const status = profile.kyc_status ?? "not_started";
+  const verified = profile.is_verified || status === "verified";
+
+  return (
+    <section className="rounded-3xl border border-white/10 bg-white/[0.055] p-4 shadow-2xl shadow-black/20 backdrop-blur-xl sm:p-6">
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+        <div className="flex items-start gap-3">
+          <span className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-primary/15 text-primary ring-1 ring-inset ring-primary/25">
+            {verified ? (
+              <BadgeCheck className="h-5 w-5" aria-hidden="true" />
+            ) : (
+              <ShieldCheck className="h-5 w-5" aria-hidden="true" />
+            )}
+          </span>
+          <div>
+            <div className="flex flex-wrap items-center gap-2">
+              <h2 className="text-xl font-semibold text-foreground">
+                Identity verification
+              </h2>
+              <Badge variant={KYC_STATUS_BADGE_VARIANTS[status]}>
+                {verified ? "Identity Verified" : KYC_STATUS_LABELS[status]}
+              </Badge>
+            </div>
+            <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground">
+              Verification connects your profile, recovery files, and escrow
+              transfer eligibility to one reviewed account record.
+            </p>
+          </div>
+        </div>
+
+        <Button asChild className="h-11 rounded-xl">
+          <Link href="/dashboard/kyc">
+            {verified ? "View verification" : "Complete KYC"}
+            <ArrowRight className="h-4 w-4" aria-hidden="true" />
+          </Link>
+        </Button>
+      </div>
+    </section>
   );
 }
 

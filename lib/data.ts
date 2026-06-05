@@ -31,9 +31,14 @@ import type {
   EmailLog,
   RecoveryOperationsCase,
   RecoveryCaseStage,
+  KycAuditLog,
+  KycDocumentSignedUrls,
+  KycStatus,
+  KycSubmission,
+  KycSubmissionWithProfile,
 } from "@/lib/types";
 import { DEMO_MODE } from "@/lib/constants";
-import { createClient } from "@/lib/supabase/server";
+import { createAdminClient, createClient } from "@/lib/supabase/server";
 import {
   MOCK_PROFILES,
   MOCK_CASES,
@@ -51,6 +56,8 @@ import {
   MOCK_ADMIN,
   MOCK_RECOVERY_CASE_STAGES,
   MOCK_KYC_REVIEWS,
+  MOCK_KYC_SUBMISSIONS,
+  MOCK_KYC_AUDIT_LOGS,
   MOCK_RECOVERED_FUNDS_ENTRIES,
   MOCK_WITHDRAWAL_CONDITIONS,
   MOCK_WITHDRAWAL_REQUESTS,
@@ -476,6 +483,196 @@ export async function getKycReview(
   }
 
   return MOCK_KYC_REVIEWS.find((k) => k.case_id === caseId) ?? null;
+}
+
+async function attachProfilesToKycSubmissions(
+  submissions: KycSubmission[]
+): Promise<KycSubmissionWithProfile[]> {
+  if (submissions.length === 0) return [];
+
+  if (DEMO_MODE) {
+    return submissions.map((submission) => ({
+      ...submission,
+      profile: MOCK_PROFILES.find((p) => p.id === submission.user_id) ?? null,
+    }));
+  }
+
+  const admin = createAdminClient();
+  const userIds = Array.from(new Set(submissions.map((item) => item.user_id)));
+  const { data: profiles } = await admin
+    .from("profiles")
+    .select("*")
+    .in("id", userIds);
+  const profileMap = new Map(
+    ((profiles ?? []) as Profile[]).map((profile) => [profile.id, profile])
+  );
+
+  return submissions.map((submission) => ({
+    ...submission,
+    profile: profileMap.get(submission.user_id) ?? null,
+  }));
+}
+
+export async function getLatestKycSubmissionForUser(
+  userId: string
+): Promise<KycSubmissionWithProfile | null> {
+  if (DEMO_MODE) {
+    const submission =
+      [...MOCK_KYC_SUBMISSIONS]
+        .filter((item) => item.user_id === userId)
+        .sort((a, b) => b.created_at.localeCompare(a.created_at))[0] ?? null;
+    if (!submission) return null;
+    return {
+      ...submission,
+      profile: MOCK_PROFILES.find((p) => p.id === submission.user_id) ?? null,
+    };
+  }
+
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("kyc_submissions")
+    .select("*")
+    .eq("user_id", userId)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle<KycSubmission>();
+
+  if (error || !data) return null;
+  const [withProfile] = await attachProfilesToKycSubmissions([data]);
+  return withProfile ?? null;
+}
+
+export async function getKycSubmissionsForAdmin({
+  status,
+  search,
+}: {
+  status?: KycStatus | "all";
+  search?: string;
+} = {}): Promise<KycSubmissionWithProfile[]> {
+  if (DEMO_MODE) {
+    const withProfiles = await attachProfilesToKycSubmissions(
+      [...MOCK_KYC_SUBMISSIONS].sort((a, b) =>
+        b.created_at.localeCompare(a.created_at)
+      )
+    );
+    return filterKycSubmissions(withProfiles, status, search);
+  }
+
+  const admin = createAdminClient();
+  let query = admin
+    .from("kyc_submissions")
+    .select("*")
+    .order("created_at", { ascending: false })
+    .limit(100);
+
+  if (status && status !== "all") {
+    query = query.eq("status", status);
+  }
+
+  const { data, error } = await query;
+  if (error) return [];
+
+  const withProfiles = await attachProfilesToKycSubmissions(
+    (data ?? []) as KycSubmission[]
+  );
+  return filterKycSubmissions(withProfiles, status, search);
+}
+
+function filterKycSubmissions(
+  submissions: KycSubmissionWithProfile[],
+  status?: KycStatus | "all",
+  search?: string
+): KycSubmissionWithProfile[] {
+  const needle = search?.trim().toLowerCase();
+  return submissions.filter((submission) => {
+    if (status && status !== "all" && submission.status !== status) return false;
+    if (!needle) return true;
+    const profile = submission.profile;
+    return [
+      submission.id,
+      submission.full_legal_name,
+      submission.email,
+      submission.phone,
+      submission.id_number,
+      profile?.full_name,
+      profile?.email,
+      profile?.phone,
+    ]
+      .filter(Boolean)
+      .some((value) => String(value).toLowerCase().includes(needle));
+  });
+}
+
+export async function getKycSubmissionById(
+  submissionId: string
+): Promise<KycSubmissionWithProfile | null> {
+  if (DEMO_MODE) {
+    const submission =
+      MOCK_KYC_SUBMISSIONS.find((item) => item.id === submissionId) ?? null;
+    if (!submission) return null;
+    const [withProfile] = await attachProfilesToKycSubmissions([submission]);
+    return withProfile ?? null;
+  }
+
+  const admin = createAdminClient();
+  const { data, error } = await admin
+    .from("kyc_submissions")
+    .select("*")
+    .eq("id", submissionId)
+    .maybeSingle<KycSubmission>();
+
+  if (error || !data) return null;
+  const [withProfile] = await attachProfilesToKycSubmissions([data]);
+  return withProfile ?? null;
+}
+
+export async function getKycAuditLogsForSubmission(
+  submissionId: string
+): Promise<KycAuditLog[]> {
+  if (DEMO_MODE) {
+    return MOCK_KYC_AUDIT_LOGS.filter(
+      (item) => item.submission_id === submissionId
+    ).sort((a, b) => b.created_at.localeCompare(a.created_at));
+  }
+
+  const admin = createAdminClient();
+  const { data, error } = await admin
+    .from("kyc_audit_logs")
+    .select("*")
+    .eq("submission_id", submissionId)
+    .order("created_at", { ascending: false });
+
+  return error ? [] : ((data ?? []) as KycAuditLog[]);
+}
+
+async function signedKycUrl(path: string | null): Promise<string | null> {
+  if (!path || DEMO_MODE) return null;
+  const admin = createAdminClient();
+  const { data, error } = await admin.storage
+    .from("kyc-documents")
+    .createSignedUrl(path, 60 * 10);
+  return error ? null : data.signedUrl;
+}
+
+export async function getSignedKycDocumentUrls(
+  submission: Pick<
+    KycSubmission,
+    "id_front_url" | "id_back_url" | "selfie_url" | "proof_of_address_url"
+  >
+): Promise<KycDocumentSignedUrls> {
+  const [idFront, idBack, selfie, proof] = await Promise.all([
+    signedKycUrl(submission.id_front_url),
+    signedKycUrl(submission.id_back_url),
+    signedKycUrl(submission.selfie_url),
+    signedKycUrl(submission.proof_of_address_url),
+  ]);
+
+  return {
+    id_front_url: idFront,
+    id_back_url: idBack,
+    selfie_url: selfie,
+    proof_of_address_url: proof,
+  };
 }
 
 export async function getRecoveredFundsEntries(
