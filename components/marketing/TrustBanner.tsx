@@ -6,27 +6,25 @@ import {
 } from "@/components/marketing/OfficialTrustMarks";
 
 /**
- * Security and compliance badges, presented as an auto-scrolling strip under
- * the hero. The detail labels describe platform alignment/readiness without
- * turning the page into a certificate claim.
+ * Security & compliance section under the hero.
  *
- * Pure-CSS marquee: two identical tracks each translating -100% for a seamless
- * loop. Pauses on hover, fades at the edges, stops for prefers-reduced-motion.
+ * Presented as a calm, static, centered grid — compliance reads more credibly
+ * standing still than as a sliding logo reel. Every chip shares one frame and
+ * the seals are normalized to a tone-aware tile (see OfficialTrustLogo), so the
+ * mixed-source set looks like one deliberate row. Wrapping with justify-center
+ * keeps the final (short) row centered instead of orphaned to the left.
  */
-const EDGE_FADE =
-  "[mask-image:linear-gradient(to_right,transparent,#000_7%,#000_93%,transparent)]";
-
-function WorkflowPill(mark: OfficialTrustMark) {
+function CredentialChip(mark: OfficialTrustMark) {
   return (
-    <li className="flex min-w-[220px] shrink-0 items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.055] py-2 pl-2 pr-5 shadow-xl shadow-black/10 backdrop-blur-md">
-      <OfficialTrustLogo mark={mark} className="h-14 w-20" />
-      <span className="whitespace-nowrap">
-        <span className="block text-sm font-semibold leading-tight text-foreground/90">
+    <li className="flex w-[calc(50%-0.375rem)] items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.035] p-3 transition-colors hover:border-white/20 hover:bg-white/[0.06] sm:w-[216px]">
+      <OfficialTrustLogo mark={mark} className="h-12 w-12" />
+      <span className="flex min-w-0 flex-1 flex-col leading-tight">
+        <span className="whitespace-nowrap text-sm font-semibold text-foreground/90">
           {mark.label}
         </span>
-        <span className="mt-1 flex items-center gap-1.5 text-[11px] font-semibold leading-tight text-primary">
-          <span className="h-1.5 w-1.5 rounded-full bg-primary" />
-          {mark.detail}
+        <span className="mt-0.5 inline-flex items-center gap-1.5 text-[11px] font-medium text-muted-foreground">
+          <span className="h-1 w-1 shrink-0 rounded-full bg-primary" />
+          <span className="truncate">{mark.detail}</span>
         </span>
       </span>
     </li>
@@ -40,37 +38,29 @@ interface TrustBannerProps {
 export function TrustBanner({ className }: TrustBannerProps) {
   return (
     <section
-      aria-label="Trust and security"
+      aria-label="Security and compliance"
       className={cn("relative w-full", className)}
     >
       <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="overflow-hidden rounded-2xl border border-white/10 bg-white/[0.04] py-4 backdrop-blur-md">
-          <p className="mb-4 text-center text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground">
-            Security controls · compliance roadmap
-          </p>
-
-          {/* Trust badges — auto-scrolling */}
-          <div className={cn("group relative flex overflow-hidden", EDGE_FADE)}>
-            <ul className="flex shrink-0 items-center gap-3 pr-3 animate-marquee group-hover:[animation-play-state:paused] motion-reduce:animate-none">
-              {COMPLIANCE_ROADMAP_MARKS.map((b) => (
-                <WorkflowPill key={b.label} {...b} />
-              ))}
-            </ul>
-            <ul
-              aria-hidden="true"
-              className="flex shrink-0 items-center gap-3 pr-3 animate-marquee group-hover:[animation-play-state:paused] motion-reduce:animate-none"
-            >
-              {COMPLIANCE_ROADMAP_MARKS.map((b) => (
-                <WorkflowPill key={`${b.label}-dup`} {...b} />
-              ))}
-            </ul>
+        <div className="glass-card rounded-3xl px-6 py-8 sm:px-10 sm:py-10">
+          <div className="mx-auto max-w-2xl text-center">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-primary/80">
+              Security &amp; compliance
+            </p>
+            <h2 className="mt-2 text-balance text-xl font-semibold tracking-tight text-foreground sm:text-2xl">
+              Built around recognized security frameworks
+            </h2>
+            <p className="mx-auto mt-2 max-w-xl text-pretty text-sm leading-relaxed text-muted-foreground">
+              The security, privacy, and data-protection standards the Digital
+              Asset Investigations platform is organized around.
+            </p>
           </div>
 
-          <p className="mt-4 px-5 text-center text-xs leading-relaxed text-muted-foreground">
-            Compliance badges identify the security frameworks and controls the
-            platform is organized around. Formal certification status should be
-            updated only when supporting documentation is issued.
-          </p>
+          <ul className="mx-auto mt-8 flex max-w-5xl flex-wrap items-stretch justify-center gap-3">
+            {COMPLIANCE_ROADMAP_MARKS.map((mark) => (
+              <CredentialChip key={mark.label} {...mark} />
+            ))}
+          </ul>
         </div>
       </div>
     </section>
