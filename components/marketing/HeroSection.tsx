@@ -35,7 +35,7 @@ export function HeroSection() {
       {/* Decorative background (video + overlays) */}
       <HeroBackground />
 
-      <div className="mx-auto w-full max-w-7xl px-4 pb-14 pt-14 sm:px-6 sm:pb-24 sm:pt-28 lg:px-8 lg:pb-32 lg:pt-36">
+      <div className="mx-auto w-full max-w-7xl px-4 pb-10 pt-9 sm:px-6 sm:pb-24 sm:pt-28 lg:px-8 lg:pb-32 lg:pt-36">
         <motion.div
           variants={container}
           initial="hidden"
@@ -56,7 +56,7 @@ export function HeroSection() {
           {/* EXACT headline */}
           <motion.h1
             variants={item}
-            className="mt-5 text-balance text-[1.75rem] font-semibold leading-[1.15] tracking-tight text-foreground sm:mt-6 sm:text-5xl sm:leading-[1.05] lg:text-6xl"
+            className="mt-4 text-balance text-[1.6rem] font-semibold leading-[1.12] tracking-tight text-foreground sm:mt-6 sm:text-5xl sm:leading-[1.05] lg:text-6xl"
           >
             File a Crypto Scam Recovery Complaint and Track Recovered Funds in
             Secure Escrow
@@ -65,7 +65,7 @@ export function HeroSection() {
           {/* Subheadline */}
           <motion.p
             variants={item}
-            className="mt-4 max-w-xl text-pretty text-sm leading-relaxed text-muted-foreground sm:mt-6 sm:text-lg"
+            className="mt-3 max-w-xl text-pretty text-[13px] leading-snug text-muted-foreground sm:mt-6 sm:text-lg sm:leading-relaxed"
           >
             Submit your complaint for free review, upload evidence, complete KYC,
             and follow case updates. When funds are recovered, the escrow record
@@ -75,9 +75,13 @@ export function HeroSection() {
           {/* Primary CTAs */}
           <motion.div
             variants={item}
-            className="mt-7 flex flex-col gap-3 sm:mt-9 sm:flex-row sm:justify-start"
+            className="mt-6 flex items-stretch gap-2.5 sm:mt-9 sm:items-center sm:gap-3 sm:justify-start"
           >
-            <Button asChild size="lg" className="w-full sm:w-auto">
+            <Button
+              asChild
+              size="lg"
+              className="h-auto min-h-[2.5rem] flex-1 whitespace-normal px-3 text-center text-[13px] leading-tight sm:h-10 sm:flex-none sm:whitespace-nowrap sm:px-8 sm:text-sm"
+            >
               <Link href="/register">
                 Open Recovery Case
                 <ArrowRight className="h-4 w-4" />
@@ -87,7 +91,7 @@ export function HeroSection() {
               asChild
               size="lg"
               variant="outline"
-              className="w-full border-white/15 bg-white/5 backdrop-blur-md hover:bg-white/10 sm:w-auto"
+              className="h-auto min-h-[2.5rem] flex-1 whitespace-normal border-white/15 bg-white/5 px-3 text-center text-[13px] leading-tight backdrop-blur-md hover:bg-white/10 sm:h-10 sm:flex-none sm:whitespace-nowrap sm:px-8 sm:text-sm"
             >
               <Link href="/register">Open Secure Escrow Account</Link>
             </Button>
@@ -96,7 +100,7 @@ export function HeroSection() {
           {/* Trust micro-badges */}
           <motion.ul
             variants={item}
-            className="mt-8 flex max-w-2xl flex-wrap items-center justify-start gap-x-5 gap-y-3 sm:mt-10"
+            className="mt-7 flex max-w-2xl flex-wrap items-center justify-start gap-x-5 gap-y-3 sm:mt-10"
           >
             {HERO_TRUST_MARKS.map((badge) => {
               return (
