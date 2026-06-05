@@ -27,6 +27,7 @@ const STATUS_ORDER: EscrowStatus[] = [
   "pending_deposit",
   "securely_escrowed",
   "ready_for_release",
+  "release_approved",
   "under_dispute_audit",
   "release_frozen",
   "released",

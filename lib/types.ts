@@ -22,6 +22,7 @@ export type EscrowStatus =
   | "securely_escrowed"
   | "under_dispute_audit"
   | "ready_for_release"
+  | "release_approved"
   | "release_frozen"
   | "released";
 
@@ -106,11 +107,27 @@ export type PayoutMethod =
 
 export type WithdrawalStatus =
   | "not_requested"
+  | "draft"
+  | "submitted"
+  | "pending_admin_review"
   | "conditions_required"
   | "requested"
+  | "approved_for_processing"
+  | "processing"
   | "approved"
+  | "paid"
+  | "failed"
+  | "rejected"
   | "denied"
-  | "paid_out";
+  | "paid_out"
+  | "cancelled";
+
+export type WithdrawalAdminReviewStatus =
+  | "not_started"
+  | "pending_review"
+  | "approved"
+  | "rejected"
+  | "needs_more_information";
 
 export type WithdrawalConditionGate =
   | "before_request"
@@ -399,17 +416,38 @@ export interface WithdrawalCondition {
 
 export interface WithdrawalRequest {
   id: string;
+  user_id: string;
   case_id: string;
+  escrow_contract_id: string | null;
   profile_id: string;
   amount: number;
   currency: string;
+  provider_fee: number;
+  net_amount: number;
   method: PayoutMethod;
+  withdrawal_method: PayoutMethod;
+  provider: string | null;
+  provider_reference: string | null;
   destination_label: string;
   status: WithdrawalStatus;
+  admin_review_status: WithdrawalAdminReviewStatus;
+  admin_notes: string | null;
   admin_note: string | null;
+  submitted_at: string | null;
   requested_at: string | null;
   reviewed_by: string | null;
   reviewed_at: string | null;
+  processed_at: string | null;
+  completed_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface WithdrawalRequestWithRelations extends WithdrawalRequest {
+  profile?: Profile | null;
+  case?: Case | null;
+  escrow?: EscrowContract | null;
+  kyc?: KycReview | null;
 }
 
 export interface RecoveryReceipt {

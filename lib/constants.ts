@@ -4,6 +4,7 @@ import {
   Wallet,
   ShieldAlert,
   Gauge,
+  CreditCard,
   ScrollText,
   UserRound,
   IdCard,
@@ -178,6 +179,14 @@ export const ESCROW_STATUS_CONFIG: Record<EscrowStatus, StatusConfig> = {
     description:
       "The escrow has been cleared for release after approval or documented resolution.",
   },
+  release_approved: {
+    label: "RELEASE APPROVED",
+    badgeClass:
+      "bg-emerald-500/10 text-emerald-300 border border-emerald-500/30",
+    dotClass: "bg-emerald-300",
+    description:
+      "Release eligibility has been approved and is ready for provider payout review.",
+  },
   release_frozen: {
     label: "RELEASE FROZEN",
     badgeClass:
@@ -306,11 +315,41 @@ export const KYC_DOCUMENT_STATUS_LABELS: Record<KycDocumentStatus, string> = {
 
 export const WITHDRAWAL_STATUS_LABELS: Record<WithdrawalStatus, string> = {
   not_requested: "Not Requested",
+  draft: "Draft",
+  submitted: "Submitted",
+  pending_admin_review: "Pending Review",
   conditions_required: "Conditions Required",
   requested: "Requested",
+  approved_for_processing: "Approved for Processing",
+  processing: "Processing",
   approved: "Approved",
+  paid: "Paid",
+  failed: "Failed",
+  rejected: "Rejected",
   denied: "Denied",
   paid_out: "Paid Out",
+  cancelled: "Cancelled",
+};
+
+export const WITHDRAWAL_STATUS_BADGE_VARIANTS: Record<
+  WithdrawalStatus,
+  "secondary" | "warning" | "success" | "destructive" | "info"
+> = {
+  not_requested: "secondary",
+  draft: "secondary",
+  submitted: "info",
+  pending_admin_review: "warning",
+  conditions_required: "warning",
+  requested: "info",
+  approved_for_processing: "success",
+  processing: "info",
+  approved: "success",
+  paid: "success",
+  failed: "destructive",
+  rejected: "destructive",
+  denied: "destructive",
+  paid_out: "success",
+  cancelled: "secondary",
 };
 
 export const PAYOUT_METHOD_LABELS: Record<PayoutMethod, string> = {
@@ -374,6 +413,7 @@ export const NAV_ADMIN: NavItem[] = [
   { label: "Command Center", href: "/admin", icon: Gauge },
   { label: "Recovery Cases", href: "/admin/cases", icon: FolderKanban },
   { label: "KYC Queue", href: "/admin/kyc", icon: IdCard },
+  { label: "Withdrawals", href: "/admin/withdrawals", icon: CreditCard },
   { label: "Disputes", href: "/admin/disputes", icon: ShieldAlert },
 ];
 

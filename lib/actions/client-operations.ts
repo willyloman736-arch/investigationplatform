@@ -172,19 +172,35 @@ export async function requestEscrowWithdrawal(input: {
   }
 
   if (DEMO_MODE) {
+    const providerFee = Math.round((parsed.data.amount * 0.015 + Number.EPSILON) * 100) / 100;
+    const requestedAt = new Date().toISOString();
     return ok({
       id: "demo-withdrawal-request",
+      user_id: "demo-profile",
       case_id: parsed.data.caseId,
+      escrow_contract_id: null,
       profile_id: "demo-profile",
       amount: parsed.data.amount,
       currency: parsed.data.currency.toUpperCase(),
+      provider_fee: providerFee,
+      net_amount: Math.round((parsed.data.amount - providerFee + Number.EPSILON) * 100) / 100,
       method: parsed.data.method,
+      withdrawal_method: parsed.data.method,
+      provider: parsed.data.method === "card" ? "stripe" : parsed.data.method,
+      provider_reference: null,
       destination_label: parsed.data.destinationLabel,
       status: "requested",
+      admin_review_status: "pending_review",
+      admin_notes: parsed.data.note || null,
       admin_note: parsed.data.note || null,
-      requested_at: new Date().toISOString(),
+      submitted_at: requestedAt,
+      requested_at: requestedAt,
       reviewed_by: null,
       reviewed_at: null,
+      processed_at: null,
+      completed_at: null,
+      created_at: requestedAt,
+      updated_at: requestedAt,
     });
   }
 
@@ -258,13 +274,23 @@ export async function requestEscrowWithdrawal(input: {
     .from("withdrawal_requests")
     .insert({
       case_id: parsed.data.caseId,
+      user_id: ctx.profile.id,
+      escrow_contract_id: escrow.id,
       profile_id: ctx.profile.id,
       amount,
       currency: parsed.data.currency.toUpperCase(),
+      provider_fee: Math.round((amount * 0.015 + Number.EPSILON) * 100) / 100,
+      net_amount: Math.round((amount - amount * 0.015 + Number.EPSILON) * 100) / 100,
       method: parsed.data.method,
+      withdrawal_method: parsed.data.method,
+      provider: parsed.data.method === "card" ? "stripe" : parsed.data.method,
+      provider_reference: null,
       destination_label: parsed.data.destinationLabel,
       status: "requested",
+      admin_review_status: "pending_review",
+      admin_notes: parsed.data.note || null,
       admin_note: parsed.data.note || null,
+      submitted_at: new Date().toISOString(),
       requested_at: new Date().toISOString(),
     })
     .select("*")

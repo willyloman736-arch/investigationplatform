@@ -58,6 +58,7 @@ const adminSetStatusSchema = z.object({
     "securely_escrowed",
     "under_dispute_audit",
     "ready_for_release",
+    "release_approved",
     "release_frozen",
     "released",
   ]),
@@ -113,7 +114,8 @@ export async function adminSetEscrowStatus(
 
   // Keep release_status coherent with a manual status move.
   const releaseStatusPatch =
-    parsed.data.status === "ready_for_release"
+    parsed.data.status === "ready_for_release" ||
+    parsed.data.status === "release_approved"
       ? { release_status: "eligible" as const }
       : parsed.data.status === "securely_escrowed" ||
         parsed.data.status === "pending_deposit"

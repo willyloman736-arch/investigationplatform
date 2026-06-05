@@ -268,6 +268,7 @@ async function syncEscrowFromRecoveredFunds(
         [
           "under_dispute_audit",
           "ready_for_release",
+          "release_approved",
           "release_frozen",
           "released",
         ].includes(preservedWorkflowStatus)

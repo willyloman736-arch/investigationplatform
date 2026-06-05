@@ -4,12 +4,12 @@ import * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
+  CreditCard,
   FolderKanban,
   Gauge,
   IdCard,
   LayoutDashboard,
   Menu,
-  ShieldAlert,
   UserRound,
 } from "lucide-react";
 
@@ -28,7 +28,7 @@ const ADMIN_ITEMS = [
   { label: "Command", href: "/admin", icon: Gauge },
   { label: "Cases", href: "/admin/cases", icon: FolderKanban },
   { label: "KYC", href: "/admin/kyc", icon: IdCard },
-  { label: "Disputes", href: "/admin/disputes", icon: ShieldAlert },
+  { label: "Withdraw", href: "/admin/withdrawals", icon: CreditCard },
 ];
 
 export function MobileBottomNav({ role }: { role: UserRole }) {

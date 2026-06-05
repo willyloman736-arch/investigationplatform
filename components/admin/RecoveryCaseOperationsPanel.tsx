@@ -19,6 +19,7 @@ import {
   PAYOUT_METHOD_LABELS,
   RECOVERY_STAGE_LABELS,
   WITHDRAWAL_CONDITION_GATE_LABELS,
+  WITHDRAWAL_STATUS_BADGE_VARIANTS,
   WITHDRAWAL_STATUS_LABELS,
 } from "@/lib/constants";
 import { cn, formatCurrency, formatDateTime } from "@/lib/utils";
@@ -86,17 +87,7 @@ const KYC_VARIANT: Record<KycStatus, "secondary" | "warning" | "success" | "dest
   resubmission_required: "warning",
 };
 
-const WITHDRAWAL_VARIANT: Record<
-  WithdrawalStatus,
-  "secondary" | "warning" | "success" | "destructive" | "info"
-> = {
-  not_requested: "secondary",
-  conditions_required: "warning",
-  requested: "info",
-  approved: "success",
-  denied: "destructive",
-  paid_out: "success",
-};
+const WITHDRAWAL_VARIANT = WITHDRAWAL_STATUS_BADGE_VARIANTS;
 
 function receiptKindLabel(kind: RecoveryReceiptKind): string {
   return kind

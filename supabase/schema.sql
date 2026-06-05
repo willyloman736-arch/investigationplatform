@@ -9,7 +9,9 @@
 --   4. recovery.sql      (account_recovery: service-role-only phrase hashes)
 --   5. recovery-operations.sql
 --   6. kyc.sql
---   7. seed.sql          (optional demo data)
+--   7. notifications.sql
+--   8. withdrawals.sql
+--   9. seed.sql          (optional demo data)
 --
 -- Safe to re-run: this file is written to be idempotent (IF NOT EXISTS guards,
 -- enum bootstrapping via DO blocks, CREATE OR REPLACE for functions/triggers).
@@ -50,6 +52,7 @@ begin
       'securely_escrowed',
       'under_dispute_audit',
       'ready_for_release',
+      'release_approved',
       'release_frozen',
       'released'
     );

@@ -121,6 +121,15 @@ const ESCROW_TONE: Record<EscrowStatus, EscrowTone> = {
     ring: "#3b82f6",
     text: "text-blue-200",
   },
+  release_approved: {
+    accent: "#10b981",
+    border: "border-emerald-400/25",
+    bg: "bg-emerald-400/[0.08]",
+    chip: "bg-emerald-400/15 text-emerald-200 ring-emerald-400/25",
+    glow: "bg-emerald-400/20",
+    ring: "#10b981",
+    text: "text-emerald-200",
+  },
   release_frozen: {
     accent: "#fb923c",
     border: "border-orange-400/25",
@@ -159,11 +168,20 @@ const WITHDRAWAL_VARIANT: Record<
   "secondary" | "warning" | "success" | "destructive" | "info"
 > = {
   not_requested: "secondary",
+  draft: "secondary",
+  submitted: "info",
+  pending_admin_review: "warning",
   conditions_required: "warning",
   requested: "info",
+  approved_for_processing: "success",
+  processing: "info",
   approved: "success",
+  paid: "success",
+  failed: "destructive",
+  rejected: "destructive",
   denied: "destructive",
   paid_out: "success",
+  cancelled: "secondary",
 };
 
 async function resolveUser(): Promise<{
@@ -1292,6 +1310,7 @@ function getEscrowStep(operation: RecoveryOperationsCase): {
   }
   if (
     status === "ready_for_release" ||
+    status === "release_approved" ||
     operation.escrow?.release_status === "eligible" ||
     withdrawalStatus === "approved"
   ) {

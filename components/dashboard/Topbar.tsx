@@ -164,11 +164,13 @@ function titleFromPath(pathname: string, role: UserRole): string {
   if (role === "admin") {
     if (pathname.startsWith("/admin/cases")) return "Recovery Cases";
     if (pathname.startsWith("/admin/kyc")) return "KYC Queue";
+    if (pathname.startsWith("/admin/withdrawals")) return "Withdrawal Queue";
     if (pathname.startsWith("/admin/disputes")) return "Disputes";
     return "Command Center";
   }
 
   if (pathname.startsWith("/dashboard/kyc")) return "KYC Verification";
+  if (pathname.startsWith("/dashboard/withdraw")) return "Withdraw Funds";
   if (pathname.startsWith("/dashboard/profile")) return "Profile";
   if (pathname.startsWith("/dashboard/cases")) return "Recovery Cases";
   return "Escrow Dashboard";

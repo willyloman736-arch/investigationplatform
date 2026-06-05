@@ -17,7 +17,8 @@ This folder contains the database layer for **Digital Asset Investigations — S
 | 5 | `recovery-operations.sql` | Creates KYC review, recovered-funds, withdrawal-condition, withdrawal-request, receipt, and email-log tables used by the admin command center and client dashboards. |
 | 6 | `kyc.sql` | Creates the full identity-verification flow: profile KYC fields, KYC submissions, KYC audit logs, and private **`kyc-documents`** storage policies. |
 | 7 | `notifications.sql` | Adds `profiles.account_status` + `email_notifications`; creates **`notifications`** (Realtime-enabled) and **`push_subscriptions`** with RLS; adds notifications to the `supabase_realtime` publication. |
-| 8 | `seed.sql` | **Optional.** Loads the same demo dataset the app shows in DEMO mode. Requires the five demo auth users to exist first (see below). |
+| 8 | `withdrawals.sql` | Extends `withdrawal_requests` for the fintech request flow, provider review fields, admin review statuses, and owner-only RLS. |
+| 9 | `seed.sql` | **Optional.** Loads the same demo dataset the app shows in DEMO mode. Requires the five demo auth users to exist first (see below). |
 
 Each file is **idempotent** — safe to re-run.
 
@@ -39,7 +40,8 @@ Open **SQL Editor** (left sidebar) and run the files **in order**. For each file
 5. `recovery-operations.sql`
 6. `kyc.sql`
 7. `notifications.sql`
-8. `seed.sql` *(optional — see "Demo seed" below)*
+8. `withdrawals.sql`
+9. `seed.sql` *(optional — see "Demo seed" below)*
 
 > The SQL Editor runs as the **service role**, which bypasses RLS — this is required for `seed.sql` to insert rows on behalf of multiple users.
 
@@ -52,6 +54,7 @@ supabase db execute --file supabase/recovery.sql
 supabase db execute --file supabase/recovery-operations.sql
 supabase db execute --file supabase/kyc.sql
 supabase db execute --file supabase/notifications.sql
+supabase db execute --file supabase/withdrawals.sql
 # optional:
 supabase db execute --file supabase/seed.sql
 ```
@@ -138,6 +141,7 @@ NEXT_PUBLIC_DEMO_MODE=true
 - **`account_recovery`:** RLS on with **no policies** → clients get zero access; only the service role can read/write it. It holds only a **scrypt hash** of each user's recovery phrase — the phrase itself is never stored, logged, or returned.
 - **Recovery operations:** KYC reviews, recovered-funds entries, withdrawal conditions, receipts, and email logs are readable by case access and written by admins. Withdrawal requests can be created by the case user and reviewed by admins.
 - **Full KYC verification:** Clients can submit their own identity package; admins can approve, decline, or request resubmission. KYC documents stay in the private `kyc-documents` bucket and are reviewed with signed URLs only. KYC audit logs are append-only.
+- **Withdrawal requests:** Clients can see only their own payout requests. Admins can view all requests, approve them for provider processing, reject them with a reason, or mark them as needing more information. Browser UI never moves funds.
 - **Service role bypasses RLS** and is used only on trusted server paths (webhook deposit/release confirmation, guaranteed audit writes, and `account_recovery` reads/writes for recovery-phrase signup/reset).
 
 ---

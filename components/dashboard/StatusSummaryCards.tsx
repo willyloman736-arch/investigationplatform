@@ -37,6 +37,7 @@ interface Derived {
 const ACTIVE_ESCROW_STATUSES: ReadonlySet<EscrowStatus> = new Set<EscrowStatus>([
   "securely_escrowed",
   "ready_for_release",
+  "release_approved",
   "release_frozen",
 ]);
 

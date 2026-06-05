@@ -479,7 +479,7 @@ function CommandLinks({ openDisputes }: { openDisputes: number }) {
       tone: "blue",
     },
     {
-      href: "/admin#withdrawals",
+      href: "/admin/withdrawals",
       label: "Withdrawal queue",
       hint: "Conditions, approvals, payout confirmation",
       icon: CreditCard,

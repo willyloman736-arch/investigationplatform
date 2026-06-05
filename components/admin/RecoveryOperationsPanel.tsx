@@ -18,6 +18,7 @@ import {
   KYC_STATUS_LABELS,
   PAYOUT_METHOD_LABELS,
   RECOVERY_STAGE_LABELS,
+  WITHDRAWAL_STATUS_BADGE_VARIANTS,
   WITHDRAWAL_STATUS_LABELS,
 } from "@/lib/constants";
 import { cn, formatCurrency, formatDate } from "@/lib/utils";
@@ -63,17 +64,7 @@ const KYC_VARIANT: Record<
   resubmission_required: "warning",
 };
 
-const WITHDRAWAL_VARIANT: Record<
-  WithdrawalStatus,
-  "secondary" | "warning" | "success" | "destructive" | "info"
-> = {
-  not_requested: "secondary",
-  conditions_required: "warning",
-  requested: "info",
-  approved: "success",
-  denied: "destructive",
-  paid_out: "success",
-};
+const WITHDRAWAL_VARIANT = WITHDRAWAL_STATUS_BADGE_VARIANTS;
 
 type ActionTone = "urgent" | "warning" | "ready" | "complete" | "neutral";
 

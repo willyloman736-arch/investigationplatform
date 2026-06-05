@@ -27,6 +27,7 @@ import type {
   RecoveredFundsEntry,
   WithdrawalCondition,
   WithdrawalRequest,
+  WithdrawalRequestWithRelations,
   RecoveryReceipt,
   EmailLog,
   RecoveryOperationsCase,
@@ -36,6 +37,7 @@ import type {
   KycStatus,
   KycSubmission,
   KycSubmissionWithProfile,
+  WithdrawalStatus,
 } from "@/lib/types";
 import { DEMO_MODE } from "@/lib/constants";
 import { createAdminClient, createClient } from "@/lib/supabase/server";
@@ -726,6 +728,187 @@ export async function getWithdrawalRequest(
   }
 
   return MOCK_WITHDRAWAL_REQUESTS.find((w) => w.case_id === caseId) ?? null;
+}
+
+export async function getWithdrawalRequestsForUser(
+  userId: string
+): Promise<WithdrawalRequestWithRelations[]> {
+  if (DEMO_MODE) {
+    return attachWithdrawalRelations(
+      MOCK_WITHDRAWAL_REQUESTS.filter(
+        (request) => request.user_id === userId || request.profile_id === userId
+      ).sort((a, b) =>
+        (b.submitted_at ?? b.requested_at ?? b.created_at).localeCompare(
+          a.submitted_at ?? a.requested_at ?? a.created_at
+        )
+      )
+    );
+  }
+
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("withdrawal_requests")
+    .select("*")
+    .or(`user_id.eq.${userId},profile_id.eq.${userId}`)
+    .order("submitted_at", { ascending: false });
+
+  return error ? [] : attachWithdrawalRelations((data ?? []) as WithdrawalRequest[]);
+}
+
+export async function getWithdrawalRequestsForAdmin({
+  status,
+  search,
+}: {
+  status?: WithdrawalStatus | "all";
+  search?: string;
+} = {}): Promise<WithdrawalRequestWithRelations[]> {
+  if (DEMO_MODE) {
+    return filterWithdrawalRequests(
+      await attachWithdrawalRelations(
+        [...MOCK_WITHDRAWAL_REQUESTS].sort((a, b) =>
+          (b.submitted_at ?? b.requested_at ?? b.created_at).localeCompare(
+            a.submitted_at ?? a.requested_at ?? a.created_at
+          )
+        )
+      ),
+      status,
+      search
+    );
+  }
+
+  const admin = createAdminClient();
+  let query = admin
+    .from("withdrawal_requests")
+    .select("*")
+    .order("submitted_at", { ascending: false })
+    .limit(200);
+
+  if (status && status !== "all") query = query.eq("status", status);
+
+  const { data, error } = await query;
+  if (error) return [];
+
+  return filterWithdrawalRequests(
+    await attachWithdrawalRelations((data ?? []) as WithdrawalRequest[]),
+    status,
+    search
+  );
+}
+
+async function attachWithdrawalRelations(
+  requests: WithdrawalRequest[]
+): Promise<WithdrawalRequestWithRelations[]> {
+  if (requests.length === 0) return [];
+
+  if (DEMO_MODE) {
+    return requests.map((request) => {
+      const caseRow =
+        MOCK_CASES.find((item) => item.id === request.case_id) ?? null;
+      return {
+        ...request,
+        profile:
+          MOCK_PROFILES.find(
+            (profile) =>
+              profile.id === request.user_id || profile.id === request.profile_id
+          ) ?? null,
+        case: caseRow,
+        escrow:
+          MOCK_ESCROW_CONTRACTS.find(
+            (escrow) =>
+              escrow.id === request.escrow_contract_id ||
+              escrow.case_id === request.case_id
+          ) ?? null,
+        kyc:
+          MOCK_KYC_REVIEWS.find(
+            (kyc) =>
+              kyc.case_id === request.case_id &&
+              (kyc.profile_id === request.user_id ||
+                kyc.profile_id === request.profile_id)
+          ) ?? null,
+      };
+    });
+  }
+
+  const admin = createAdminClient();
+  const userIds = Array.from(
+    new Set(requests.map((request) => request.user_id ?? request.profile_id))
+  );
+  const caseIds = Array.from(new Set(requests.map((request) => request.case_id)));
+  const escrowIds = Array.from(
+    new Set(
+      requests
+        .map((request) => request.escrow_contract_id)
+        .filter((id): id is string => Boolean(id))
+    )
+  );
+
+  const [profilesResult, casesResult, escrowsResult, kycResult] =
+    await Promise.all([
+      admin.from("profiles").select("*").in("id", userIds),
+      admin.from("cases").select("*").in("id", caseIds),
+      escrowIds.length > 0
+        ? admin.from("escrow_contracts").select("*").in("id", escrowIds)
+        : admin.from("escrow_contracts").select("*").in("case_id", caseIds),
+      admin.from("recovery_kyc_reviews").select("*").in("case_id", caseIds),
+    ]);
+
+  const profileMap = new Map(
+    ((profilesResult.data ?? []) as Profile[]).map((profile) => [
+      profile.id,
+      profile,
+    ])
+  );
+  const caseMap = new Map(
+    ((casesResult.data ?? []) as Case[]).map((caseRow) => [caseRow.id, caseRow])
+  );
+  const escrowRows = (escrowsResult.data ?? []) as EscrowContract[];
+  const escrowById = new Map(escrowRows.map((escrow) => [escrow.id, escrow]));
+  const escrowByCase = new Map(
+    escrowRows.map((escrow) => [escrow.case_id, escrow])
+  );
+  const kycRows = (kycResult.data ?? []) as KycReview[];
+
+  return requests.map((request) => ({
+    ...request,
+    profile: profileMap.get(request.user_id ?? request.profile_id) ?? null,
+    case: caseMap.get(request.case_id) ?? null,
+    escrow:
+      (request.escrow_contract_id
+        ? escrowById.get(request.escrow_contract_id)
+        : null) ??
+      escrowByCase.get(request.case_id) ??
+      null,
+    kyc:
+      kycRows.find(
+        (kyc) =>
+          kyc.case_id === request.case_id &&
+          (kyc.profile_id === request.user_id ||
+            kyc.profile_id === request.profile_id)
+      ) ?? null,
+  }));
+}
+
+function filterWithdrawalRequests(
+  requests: WithdrawalRequestWithRelations[],
+  status?: WithdrawalStatus | "all",
+  search?: string
+): WithdrawalRequestWithRelations[] {
+  const needle = search?.trim().toLowerCase();
+  return requests.filter((request) => {
+    if (status && status !== "all" && request.status !== status) return false;
+    if (!needle) return true;
+    return [
+      request.id,
+      request.case_id,
+      request.case?.case_number,
+      request.profile?.full_name,
+      request.profile?.email,
+      request.profile?.phone,
+      request.destination_label,
+    ]
+      .filter(Boolean)
+      .some((value) => String(value).toLowerCase().includes(needle));
+  });
 }
 
 export async function getRecoveryReceipts(

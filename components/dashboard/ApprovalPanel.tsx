@@ -61,7 +61,8 @@ export function ApprovalPanel({
   const partyBApproved = Boolean(approvalFor("party_b")?.approved);
   const bothApproved = partyAApproved && partyBApproved;
 
-  const isReady = escrowStatus === "ready_for_release";
+  const isReady =
+    escrowStatus === "ready_for_release" || escrowStatus === "release_approved";
   const isReleased = escrowStatus === "released";
   const isBlocked =
     escrowStatus === "under_dispute_audit" ||
