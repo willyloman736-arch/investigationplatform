@@ -17,6 +17,8 @@ import { toast } from "sonner";
 import { cn, formatDateTime } from "@/lib/utils";
 import type { ChatMessage } from "@/lib/types";
 import { sendMessage } from "@/lib/actions/messages";
+import { createClient } from "@/lib/supabase/client";
+import type { RealtimeChannel } from "@supabase/supabase-js";
 
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -57,23 +59,68 @@ export function SecureChat({
   // and the `messages` prop catches up, matching pending entries are dropped.
   // (We avoid React 19's useOptimistic to stay compatible with React 18.3.)
   const [pending, setPending] = useState<ChatMessage[]>([]);
+  // Messages received live via Supabase Realtime that the server list (the
+  // `messages` prop) has not caught up to yet.
+  const [realtime, setRealtime] = useState<ChatMessage[]>([]);
 
+  // Live two-way updates: subscribe to inserts on this case so the other party's
+  // replies appear without a manual refresh. Requires chat_messages in the
+  // supabase_realtime publication (supabase/realtime-messages.sql). Degrades
+  // gracefully — without Supabase/realtime, server revalidation still refreshes
+  // the thread on the next load.
   useEffect(() => {
-    if (pending.length === 0) return;
-    const known = new Set(
+    if (!process.env.NEXT_PUBLIC_SUPABASE_URL) return;
+    const supabase = createClient();
+    const channel: RealtimeChannel = supabase
+      .channel(`case-chat:${caseId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "chat_messages",
+          filter: `case_id=eq.${caseId}`,
+        },
+        (payload) => {
+          const incoming = payload.new as ChatMessage;
+          setRealtime((prev) =>
+            prev.some((m) => m.id === incoming.id) ? prev : [...prev, incoming]
+          );
+        }
+      )
+      .subscribe();
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [caseId]);
+
+  // Reconcile optimistic + realtime entries against the authoritative server
+  // list whenever it changes (drop ones the server now includes).
+  useEffect(() => {
+    const knownIds = new Set(messages.map((m) => m.id));
+    const knownSenderBody = new Set(
       messages.map((m) => `${m.sender_id}|${m.body}`)
     );
+    setRealtime((prev) => prev.filter((m) => !knownIds.has(m.id)));
     setPending((prev) =>
-      prev.filter((p) => !known.has(`${p.sender_id}|${p.body}`))
+      prev.filter((p) => !knownSenderBody.has(`${p.sender_id}|${p.body}`))
     );
-    // Re-run whenever the authoritative server list changes.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [messages]);
 
-  const allMessages = useMemo(
-    () => [...messages, ...pending],
-    [messages, pending]
-  );
+  const allMessages = useMemo(() => {
+    const knownIds = new Set(messages.map((m) => m.id));
+    const realtimeExtra = realtime.filter((m) => !knownIds.has(m.id));
+    const knownSenderBody = new Set(
+      [...messages, ...realtimeExtra].map((m) => `${m.sender_id}|${m.body}`)
+    );
+    const pendingExtra = pending.filter(
+      (p) => !knownSenderBody.has(`${p.sender_id}|${p.body}`)
+    );
+    return [...messages, ...realtimeExtra, ...pendingExtra].sort((a, b) =>
+      a.created_at.localeCompare(b.created_at)
+    );
+  }, [messages, realtime, pending]);
 
   useEffect(() => {
     scrollEndRef.current?.scrollIntoView({ behavior: "smooth" });

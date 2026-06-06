@@ -29,12 +29,14 @@ import {
   ShieldCheck,
   Lock,
   Users,
+  MessageSquare,
   type LucideIcon,
 } from "lucide-react";
 
 import { cn, formatCurrency, formatDateTime, formatDate } from "@/lib/utils";
 import {
   APP_NAME,
+  DEMO_MODE,
   CASE_STATUS_CONFIG,
   DEPOSIT_STATUS_LABELS,
   RELEASE_STATUS_LABELS,
@@ -52,6 +54,8 @@ import {
   getAuditLogs,
   getProfileById,
   getRecoveryCaseOperations,
+  getMessages,
+  getCurrentUserMock,
 } from "@/lib/data";
 import type {
   AuditLog,
@@ -83,6 +87,8 @@ import { FlagActivityDialog } from "@/components/admin/FlagActivityDialog";
 import { ContractVerificationPanel } from "@/components/admin/ContractVerificationPanel";
 import { RecoveryCaseOperationsPanel } from "@/components/admin/RecoveryCaseOperationsPanel";
 import { Icon3D, type Icon3DTone } from "@/components/shared/Icon3D";
+import { SecureChat } from "@/components/dashboard/SecureChat";
+import { createClient } from "@/lib/supabase/server";
 
 interface PageProps {
   params: { caseId: string };
@@ -100,6 +106,19 @@ export async function generateMetadata({ params }: PageProps) {
 function nameForProfile(p: Profile | null | undefined): string {
   if (!p) return "—";
   return p.full_name ?? p.company ?? p.email;
+}
+
+/** Resolve the acting admin's profile id (for chat "mine" alignment). */
+async function resolveCurrentUserId(): Promise<string> {
+  if (DEMO_MODE) {
+    const mock = await getCurrentUserMock("admin");
+    return mock.id;
+  }
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  return user?.id ?? "";
 }
 
 function partyDisplay(
@@ -128,6 +147,8 @@ export default async function AdminCaseDetailPage({ params }: PageProps) {
     disputes,
     auditLogs,
     recoveryOperation,
+    messages,
+    currentAdminId,
   ] = await Promise.all([
       getEscrow(caseId),
       getFiles(caseId),
@@ -137,6 +158,8 @@ export default async function AdminCaseDetailPage({ params }: PageProps) {
       getDisputes(),
       getAuditLogs(caseId),
       getRecoveryCaseOperations(caseId),
+      getMessages(caseId),
+      resolveCurrentUserId(),
     ]);
 
   // Resolve profiles referenced by parties, files, transactions, and audit logs.
@@ -154,6 +177,12 @@ export default async function AdminCaseDetailPage({ params }: PageProps) {
     )
   );
   const profiles = new Map<string, Profile | null>(profileEntries);
+
+  // Display-name lookup for the secure case channel (sender_id → name).
+  const senderNames: Record<string, string> = {};
+  profiles.forEach((profile, id) => {
+    if (profile) senderNames[id] = nameForProfile(profile);
+  });
 
   const resolveActor = (id: string | null): string | undefined => {
     if (!id) return "System";
@@ -361,6 +390,20 @@ export default async function AdminCaseDetailPage({ params }: PageProps) {
             />
           </section>
 
+          {/* Secure case channel — two-way messaging with the client */}
+          <section className="space-y-3">
+            <h3 className="flex items-center gap-2 text-base font-semibold text-foreground">
+              <MessageSquare className="h-4 w-4 text-primary" />
+              Secure case channel
+            </h3>
+            <SecureChat
+              caseId={caseId}
+              messages={messages}
+              currentUserId={currentAdminId}
+              senderNames={senderNames}
+            />
+          </section>
+
           {/* Dispute review */}
           <section className="space-y-3">
             <h3 className="flex items-center gap-2 text-base font-semibold text-foreground">
@@ -498,22 +541,16 @@ function EvidenceReview({
                     </p>
                   )}
                 </div>
-                {file.file_url ? (
-                  <Button asChild variant="outline" size="sm">
-                    <a
-                      href={file.file_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      Open
-                      <ExternalLink className="h-3.5 w-3.5" />
-                    </a>
-                  </Button>
-                ) : (
-                  <Badge variant="secondary" className="shrink-0">
-                    Stored
-                  </Badge>
-                )}
+                <Button asChild variant="outline" size="sm">
+                  <a
+                    href={file.file_url ?? `/api/evidence/${file.id}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    Open
+                    <ExternalLink className="h-3.5 w-3.5" />
+                  </a>
+                </Button>
               </li>
             );
           })}
