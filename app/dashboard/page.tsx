@@ -20,7 +20,6 @@ import {
   Search,
   ShieldAlert,
   ShieldCheck,
-  SlidersHorizontal,
   UploadCloud,
   Wallet,
   type LucideIcon,
@@ -824,17 +823,6 @@ function EscrowAccountsBoard({
         eyebrow="My escrows"
         title="Escrow account status"
         subtitle="Every recovered-funds account connected to your complaint files."
-        action={
-          <div className="flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.045] p-1">
-            <span className="rounded-lg bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground">
-              All
-            </span>
-            <span className="px-3 py-1.5 text-xs font-medium text-muted-foreground">
-              Active
-            </span>
-            <SlidersHorizontal className="mr-2 h-4 w-4 text-muted-foreground" />
-          </div>
-        }
       />
       <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
         {operations.map((operation) => (

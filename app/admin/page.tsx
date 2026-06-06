@@ -503,7 +503,7 @@ function CommandLinks({ openDisputes }: { openDisputes: number }) {
       tone: "red",
     },
     {
-      href: "/admin#receipts",
+      href: "/admin/cases",
       label: "Receipts",
       hint: "Generate and download client records",
       icon: ReceiptText,

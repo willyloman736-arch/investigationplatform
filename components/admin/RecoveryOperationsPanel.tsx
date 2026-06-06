@@ -401,7 +401,7 @@ function QueueRow({ operation }: { operation: RecoveryOperationsCase }) {
 
       <div className="min-w-0 text-sm text-muted-foreground">
         <span className="lg:hidden">Client: </span>
-        <span className="truncate">{clientLabel(operation)}</span>
+        <span className="block truncate">{clientLabel(operation)}</span>
       </div>
 
       <div>

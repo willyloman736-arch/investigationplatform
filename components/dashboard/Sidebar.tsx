@@ -40,7 +40,7 @@ interface NavGroup {
 
 const ADMIN_OPERATIONS_NAV: NavItem[] = [
   { label: "Withdrawal Queue", href: "/admin/withdrawals", icon: CreditCard },
-  { label: "Receipts", href: "/admin#receipts", icon: ReceiptText },
+  { label: "Receipts", href: "/admin/cases", icon: ReceiptText },
   { label: "Escrow Ledger", href: "/admin#escrow-ledger", icon: Wallet },
   { label: "Audit Logs", href: "/admin#audit-logs", icon: ScrollText },
   { label: "Release Checks", href: "/admin/cases", icon: FileCheck2 },
