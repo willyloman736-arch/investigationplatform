@@ -41,6 +41,7 @@ import {
   recordRecoveredFunds,
   reviewWithdrawalRequest,
   sendReceiptEmailPlaceholder,
+  setWithdrawalConditionSatisfied,
 } from "@/lib/actions/recovery-operations";
 
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -217,6 +218,29 @@ export function RecoveryCaseOperationsPanel({
       setConditionLabel("");
       setConditionDescription("");
       toast.success("Withdrawal condition added.");
+      refreshAfterSuccess();
+    });
+  }
+
+  function handleSatisfyCondition(condition: WithdrawalCondition) {
+    run(`condition-${condition.id}`, async () => {
+      const result = await setWithdrawalConditionSatisfied({
+        caseId: operation.id,
+        conditionId: condition.id,
+        satisfied: true,
+      });
+      if (!result.success) {
+        toast.error(result.error ?? "Could not update the condition.");
+        return;
+      }
+      setConditions((items) =>
+        items.map((item) =>
+          item.id === condition.id
+            ? { ...item, satisfied: true, resolved_at: new Date().toISOString() }
+            : item
+        )
+      );
+      toast.success("Condition marked satisfied — withdrawal can now proceed once eligible.");
       refreshAfterSuccess();
     });
   }
@@ -525,15 +549,47 @@ export function RecoveryCaseOperationsPanel({
               Add Condition
             </Button>
           </div>
-          <MiniList
-            items={conditions.map((condition) => ({
-              key: condition.id,
-              title: condition.label,
-              meta: `${WITHDRAWAL_CONDITION_GATE_LABELS[condition.gate]} - ${
-                condition.satisfied ? "Satisfied" : "Open"
-              }`,
-            }))}
-          />
+          {conditions.length === 0 ? (
+            <p className="text-xs text-muted-foreground">
+              No release conditions on this case.
+            </p>
+          ) : (
+            <ul className="space-y-2">
+              {conditions.map((condition) => (
+                <li
+                  key={condition.id}
+                  className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-white/10 bg-background/35 p-3"
+                >
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-medium text-foreground">
+                      {condition.label}
+                    </p>
+                    <p className="text-[11px] text-muted-foreground">
+                      {WITHDRAWAL_CONDITION_GATE_LABELS[condition.gate]}
+                    </p>
+                  </div>
+                  {condition.satisfied ? (
+                    <Badge variant="success">Satisfied</Badge>
+                  ) : (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleSatisfyCondition(condition)}
+                      disabled={isPending}
+                    >
+                      {busyLabel === `condition-${condition.id}` ? (
+                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                      ) : (
+                        <FileCheck2 className="h-3.5 w-3.5" />
+                      )}
+                      Mark satisfied
+                    </Button>
+                  )}
+                </li>
+              ))}
+            </ul>
+          )}
         </PanelBlock>
 
         <PanelBlock icon={ReceiptText} title="Receipts & Email">

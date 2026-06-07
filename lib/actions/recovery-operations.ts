@@ -690,6 +690,81 @@ export async function addWithdrawalCondition(input: {
   }
 }
 
+const satisfyConditionSchema = z.object({
+  caseId: caseIdSchema,
+  conditionId: z.string().trim().min(1, "Condition id is required."),
+  satisfied: z.boolean().optional().default(true),
+});
+
+/**
+ * Mark a release/withdrawal condition as satisfied (or reopen it). Admin-only,
+ * audited, and notifies the client when a requirement is cleared. This is the
+ * missing counterpart to addWithdrawalCondition — without it, a pending
+ * condition blocks the client's withdrawal permanently.
+ */
+export async function setWithdrawalConditionSatisfied(input: {
+  caseId: string;
+  conditionId: string;
+  satisfied?: boolean;
+}): Promise<ActionResult<Partial<WithdrawalCondition>>> {
+  const parsed = satisfyConditionSchema.safeParse(input);
+  if (!parsed.success) {
+    return fail(parsed.error.issues[0]?.message ?? "Invalid condition update.");
+  }
+
+  try {
+    const ctx = await adminOrDemo();
+    if (ctx) {
+      const { data: condition, error } = await ctx.supabase
+        .from("withdrawal_conditions")
+        .update({
+          satisfied: parsed.data.satisfied,
+          resolved_at: parsed.data.satisfied ? nowIso() : null,
+        })
+        .eq("id", parsed.data.conditionId)
+        .eq("case_id", parsed.data.caseId)
+        .select("*")
+        .single<WithdrawalCondition>();
+
+      if (error || !condition) {
+        return fail(error?.message ?? "Could not update the condition.");
+      }
+
+      await logAudit(ctx.supabase, {
+        actorId: ctx.profile.id,
+        caseId: parsed.data.caseId,
+        action: parsed.data.satisfied
+          ? "recovery.withdrawal_condition_satisfied"
+          : "recovery.withdrawal_condition_reopened",
+        entityType: "withdrawal_condition",
+        entityId: condition.id,
+        metadata: { label: condition.label, satisfied: condition.satisfied },
+      });
+
+      if (parsed.data.satisfied) {
+        await notifyCaseClient({
+          caseId: parsed.data.caseId,
+          actorId: ctx.profile.id,
+          type: "withdrawal_conditions",
+          title: "Release requirement completed",
+          body: `A release requirement on your case was marked satisfied: ${condition.label}.`,
+          link: "/dashboard/cases",
+        });
+      }
+
+      revalidateCase(parsed.data.caseId);
+      return ok(condition);
+    }
+
+    revalidateCase(parsed.data.caseId);
+    return ok({ id: parsed.data.conditionId, satisfied: parsed.data.satisfied });
+  } catch (err) {
+    return fail(
+      err instanceof Error ? err.message : "Could not update the condition."
+    );
+  }
+}
+
 export async function reviewWithdrawalRequest(input: {
   caseId: string;
   status: Extract<
