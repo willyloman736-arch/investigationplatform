@@ -99,6 +99,7 @@ export async function updateProfile(input: {
   });
 
   revalidatePath("/dashboard");
+  revalidatePath("/dashboard/escrow");
   revalidatePath("/dashboard/cases");
   revalidatePath("/dashboard/profile");
 

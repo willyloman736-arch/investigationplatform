@@ -33,17 +33,16 @@ import { cn } from "@/lib/utils";
 /**
  * Client registration form.
  *
- * After the account basics, the user picks one of two intents — "File a case"
- * (a recovery complaint) or "Open an escrow account" — and the relevant fields
- * reveal inline. A 12-word recovery phrase is generated in the browser and sent
- * once so the server stores only its hash; on success it is revealed one time.
+ * After the account basics, the user files a recovery complaint. Escrow access
+ * is intentionally gated until a case exists. A 12-word recovery phrase is
+ * generated in the browser and sent once so the server stores only its hash; on
+ * success it is revealed one time.
  *
- * NOTE (demo): in DEMO mode the extra case/escrow fields are collected and
- * validated but not persisted — wiring them to a real case/escrow record is a
- * server follow-up. The TODO below marks where that hook goes.
+ * NOTE (demo): in DEMO mode the case fields are collected and validated but not
+ * persisted.
  */
 
-type Intent = "file_case" | "open_escrow";
+type Intent = "file_case";
 
 const SCAM_TYPES = [
   { value: "investment", label: "Investment / 'pig butchering'" },
@@ -51,17 +50,6 @@ const SCAM_TYPES = [
   { value: "fake_platform", label: "Fake exchange or wallet" },
   { value: "phishing", label: "Phishing / account takeover" },
   { value: "other", label: "Other" },
-];
-
-const ESCROW_ROLES = [
-  { value: "buyer", label: "Buyer (sending funds)" },
-  { value: "seller", label: "Seller (receiving funds)" },
-];
-
-const FEE_PAYERS = [
-  { value: "buyer", label: "Buyer" },
-  { value: "seller", label: "Seller" },
-  { value: "split", label: "Split 50/50" },
 ];
 
 function SubmitButton({ intent }: { intent: Intent | null }) {
@@ -81,11 +69,9 @@ function SubmitButton({ intent }: { intent: Intent | null }) {
       ) : (
         <>
           <UserPlus aria-hidden />
-          {intent === "open_escrow"
-            ? "Create account & open escrow"
-            : intent === "file_case"
-              ? "Create account & file case"
-              : "Create account"}
+          {intent === "file_case"
+            ? "Create account & file case"
+            : "Create account"}
         </>
       )}
     </Button>
@@ -97,10 +83,8 @@ export function RegisterForm() {
   const [error, setError] = useState<string | null>(null);
   const [phrase, setPhrase] = useState<string | null>(null);
 
-  const [intent, setIntent] = useState<Intent | null>(null);
+  const [intent, setIntent] = useState<Intent | null>("file_case");
   const [scamType, setScamType] = useState("investment");
-  const [escrowRole, setEscrowRole] = useState("buyer");
-  const [feePayer, setFeePayer] = useState("buyer");
 
   async function handleAction(formData: FormData) {
     setError(null);
@@ -111,32 +95,18 @@ export function RegisterForm() {
     };
 
     if (!intent) return fail("Choose what you'd like to do first.");
-
-    // Light per-intent validation.
-    const required: [string, string][] =
-      intent === "file_case"
-        ? [
-            ["amountLost", "Enter the amount lost."],
-            ["description", "Briefly describe what happened."],
-          ]
-        : [
-            ["counterpartyEmail", "Enter the counterparty's email."],
-            ["dealTitle", "Add a deal title."],
-            ["escrowAmount", "Enter the escrow amount."],
-          ];
+    const required: [string, string][] = [
+      ["amountLost", "Enter the amount lost."],
+      ["description", "Briefly describe what happened."],
+    ];
     for (const [name, msg] of required) {
       if (!String(formData.get(name) ?? "").trim()) return fail(msg);
     }
 
-    // Both intents are client accounts; carry the intent + select values.
+    // Signup is recovery-case first; escrow unlocks after the case exists.
     formData.set("role", "client");
-    formData.set("intent", intent);
-    if (intent === "file_case") {
-      formData.set("scamType", scamType);
-    } else {
-      formData.set("escrowRole", escrowRole);
-      formData.set("feePayer", feePayer);
-    }
+    formData.set("intent", "file_case");
+    formData.set("scamType", scamType);
 
     // Generate the recovery phrase in the browser; send once for hashing.
     const generated = generateRecoveryPhrase();
@@ -148,9 +118,7 @@ export function RegisterForm() {
     if (result?.error) return fail(result.error);
     if (result?.success) {
       toast.success(
-        intent === "open_escrow"
-          ? "Account created — escrow request captured."
-          : "Account created — case details captured."
+        "Account created — recovery case details captured."
       );
       setPhrase(generated);
     }
@@ -161,7 +129,7 @@ export function RegisterForm() {
       <RecoveryPhraseReveal
         phrase={phrase}
         onConfirmed={() =>
-          router.push(intent === "file_case" ? "/dashboard/cases" : "/dashboard")
+          router.push("/dashboard")
         }
       />
     );
@@ -242,27 +210,21 @@ export function RegisterForm() {
             hint="Report a crypto scam and start recovery."
           />
           <IntentCard
-            active={intent === "open_escrow"}
-            onClick={() => setIntent("open_escrow")}
+            active={false}
+            onClick={() =>
+              toast.info("File a recovery case first. Escrow access unlocks after your case is on file.")
+            }
             icon={Handshake}
             tone="emerald"
-            title="Open an escrow account"
-            hint="Hold funds safely for a deal."
+            title="Escrow after case"
+            hint="Unlocked after a recovery complaint is filed."
+            disabled
           />
         </div>
       </div>
 
       {intent === "file_case" ? (
         <FileCaseFields scamType={scamType} setScamType={setScamType} />
-      ) : null}
-
-      {intent === "open_escrow" ? (
-        <OpenEscrowFields
-          escrowRole={escrowRole}
-          setEscrowRole={setEscrowRole}
-          feePayer={feePayer}
-          setFeePayer={setFeePayer}
-        />
       ) : null}
 
       <SubmitButton intent={intent} />
@@ -282,6 +244,7 @@ function IntentCard({
   tone,
   title,
   hint,
+  disabled = false,
 }: {
   active: boolean;
   onClick: () => void;
@@ -289,6 +252,7 @@ function IntentCard({
   tone: Icon3DTone;
   title: string;
   hint: string;
+  disabled?: boolean;
 }) {
   return (
     <button
@@ -296,9 +260,12 @@ function IntentCard({
       role="radio"
       aria-checked={active}
       onClick={onClick}
+      disabled={disabled}
       className={cn(
         "flex items-start gap-3 rounded-xl border p-3 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-        active
+        disabled
+          ? "cursor-not-allowed border-white/10 bg-white/[0.02] opacity-60"
+          : active
           ? "border-primary/60 bg-primary/10"
           : "border-white/10 bg-white/[0.03] hover:border-white/20 hover:bg-white/[0.05]"
       )}
@@ -403,119 +370,6 @@ function FileCaseFields({
         You&apos;ll upload evidence (screenshots, receipts, chat logs) inside your
         case after signup.
       </p>
-    </div>
-  );
-}
-
-function OpenEscrowFields({
-  escrowRole,
-  setEscrowRole,
-  feePayer,
-  setFeePayer,
-}: {
-  escrowRole: string;
-  setEscrowRole: (v: string) => void;
-  feePayer: string;
-  setFeePayer: (v: string) => void;
-}) {
-  return (
-    <div className="space-y-4 rounded-xl border border-white/10 bg-white/[0.02] p-4">
-      <input type="hidden" name="escrowRole" value={escrowRole} />
-      <input type="hidden" name="feePayer" value={feePayer} />
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-        <div className="space-y-2">
-          <Label htmlFor="escrowRole-trigger">Your role</Label>
-          <Select value={escrowRole} onValueChange={setEscrowRole}>
-            <SelectTrigger
-              id="escrowRole-trigger"
-              className="auth-trigger"
-              aria-label="Your role"
-            >
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {ESCROW_ROLES.map((o) => (
-                <SelectItem key={o.value} value={o.value}>
-                  {o.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="counterpartyEmail">Counterparty email</Label>
-          <Input
-            id="counterpartyEmail"
-            name="counterpartyEmail"
-            type="email"
-            inputMode="email"
-            placeholder="them@example.com"
-            required
-          />
-        </div>
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="dealTitle">Deal title</Label>
-        <Input
-          id="dealTitle"
-          name="dealTitle"
-          placeholder="e.g. 2008 BMW 328xi"
-          required
-        />
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="dealDescription">Description</Label>
-        <Textarea
-          id="dealDescription"
-          name="dealDescription"
-          className="min-h-[72px]"
-          placeholder="What's being bought or sold, and the terms."
-        />
-      </div>
-
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-        <div className="space-y-2">
-          <Label htmlFor="escrowAmount">Amount (USD)</Label>
-          <Input
-            id="escrowAmount"
-            name="escrowAmount"
-            inputMode="decimal"
-            placeholder="0.00"
-            required
-          />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="feePayer-trigger">Fee paid by</Label>
-          <Select value={feePayer} onValueChange={setFeePayer}>
-            <SelectTrigger
-              id="feePayer-trigger"
-              className="auth-trigger"
-              aria-label="Fee paid by"
-            >
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {FEE_PAYERS.map((o) => (
-                <SelectItem key={o.value} value={o.value}>
-                  {o.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="inspectionDays">Inspection (days)</Label>
-          <Input
-            id="inspectionDays"
-            name="inspectionDays"
-            inputMode="numeric"
-            placeholder="3"
-            defaultValue="3"
-          />
-        </div>
-      </div>
     </div>
   );
 }

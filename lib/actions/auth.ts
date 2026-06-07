@@ -411,6 +411,13 @@ export async function signUp(formData: FormData): Promise<AuthResult> {
   }
 
   const { fullName, email, password, role } = parsed.data;
+  const signupIntent = formText(formData, "intent");
+  if (signupIntent && signupIntent !== "file_case") {
+    return {
+      error:
+        "Open a recovery case before enabling secure escrow account access.",
+    };
+  }
 
   // DEMO path: skip real account creation, but still resolve with success so the
   // client can show the (client-generated) recovery-phrase reveal step.
@@ -452,9 +459,10 @@ export async function signUp(formData: FormData): Promise<AuthResult> {
 
   if (data.user) {
     // Fallback profile upsert (the auth.users trigger is the source of truth).
-    // RLS must allow a user to upsert their own profile row (id = auth.uid()).
+    // Use the service role so privileged fields cannot be spoofed by users.
     try {
-      await supabase.from("profiles").upsert(
+      const admin = createAdminClient();
+      await admin.from("profiles").upsert(
         {
           id: data.user.id,
           email,

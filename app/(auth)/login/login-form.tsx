@@ -37,7 +37,7 @@ function SubmitButton() {
   );
 }
 
-export function LoginForm() {
+export function LoginForm({ redirectTo }: { redirectTo?: string }) {
   const [error, setError] = useState<string | null>(null);
 
   async function handleAction(formData: FormData) {
@@ -52,6 +52,7 @@ export function LoginForm() {
 
   return (
     <form action={handleAction} className="space-y-5" noValidate>
+      {redirectTo ? <input type="hidden" name="redirectTo" value={redirectTo} /> : null}
       {error ? (
         <div
           role="alert"

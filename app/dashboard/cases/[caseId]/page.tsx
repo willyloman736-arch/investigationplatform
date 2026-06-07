@@ -20,6 +20,7 @@ import {
   CalendarClock,
   CheckCircle2,
   CircleDashed,
+  ExternalLink,
   FileText,
   Info,
   Receipt,
@@ -343,6 +344,15 @@ export default async function CaseWorkspacePage({
                             {formatDateTime(file.created_at)}
                           </p>
                         </div>
+                        <Link
+                          href={`/api/evidence/${file.id}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex h-9 shrink-0 items-center gap-1 rounded-xl border border-white/10 px-3 text-xs font-semibold text-muted-foreground transition-colors hover:bg-white/[0.055] hover:text-foreground"
+                        >
+                          Open
+                          <ExternalLink className="h-3.5 w-3.5" aria-hidden="true" />
+                        </Link>
                       </li>
                     ))}
                   </ul>

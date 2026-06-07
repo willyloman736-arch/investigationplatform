@@ -60,6 +60,9 @@ function navGroupsForRole(role: UserRole): NavGroup[] {
 function isActiveHref(pathname: string, href: string): boolean {
   if (href.includes("#")) return false;
   if (href === "/dashboard" || href === "/admin") {
+    if (href === "/dashboard") {
+      return pathname === "/dashboard" || pathname.startsWith("/dashboard/cases");
+    }
     return pathname === href;
   }
   return pathname === href || pathname.startsWith(`${href}/`);

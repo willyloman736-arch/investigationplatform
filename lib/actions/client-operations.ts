@@ -4,7 +4,11 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
 import { logAudit } from "@/lib/audit";
-import { DEMO_MODE } from "@/lib/constants";
+import {
+  DEMO_MODE,
+  RELEASE_PROCESSING_FEE_PERCENTAGE,
+  RELEASE_PROCESSING_FEE_RATE,
+} from "@/lib/constants";
 import {
   fail,
   getAuthContext,
@@ -53,6 +57,7 @@ const requestWithdrawalSchema = z.object({
 
 function revalidateClientCase(caseId: string) {
   revalidatePath("/dashboard");
+  revalidatePath("/dashboard/escrow");
   revalidatePath("/dashboard/cases");
   revalidatePath(`/dashboard/cases/${caseId}`);
   revalidatePath("/dashboard/profile");
@@ -265,6 +270,11 @@ export async function requestEscrowWithdrawal(input: {
 
   const available = Number(escrow.net_release_amount ?? 0);
   const amount = Math.round((parsed.data.amount + Number.EPSILON) * 100) / 100;
+  const releaseProcessingFee =
+    Math.round((amount * RELEASE_PROCESSING_FEE_RATE + Number.EPSILON) * 100) /
+    100;
+  const netAmount =
+    Math.round((amount - releaseProcessingFee + Number.EPSILON) * 100) / 100;
   if (amount > available) {
     return fail("Requested amount is higher than the available withdrawal balance.");
   }
@@ -279,14 +289,18 @@ export async function requestEscrowWithdrawal(input: {
       profile_id: ctx.profile.id,
       amount,
       currency: parsed.data.currency.toUpperCase(),
-      provider_fee: Math.round((amount * 0.015 + Number.EPSILON) * 100) / 100,
-      net_amount: Math.round((amount - amount * 0.015 + Number.EPSILON) * 100) / 100,
+      provider_fee: 0,
+      release_processing_fee: releaseProcessingFee,
+      release_processing_fee_percentage: RELEASE_PROCESSING_FEE_PERCENTAGE,
+      net_amount: netAmount,
       method: parsed.data.method,
       withdrawal_method: parsed.data.method,
       provider: parsed.data.method === "card" ? "stripe" : parsed.data.method,
       provider_reference: null,
       destination_label: parsed.data.destinationLabel,
-      status: "requested",
+      status: "awaiting_fee_completion",
+      fee_status: "pending_verification",
+      payment_details: { method: parsed.data.method },
       admin_review_status: "pending_review",
       admin_notes: parsed.data.note || null,
       admin_note: parsed.data.note || null,
@@ -318,8 +332,10 @@ export async function requestEscrowWithdrawal(input: {
       amount,
       currency: data.currency,
       method: data.method,
+      release_processing_fee: releaseProcessingFee,
+      net_amount: netAmount,
     },
-    reason: parsed.data.note || "Client requested escrow transfer.",
+    reason: parsed.data.note || "Client requested escrow transfer pending release fee verification.",
   });
 
   revalidateClientCase(parsed.data.caseId);

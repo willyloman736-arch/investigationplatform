@@ -7,6 +7,7 @@ import {
   CreditCard,
   ScrollText,
   UserRound,
+  UsersRound,
   IdCard,
   type LucideIcon,
 } from "lucide-react";
@@ -57,6 +58,8 @@ export const DEMO_MODE =
 // ── Fee rates (used for display + mock math only; no real balance arithmetic) ─
 export const PLATFORM_FEE_RATE = 0.03; // 3%
 export const PROVIDER_FEE_RATE = 0.015; // 1.5%
+export const RELEASE_PROCESSING_FEE_RATE = 0.2; // 20%
+export const RELEASE_PROCESSING_FEE_PERCENTAGE = 20;
 
 // ── Upload constraints ──────────────────────────────────────────────────────
 export const MAX_FILE_SIZE = 15 * 1024 * 1024; // 15 MB
@@ -317,12 +320,15 @@ export const WITHDRAWAL_STATUS_LABELS: Record<WithdrawalStatus, string> = {
   not_requested: "Not Requested",
   draft: "Draft",
   submitted: "Submitted",
+  pending_review: "Pending Review",
+  awaiting_fee_completion: "Awaiting Fee Completion",
   pending_admin_review: "Pending Review",
   conditions_required: "Conditions Required",
   requested: "Requested",
   approved_for_processing: "Approved for Processing",
-  processing: "Processing",
+  processing: "Processing Payout",
   approved: "Approved",
+  completed: "Payout Completed",
   paid: "Paid",
   failed: "Failed",
   rejected: "Rejected",
@@ -338,12 +344,15 @@ export const WITHDRAWAL_STATUS_BADGE_VARIANTS: Record<
   not_requested: "secondary",
   draft: "secondary",
   submitted: "info",
+  pending_review: "warning",
+  awaiting_fee_completion: "warning",
   pending_admin_review: "warning",
   conditions_required: "warning",
   requested: "info",
   approved_for_processing: "success",
   processing: "info",
   approved: "success",
+  completed: "success",
   paid: "success",
   failed: "destructive",
   rejected: "destructive",
@@ -403,8 +412,8 @@ export interface NavItem {
 }
 
 export const NAV_CLIENT: NavItem[] = [
-  { label: "Escrow Dashboard", href: "/dashboard", icon: LayoutDashboard },
-  { label: "Recovery Cases", href: "/dashboard/cases", icon: FolderKanban },
+  { label: "Recovery Cases", href: "/dashboard", icon: FolderKanban },
+  { label: "Escrow Account", href: "/dashboard/escrow", icon: LayoutDashboard },
   { label: "KYC Verification", href: "/dashboard/kyc", icon: IdCard },
   { label: "Profile & Settings", href: "/dashboard/profile", icon: UserRound },
 ];
@@ -413,6 +422,7 @@ export const NAV_ADMIN: NavItem[] = [
   { label: "Command Center", href: "/admin", icon: Gauge },
   { label: "Recovery Cases", href: "/admin/cases", icon: FolderKanban },
   { label: "KYC Queue", href: "/admin/kyc", icon: IdCard },
+  { label: "Users", href: "/admin/users", icon: UsersRound },
   { label: "Withdrawals", href: "/admin/withdrawals", icon: CreditCard },
   { label: "Disputes", href: "/admin/disputes", icon: ShieldAlert },
 ];

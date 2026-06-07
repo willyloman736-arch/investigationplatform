@@ -19,12 +19,15 @@ begin
       'not_requested',
       'draft',
       'submitted',
+      'pending_review',
+      'awaiting_fee_completion',
       'pending_admin_review',
       'conditions_required',
       'requested',
       'approved_for_processing',
       'processing',
       'approved',
+      'completed',
       'paid',
       'failed',
       'rejected',
@@ -35,9 +38,12 @@ begin
   else
     alter type withdrawal_status add value if not exists 'draft';
     alter type withdrawal_status add value if not exists 'submitted';
+    alter type withdrawal_status add value if not exists 'pending_review';
+    alter type withdrawal_status add value if not exists 'awaiting_fee_completion';
     alter type withdrawal_status add value if not exists 'pending_admin_review';
     alter type withdrawal_status add value if not exists 'approved_for_processing';
     alter type withdrawal_status add value if not exists 'processing';
+    alter type withdrawal_status add value if not exists 'completed';
     alter type withdrawal_status add value if not exists 'paid';
     alter type withdrawal_status add value if not exists 'failed';
     alter type withdrawal_status add value if not exists 'rejected';
@@ -46,6 +52,17 @@ begin
 end$$;
 
 alter type escrow_status add value if not exists 'release_approved';
+
+do $$
+begin
+  if not exists (select 1 from pg_type where typname = 'withdrawal_fee_status') then
+    create type withdrawal_fee_status as enum (
+      'unpaid',
+      'pending_verification',
+      'completed'
+    );
+  end if;
+end$$;
 
 do $$
 begin
@@ -65,10 +82,14 @@ alter table public.withdrawal_requests
   add column if not exists user_id uuid references public.profiles(id) on delete cascade,
   add column if not exists escrow_contract_id uuid references public.escrow_contracts(id) on delete set null,
   add column if not exists provider_fee numeric(14,2) not null default 0,
+  add column if not exists release_processing_fee numeric(14,2) not null default 0,
+  add column if not exists release_processing_fee_percentage numeric(6,2) not null default 20,
   add column if not exists net_amount numeric(14,2) not null default 0,
   add column if not exists withdrawal_method payout_method,
   add column if not exists provider text,
   add column if not exists provider_reference text,
+  add column if not exists fee_status withdrawal_fee_status not null default 'unpaid',
+  add column if not exists payment_details jsonb not null default '{}'::jsonb,
   add column if not exists admin_review_status withdrawal_admin_review_status not null default 'pending_review',
   add column if not exists admin_notes text,
   add column if not exists submitted_at timestamptz,
@@ -83,7 +104,15 @@ set
   withdrawal_method = coalesce(withdrawal_method, method),
   admin_notes = coalesce(admin_notes, admin_note),
   submitted_at = coalesce(submitted_at, requested_at, created_at),
-  net_amount = case when net_amount = 0 then amount else net_amount end,
+  release_processing_fee = case
+    when release_processing_fee = 0 then round((amount * 0.20)::numeric, 2)
+    else release_processing_fee
+  end,
+  release_processing_fee_percentage = coalesce(release_processing_fee_percentage, 20),
+  net_amount = case
+    when net_amount = 0 then round((amount - (amount * 0.20))::numeric, 2)
+    else net_amount
+  end,
   escrow_contract_id = coalesce(
     escrow_contract_id,
     (
@@ -104,6 +133,7 @@ create index if not exists idx_withdrawal_requests_user_id on public.withdrawal_
 create index if not exists idx_withdrawal_requests_escrow_contract_id on public.withdrawal_requests(escrow_contract_id);
 create index if not exists idx_withdrawal_requests_submitted on public.withdrawal_requests(submitted_at desc);
 create index if not exists idx_withdrawal_requests_admin_review on public.withdrawal_requests(admin_review_status);
+create index if not exists idx_withdrawal_requests_fee_status on public.withdrawal_requests(fee_status);
 
 drop trigger if exists trg_withdrawal_requests_updated_at on public.withdrawal_requests;
 create trigger trg_withdrawal_requests_updated_at
@@ -122,13 +152,11 @@ create policy withdrawal_requests_select_owner_or_admin
 
 drop policy if exists withdrawal_requests_insert_case_user on public.withdrawal_requests;
 drop policy if exists withdrawal_requests_insert_owner on public.withdrawal_requests;
-create policy withdrawal_requests_insert_owner
+drop policy if exists withdrawal_requests_insert_admin on public.withdrawal_requests;
+create policy withdrawal_requests_insert_admin
   on public.withdrawal_requests for insert
   to authenticated
-  with check (
-    (user_id = auth.uid() and profile_id = auth.uid())
-    or public.is_admin()
-  );
+  with check (public.is_admin());
 
 drop policy if exists withdrawal_requests_update_admin on public.withdrawal_requests;
 create policy withdrawal_requests_update_admin

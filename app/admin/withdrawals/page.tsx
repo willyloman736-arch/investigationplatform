@@ -15,11 +15,16 @@ import {
   KYC_STATUS_BADGE_VARIANTS,
   KYC_STATUS_LABELS,
   PAYOUT_METHOD_LABELS,
+  RELEASE_PROCESSING_FEE_PERCENTAGE,
   WITHDRAWAL_STATUS_BADGE_VARIANTS,
   WITHDRAWAL_STATUS_LABELS,
 } from "@/lib/constants";
 import { getWithdrawalRequestsForAdmin } from "@/lib/data";
-import type { WithdrawalRequestWithRelations, WithdrawalStatus } from "@/lib/types";
+import type {
+  WithdrawalFeeStatus,
+  WithdrawalRequestWithRelations,
+  WithdrawalStatus,
+} from "@/lib/types";
 import { formatCurrency, formatDateTime } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -38,16 +43,15 @@ const FILTERS: Array<{
   icon: LucideIcon;
 }> = [
   { label: "All", value: "all", icon: CreditCard },
-  { label: "Pending", value: "pending_admin_review", icon: Clock },
-  { label: "Approved", value: "approved_for_processing", icon: CheckCircle2 },
+  { label: "Pending Review", value: "pending_review", icon: Clock },
+  { label: "Awaiting Fee", value: "awaiting_fee_completion", icon: Clock },
   { label: "Processing", value: "processing", icon: ShieldCheck },
-  { label: "Paid", value: "paid", icon: CheckCircle2 },
+  { label: "Completed", value: "completed", icon: CheckCircle2 },
   { label: "Rejected", value: "rejected", icon: XCircle },
 ];
 
 const TERMINAL_STATUSES = new Set<WithdrawalStatus>([
-  "approved_for_processing",
-  "processing",
+  "completed",
   "paid",
   "paid_out",
   "failed",
@@ -60,7 +64,7 @@ function normalizeStatus(value: string | undefined): WithdrawalStatus | "all" {
   const allowed = FILTERS.map((filter) => filter.value);
   return allowed.includes(value as WithdrawalStatus | "all")
     ? (value as WithdrawalStatus | "all")
-    : "pending_admin_review";
+    : "all";
 }
 
 export default async function AdminWithdrawalsPage({
@@ -79,7 +83,11 @@ export default async function AdminWithdrawalsPage({
     return acc;
   }, {});
   const totalPendingValue = allRequests
-    .filter((request) => request.status === "pending_admin_review")
+    .filter((request) =>
+      ["pending_review", "pending_admin_review", "awaiting_fee_completion"].includes(
+        request.status
+      )
+    )
     .reduce((sum, request) => sum + Number(request.amount), 0);
 
   return (
@@ -106,9 +114,17 @@ export default async function AdminWithdrawalsPage({
           </div>
 
           <div className="grid grid-cols-2 gap-2 sm:w-[440px]">
-            <Metric label="Pending" value={counts.pending_admin_review ?? 0} />
-            <Metric label="Approved" value={counts.approved_for_processing ?? 0} />
-            <Metric label="Paid" value={(counts.paid ?? 0) + (counts.paid_out ?? 0)} />
+            <Metric
+              label="Awaiting Fee"
+              value={counts.awaiting_fee_completion ?? 0}
+            />
+            <Metric label="Processing" value={counts.processing ?? 0} />
+            <Metric
+              label="Completed"
+              value={
+                (counts.completed ?? 0) + (counts.paid ?? 0) + (counts.paid_out ?? 0)
+              }
+            />
             <Metric
               label="Pending Value"
               value={formatCurrency(totalPendingValue, "USD")}
@@ -124,7 +140,7 @@ export default async function AdminWithdrawalsPage({
               const Icon = filter.icon;
               const active = status === filter.value;
               const href =
-                filter.value === "pending_admin_review"
+                filter.value === "all"
                   ? "/admin/withdrawals"
                   : `/admin/withdrawals?status=${filter.value}`;
               return (
@@ -199,6 +215,8 @@ function WithdrawalRequestCard({
   const kycStatus = request.kyc?.status ?? profile?.kyc_status ?? "not_started";
   const closed = TERMINAL_STATUSES.has(request.status);
   const method = request.withdrawal_method ?? request.method;
+  const feeStatus = request.fee_status ?? "unpaid";
+  const releaseFee = Number(request.release_processing_fee ?? 0);
 
   return (
     <article className="rounded-3xl border border-white/10 bg-white/[0.055] p-4 shadow-2xl shadow-black/20 backdrop-blur-xl transition-colors hover:border-primary/25 sm:p-5">
@@ -215,6 +233,9 @@ function WithdrawalRequestCard({
           <Badge variant={WITHDRAWAL_STATUS_BADGE_VARIANTS[request.status]}>
             {WITHDRAWAL_STATUS_LABELS[request.status]}
           </Badge>
+          <Badge variant={feeStatusVariant(feeStatus)}>
+            {feeStatusLabel(feeStatus)}
+          </Badge>
           <Badge variant={KYC_STATUS_BADGE_VARIANTS[kycStatus]}>
             KYC {KYC_STATUS_LABELS[kycStatus]}
           </Badge>
@@ -226,7 +247,11 @@ function WithdrawalRequestCard({
         <Info label="Method" value={PAYOUT_METHOD_LABELS[method]} />
         <Info label="Amount" value={formatCurrency(request.amount, request.currency)} />
         <Info label="Net" value={formatCurrency(request.net_amount, request.currency)} />
-        <Info label="Provider fee" value={formatCurrency(request.provider_fee, request.currency)} />
+        <Info
+          label={`Release fee (${RELEASE_PROCESSING_FEE_PERCENTAGE}%)`}
+          value={formatCurrency(releaseFee, request.currency)}
+        />
+        <Info label="Fee Status" value={feeStatusLabel(feeStatus)} />
         <Info label="Provider" value={request.provider ?? "Pending"} />
         <Info
           label="Submitted"
@@ -251,7 +276,12 @@ function WithdrawalRequestCard({
       ) : null}
 
       <div className="mt-4 grid gap-3">
-        <WithdrawalReviewActions withdrawalId={request.id} disabled={closed} />
+        <WithdrawalReviewActions
+          withdrawalId={request.id}
+          status={request.status}
+          feeStatus={feeStatus}
+          disabled={closed}
+        />
         <Button asChild variant="ghost" className="h-11 rounded-xl">
           <Link href={`/admin/cases/${request.case_id}`}>
             Open case file
@@ -274,6 +304,20 @@ function Info({ label, value }: { label: string; value: string }) {
       </p>
     </div>
   );
+}
+
+function feeStatusLabel(status: WithdrawalFeeStatus) {
+  if (status === "pending_verification") return "Fee Pending Verification";
+  if (status === "completed") return "Fee Verified";
+  return "Fee Unpaid";
+}
+
+function feeStatusVariant(
+  status: WithdrawalFeeStatus
+): "secondary" | "warning" | "success" | "destructive" | "info" {
+  if (status === "completed") return "success";
+  if (status === "pending_verification") return "info";
+  return "warning";
 }
 
 function reviewLabel(status: WithdrawalRequestWithRelations["admin_review_status"]) {

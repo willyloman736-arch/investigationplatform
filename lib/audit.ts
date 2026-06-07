@@ -1,12 +1,15 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { createAdminClient } from "@/lib/supabase/server";
 
 /**
- * Append a row to audit_logs. Best-effort: this function swallows all errors and
- * NEVER throws, so audit failures can never break a user-facing mutation. Call
- * it from server actions / route handlers after every important action.
+ * Append a row to audit_logs from trusted server code. Best-effort: this
+ * function swallows all errors and NEVER throws, so audit failures can never
+ * break a user-facing mutation. Call it from server actions / route handlers
+ * after every important action.
  *
- * Pass a Supabase client created on the server (user-scoped or admin). The
- * audit_logs table is append-only by design.
+ * The client parameter is kept for call-site compatibility; inserts prefer the
+ * service-role client so authenticated users cannot forge audit rows directly.
+ * The audit_logs table is append-only by design.
  */
 export interface LogAuditInput {
   actorId?: string | null;
@@ -31,7 +34,14 @@ export async function logAudit(
   }: LogAuditInput
 ): Promise<void> {
   try {
-    await client.from("audit_logs").insert({
+    let auditClient: SupabaseClient = client;
+    try {
+      auditClient = createAdminClient() as unknown as SupabaseClient;
+    } catch {
+      auditClient = client;
+    }
+
+    await auditClient.from("audit_logs").insert({
       actor_id: actorId,
       case_id: caseId,
       action,

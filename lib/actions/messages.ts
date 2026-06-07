@@ -12,6 +12,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
 import { logAudit } from "@/lib/audit";
+import { createAdminClient } from "@/lib/supabase/server";
 import {
   getAuthContext,
   userCanAccessCase,
@@ -133,7 +134,8 @@ export async function markRead(input: MarkReadInput): Promise<ActionResult> {
     return fail("You do not have access to this message.");
   }
 
-  const { error } = await supabase
+  const admin = createAdminClient();
+  const { error } = await admin
     .from("chat_messages")
     .update({ read: true })
     .eq("id", parsed.data.messageId);

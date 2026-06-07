@@ -93,7 +93,7 @@ export function HeroSection() {
               variant="outline"
               className="h-auto min-h-[2.5rem] flex-1 whitespace-normal border-white/15 bg-white/5 px-3 text-center text-[13px] leading-tight backdrop-blur-md hover:bg-white/10 sm:h-10 sm:flex-none sm:whitespace-nowrap sm:px-8 sm:text-sm"
             >
-              <Link href="/register">Open Secure Escrow Account</Link>
+              <Link href="/login?redirectTo=/dashboard/escrow">Secure Escrow Access</Link>
             </Button>
           </motion.div>
 

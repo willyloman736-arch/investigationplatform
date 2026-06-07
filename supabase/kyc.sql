@@ -130,29 +130,19 @@ create policy kyc_submissions_select_owner_or_admin
   using (user_id = auth.uid() or public.is_admin());
 
 drop policy if exists kyc_submissions_insert_owner on public.kyc_submissions;
-create policy kyc_submissions_insert_owner
+drop policy if exists kyc_submissions_insert_admin on public.kyc_submissions;
+create policy kyc_submissions_insert_admin
   on public.kyc_submissions for insert
   to authenticated
-  with check (user_id = auth.uid() or public.is_admin());
+  with check (public.is_admin());
 
 drop policy if exists kyc_submissions_update_owner_resubmit_or_admin on public.kyc_submissions;
-create policy kyc_submissions_update_owner_resubmit_or_admin
+drop policy if exists kyc_submissions_update_admin on public.kyc_submissions;
+create policy kyc_submissions_update_admin
   on public.kyc_submissions for update
   to authenticated
-  using (
-    public.is_admin()
-    or (
-      user_id = auth.uid()
-      and status::text in ('not_started', 'resubmission_required', 'declined', 'rejected')
-    )
-  )
-  with check (
-    public.is_admin()
-    or (
-      user_id = auth.uid()
-      and status::text in ('not_started', 'pending_review')
-    )
-  );
+  using (public.is_admin())
+  with check (public.is_admin());
 
 drop policy if exists kyc_submissions_delete_admin on public.kyc_submissions;
 create policy kyc_submissions_delete_admin
@@ -167,10 +157,7 @@ create policy kyc_audit_logs_select_owner_or_admin
   using (user_id = auth.uid() or public.is_admin());
 
 drop policy if exists kyc_audit_logs_insert_owner_or_admin on public.kyc_audit_logs;
-create policy kyc_audit_logs_insert_owner_or_admin
-  on public.kyc_audit_logs for insert
-  to authenticated
-  with check (actor_id = auth.uid() or public.is_admin());
+drop policy if exists kyc_audit_logs_insert_admin on public.kyc_audit_logs;
 
 -- No update/delete policies on kyc_audit_logs: append-only for normal roles.
 
@@ -219,25 +206,27 @@ create policy kyc_documents_select_owner_or_admin
   );
 
 drop policy if exists kyc_documents_insert_owner_or_admin on storage.objects;
-create policy kyc_documents_insert_owner_or_admin
+drop policy if exists kyc_documents_insert_admin on storage.objects;
+create policy kyc_documents_insert_admin
   on storage.objects for insert
   to authenticated
   with check (
     bucket_id = 'kyc-documents'
-    and (public.kyc_document_owner_id(name) = auth.uid() or public.is_admin())
+    and public.is_admin()
   );
 
 drop policy if exists kyc_documents_update_owner_or_admin on storage.objects;
-create policy kyc_documents_update_owner_or_admin
+drop policy if exists kyc_documents_update_admin on storage.objects;
+create policy kyc_documents_update_admin
   on storage.objects for update
   to authenticated
   using (
     bucket_id = 'kyc-documents'
-    and (public.kyc_document_owner_id(name) = auth.uid() or public.is_admin())
+    and public.is_admin()
   )
   with check (
     bucket_id = 'kyc-documents'
-    and (public.kyc_document_owner_id(name) = auth.uid() or public.is_admin())
+    and public.is_admin()
   );
 
 drop policy if exists kyc_documents_delete_admin on storage.objects;

@@ -19,10 +19,10 @@ export default function RegisterPage() {
           <Logo href={null} />
         </div>
         <h2 className="text-2xl font-semibold tracking-tight text-foreground">
-          Create your account
+          Open your recovery case
         </h2>
         <p className="mt-1.5 text-sm text-muted-foreground">
-          Choose what you want to do, then complete the details.
+          File a crypto scam complaint first. Secure escrow access unlocks after a case is on file.
         </p>
       </div>
 

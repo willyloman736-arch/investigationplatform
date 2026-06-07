@@ -24,7 +24,7 @@ const COLUMNS: FooterColumn[] = [
     links: [
       { label: "Client portal", href: "/login" },
       { label: "Operator sign-in", href: "/operator" },
-      { label: "Open secure escrow account", href: "/register" },
+      { label: "Secure escrow access", href: "/login?redirectTo=/dashboard/escrow" },
       { label: "Withdrawal approval", href: "/how-it-works#workflow" },
       { label: "Evidence audit trail", href: "/how-it-works#security" },
     ],

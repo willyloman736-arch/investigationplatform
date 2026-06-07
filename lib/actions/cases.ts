@@ -19,6 +19,8 @@ import { createAdminClient } from "@/lib/supabase/server";
 import type { CaseStatus, PartyRole } from "@/lib/types";
 import {
   getAuthContext,
+  isAdmin,
+  partyRoleForUser,
   requireAdmin,
   userCanAccessCase,
   ok,
@@ -123,8 +125,9 @@ export async function createCase(
   const platformFee = round2(totalAmount * PLATFORM_FEE_RATE);
   const providerFee = round2(totalAmount * PROVIDER_FEE_RATE);
   const netRelease = round2(totalAmount - platformFee - providerFee);
+  const admin = createAdminClient();
 
-  const { data: escrowRow } = await supabase
+  const { data: escrowRow } = await admin
     .from("escrow_contracts")
     .insert({
       case_id: caseRow.id,
@@ -141,7 +144,6 @@ export async function createCase(
     .maybeSingle<{ id: string }>();
 
   if (profile.role !== "admin") {
-    const admin = createAdminClient();
     await admin
       .from("profiles")
       .update({
@@ -192,7 +194,7 @@ export async function createCase(
     });
   }
   if (parties.length > 0) {
-    await supabase.from("case_parties").insert(parties);
+    await admin.from("case_parties").insert(parties);
   }
 
   await logAudit(supabase, {
@@ -210,6 +212,7 @@ export async function createCase(
   });
 
   revalidatePath("/dashboard/cases");
+  revalidatePath("/dashboard/escrow");
   revalidatePath("/admin/cases");
   return ok({ caseId: caseRow.id, caseNumber: caseRow.case_number });
 }
@@ -271,6 +274,7 @@ export async function updateCaseStatus(
 
   revalidatePath(`/admin/cases/${parsed.data.caseId}`);
   revalidatePath(`/dashboard/cases/${parsed.data.caseId}`);
+  revalidatePath("/dashboard/escrow");
   revalidatePath("/admin/cases");
   return ok();
 }
@@ -362,6 +366,7 @@ export async function assignParties(
 
   revalidatePath(`/admin/cases/${caseId}`);
   revalidatePath(`/dashboard/cases/${caseId}`);
+  revalidatePath("/dashboard/escrow");
   return ok();
 }
 
@@ -401,13 +406,24 @@ export async function signContract(
   if (!allowed) {
     return fail("You do not have access to this case.");
   }
+  if (!isAdmin(profile)) {
+    const partyRole = await partyRoleForUser(
+      supabase,
+      profile,
+      parsed.data.caseId
+    );
+    if (partyRole !== parsed.data.party) {
+      return fail("You can only sign for your assigned party role.");
+    }
+  }
 
   const column =
     parsed.data.party === "party_a"
       ? "contract_signed_by_a"
       : "contract_signed_by_b";
 
-  const { error } = await supabase
+  const admin = createAdminClient();
+  const { error } = await admin
     .from("cases")
     .update({ [column]: true, updated_at: new Date().toISOString() })
     .eq("id", parsed.data.caseId);
@@ -426,6 +442,7 @@ export async function signContract(
   });
 
   revalidatePath(`/dashboard/cases/${parsed.data.caseId}`);
+  revalidatePath("/dashboard/escrow");
   revalidatePath(`/admin/cases/${parsed.data.caseId}`);
   return ok();
 }

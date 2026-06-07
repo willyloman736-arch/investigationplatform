@@ -15,6 +15,7 @@ import { z } from "zod";
 
 import { logAudit } from "@/lib/audit";
 import { notifyCaseClient, notifyUser } from "@/lib/notifications";
+import { createAdminClient } from "@/lib/supabase/server";
 import type {
   AccountStatus,
   DisputeStatus,
@@ -83,7 +84,8 @@ export async function openDispute(
   }
 
   // Gate the case + escrow so nothing can be released during review.
-  await supabase
+  const admin = createAdminClient();
+  await admin
     .from("cases")
     .update({
       status: "under_dispute" as CaseStatus,
@@ -91,7 +93,7 @@ export async function openDispute(
     })
     .eq("id", parsed.data.caseId);
 
-  await supabase
+  await admin
     .from("escrow_contracts")
     .update({
       escrow_status: "under_dispute_audit",
@@ -460,7 +462,8 @@ export async function setAccountStatus(
   const { supabase, profile } = ctx;
   requireAdmin(profile);
 
-  const { error } = await supabase
+  const admin = createAdminClient();
+  const { error } = await admin
     .from("profiles")
     .update({ account_status: parsed.data.status })
     .eq("id", parsed.data.profileId);

@@ -18,7 +18,8 @@ This folder contains the database layer for **Digital Asset Investigations — S
 | 6 | `kyc.sql` | Creates the full identity-verification flow: profile KYC fields, KYC submissions, KYC audit logs, and private **`kyc-documents`** storage policies. |
 | 7 | `notifications.sql` | Adds `profiles.account_status` + `email_notifications`; creates **`notifications`** (Realtime-enabled) and **`push_subscriptions`** with RLS; adds notifications to the `supabase_realtime` publication. |
 | 8 | `withdrawals.sql` | Extends `withdrawal_requests` for the fintech request flow, provider review fields, admin review statuses, and owner-only RLS. |
-| 9 | `seed.sql` | **Optional.** Loads the same demo dataset the app shows in DEMO mode. Requires the five demo auth users to exist first (see below). |
+| 9 | `realtime-messages.sql` | Enables Supabase Realtime on **`chat_messages`** so the per-case Secure Case Channel updates live for client + admin. |
+| 10 | `seed.sql` | **Optional.** Loads the same demo dataset the app shows in DEMO mode. Requires the five demo auth users to exist first (see below). |
 
 Each file is **idempotent** — safe to re-run.
 
@@ -41,7 +42,8 @@ Open **SQL Editor** (left sidebar) and run the files **in order**. For each file
 6. `kyc.sql`
 7. `notifications.sql`
 8. `withdrawals.sql`
-9. `seed.sql` *(optional — see "Demo seed" below)*
+9. `realtime-messages.sql`
+10. `seed.sql` *(optional — see "Demo seed" below)*
 
 > The SQL Editor runs as the **service role**, which bypasses RLS — this is required for `seed.sql` to insert rows on behalf of multiple users.
 
@@ -55,6 +57,7 @@ supabase db execute --file supabase/recovery-operations.sql
 supabase db execute --file supabase/kyc.sql
 supabase db execute --file supabase/notifications.sql
 supabase db execute --file supabase/withdrawals.sql
+supabase db execute --file supabase/realtime-messages.sql
 # optional:
 supabase db execute --file supabase/seed.sql
 ```

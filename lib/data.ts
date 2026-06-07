@@ -410,6 +410,20 @@ export async function getProfileById(id: string): Promise<Profile | null> {
   return MOCK_PROFILES.find((p) => p.id === id) ?? null;
 }
 
+export async function getProfilesForAdmin(): Promise<Profile[]> {
+  if (!DEMO_MODE) {
+    const admin = createAdminClient();
+    const { data, error } = await admin
+      .from("profiles")
+      .select("*")
+      .order("created_at", { ascending: false })
+      .limit(500);
+    return error ? [] : ((data ?? []) as Profile[]);
+  }
+
+  return sortByCreatedDesc(MOCK_PROFILES);
+}
+
 /**
  * Build the rows consumed by FundsBreakdownTable across all visible cases.
  * Joins case + escrow + party display names. Admin sees all; others see theirs.

@@ -7,11 +7,11 @@ import { updateSession } from "@/lib/supabase/middleware";
  * - When NEXT_PUBLIC_DEMO_MODE === "true": the guard is BYPASSED so the app is
  *   viewable from mock data without Supabase configured. DEMO ONLY — this MUST
  *   be "false" (or unset) in production.
- * - Otherwise: unauthenticated users are redirected to /login; authenticated
- *   non-admins hitting /admin are redirected to /dashboard.
+ * - Otherwise: unauthenticated users are redirected to /login. Admin pages are
+ *   authorized by app/admin/layout.tsx using the database profile role.
  *
- * Admin determination: we read the user's role from app_metadata/user_metadata
- * (set at signup / by an admin). This avoids a DB round-trip in middleware.
+ * We do not trust user_metadata for authorization. Middleware only confirms a
+ * valid session; admin authorization is enforced server-side from profiles.
  */
 // Demo mode is ON when explicitly enabled, OR when no Supabase URL is
 // configured (a fresh deploy is a working showcase, not a broken login). Adding
@@ -22,7 +22,6 @@ const DEMO_MODE =
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
-  const isAdminRoute = pathname.startsWith("/admin");
 
   // Demo bypass: still refresh the session (no-op if env missing) but never
   // block access.
@@ -38,16 +37,6 @@ export async function middleware(request: NextRequest) {
     const loginUrl = new URL("/login", request.url);
     loginUrl.searchParams.set("redirectTo", pathname);
     return NextResponse.redirect(loginUrl);
-  }
-
-  // Admin-only routes: non-admins are redirected to their dashboard.
-  if (isAdminRoute) {
-    const role =
-      (user.app_metadata?.role as string | undefined) ??
-      (user.user_metadata?.role as string | undefined);
-    if (role !== "admin") {
-      return NextResponse.redirect(new URL("/dashboard", request.url));
-    }
   }
 
   return response;

@@ -12,7 +12,6 @@ import {
   CheckCircle2,
   CreditCard,
   Loader2,
-  Lock,
   Mail,
   ShieldCheck,
   Wallet,
@@ -46,6 +45,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { StripeCardSetup } from "@/components/dashboard/StripeCardSetup";
 
 type Step = "method" | "details" | "confirm" | "success";
 
@@ -67,6 +67,7 @@ interface FormState {
   billingCountry: string;
   cardholderName: string;
   billingPostalCode: string;
+  cardPaymentMethodId: string;
   paypalEmail: string;
   confirmPaypalEmail: string;
 }
@@ -134,6 +135,7 @@ function initialForm(availableAmount: number): FormState {
     billingCountry: "United States",
     cardholderName: "",
     billingPostalCode: "",
+    cardPaymentMethodId: "",
     paypalEmail: "",
     confirmPaypalEmail: "",
   };
@@ -200,6 +202,9 @@ export function WithdrawalFlow({
     if (method === "card") {
       if (!form.cardholderName.trim()) return toastError("Enter the cardholder name.");
       if (!form.billingPostalCode.trim()) return toastError("Enter the billing ZIP or postal code.");
+      if (!form.cardPaymentMethodId.trim()) {
+        return toastError("Secure the card with Stripe before continuing.");
+      }
     }
     if (method === "paypal") {
       if (!form.paypalEmail.trim()) return toastError("Enter your PayPal email.");
@@ -243,7 +248,7 @@ export function WithdrawalFlow({
     <div className="mx-auto flex w-full max-w-5xl flex-col gap-5 pb-24 lg:pb-8">
       <header className="flex items-center gap-3">
         <Button asChild variant="outline" size="icon" className="h-11 w-11 rounded-2xl">
-          <Link href="/dashboard">
+          <Link href="/dashboard/escrow">
             <ArrowLeft className="h-5 w-5" aria-hidden="true" />
             <span className="sr-only">Back to dashboard</span>
           </Link>
@@ -311,6 +316,7 @@ export function WithdrawalFlow({
               amount={amount}
               availableAmount={availableAmount}
               currency={escrow.currency}
+              caseId={operation.id}
               onBack={() => setStep("method")}
               onContinue={() => {
                 if (validateDetails()) setStep("confirm");
@@ -480,6 +486,7 @@ function DetailsStep({
   amount,
   availableAmount,
   currency,
+  caseId,
   onBack,
   onContinue,
 }: {
@@ -489,6 +496,7 @@ function DetailsStep({
   amount: number;
   availableAmount: number;
   currency: string;
+  caseId: string;
   onBack: () => void;
   onContinue: () => void;
 }) {
@@ -525,7 +533,9 @@ function DetailsStep({
         {method === "bank_transfer" ? (
           <BankFields form={form} update={update} />
         ) : null}
-        {method === "card" ? <CardFields form={form} update={update} /> : null}
+        {method === "card" ? (
+          <CardFields caseId={caseId} form={form} update={update} />
+        ) : null}
         {method === "paypal" ? (
           <PaypalFields form={form} update={update} />
         ) : null}
@@ -606,9 +616,11 @@ function BankFields({
 }
 
 function CardFields({
+  caseId,
   form,
   update,
 }: {
+  caseId: string;
   form: FormState;
   update: <K extends keyof FormState>(key: K, value: FormState[K]) => void;
 }) {
@@ -618,29 +630,26 @@ function CardFields({
         id="cardholder-name"
         label="Cardholder name"
         value={form.cardholderName}
-        onChange={(value) => update("cardholderName", value)}
+        onChange={(value) => {
+          update("cardholderName", value);
+          update("cardPaymentMethodId", "");
+        }}
       />
-      <div className="rounded-2xl border border-primary/20 bg-primary/[0.07] p-4">
-        <div className="flex items-center gap-3">
-          <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-primary/15 text-primary ring-1 ring-inset ring-primary/25">
-            <Lock className="h-5 w-5" aria-hidden="true" />
-          </span>
-          <div>
-            <p className="text-sm font-semibold text-foreground">
-              Card details through Stripe Elements only
-            </p>
-            <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-              Card number, expiry, and CVC are collected by the secure provider
-              step. They are never stored in this dashboard form.
-            </p>
-          </div>
-        </div>
-      </div>
       <Field
         id="billing-postal-code"
         label="Billing ZIP/postal code"
         value={form.billingPostalCode}
-        onChange={(value) => update("billingPostalCode", value)}
+        onChange={(value) => {
+          update("billingPostalCode", value);
+          update("cardPaymentMethodId", "");
+        }}
+      />
+      <StripeCardSetup
+        caseId={caseId}
+        cardholderName={form.cardholderName}
+        postalCode={form.billingPostalCode}
+        paymentMethodId={form.cardPaymentMethodId}
+        onPaymentMethodId={(value) => update("cardPaymentMethodId", value)}
       />
     </div>
   );

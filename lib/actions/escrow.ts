@@ -147,6 +147,7 @@ export async function adminSetEscrowStatus(
 
   revalidatePath(`/admin/cases/${parsed.data.caseId}`);
   revalidatePath(`/dashboard/cases/${parsed.data.caseId}`);
+  revalidatePath("/dashboard/escrow");
   return ok();
 }
 
@@ -227,6 +228,7 @@ export async function confirmDeposit(
 
   revalidatePath(`/admin/cases/${parsed.data.caseId}`);
   revalidatePath(`/dashboard/cases/${parsed.data.caseId}`);
+  revalidatePath("/dashboard/escrow");
   return ok();
 }
 
@@ -294,6 +296,7 @@ export async function freezeRelease(
 
   revalidatePath(`/admin/cases/${parsed.data.caseId}`);
   revalidatePath(`/dashboard/cases/${parsed.data.caseId}`);
+  revalidatePath("/dashboard/escrow");
   return ok();
 }
 
@@ -365,6 +368,7 @@ export async function requestAdditionalVerification(
 
   revalidatePath(`/admin/cases/${parsed.data.caseId}`);
   revalidatePath(`/dashboard/cases/${parsed.data.caseId}`);
+  revalidatePath("/dashboard/escrow");
   return ok();
 }
 
@@ -439,5 +443,6 @@ export async function approveReleaseEligibility(
 
   revalidatePath(`/admin/cases/${parsed.data.caseId}`);
   revalidatePath(`/dashboard/cases/${parsed.data.caseId}`);
+  revalidatePath("/dashboard/escrow");
   return ok();
 }

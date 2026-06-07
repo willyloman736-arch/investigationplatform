@@ -11,8 +11,9 @@
 --   => the FIRST path segment is the case id, so access is gated by
 --      has_case_access(<that case id>).
 --
--- A user may read/write objects only under a case-id prefix they can access;
--- admins can access all. The SERVICE ROLE bypasses these policies.
+-- A user may read objects only under a case-id prefix they can access; uploads,
+-- updates, and deletes are admin/server-only. The SERVICE ROLE bypasses these
+-- policies.
 --
 -- Safe to re-run.
 -- ============================================================================
@@ -72,8 +73,8 @@ grant execute on function public.evidence_case_id(text) to authenticated, servic
 
 -- ── Policies on storage.objects scoped to the "evidence" bucket ───────────────
 -- RLS is already enabled on storage.objects by Supabase. We add four policies
--- (select / insert / update / delete), each requiring case access to the case
--- id encoded in the object's first path segment.
+-- (select / insert / update / delete), with user reads scoped to the case id
+-- encoded in the object's first path segment.
 
 drop policy if exists evidence_select_access on storage.objects;
 create policy evidence_select_access
@@ -85,38 +86,37 @@ create policy evidence_select_access
   );
 
 drop policy if exists evidence_insert_access on storage.objects;
-create policy evidence_insert_access
+drop policy if exists evidence_insert_admin on storage.objects;
+create policy evidence_insert_admin
   on storage.objects for insert
   to authenticated
   with check (
     bucket_id = 'evidence'
-    and public.has_case_access(public.evidence_case_id(name))
+    and public.is_admin()
   );
 
 drop policy if exists evidence_update_access on storage.objects;
-create policy evidence_update_access
+drop policy if exists evidence_update_admin on storage.objects;
+create policy evidence_update_admin
   on storage.objects for update
   to authenticated
   using (
     bucket_id = 'evidence'
-    and public.has_case_access(public.evidence_case_id(name))
+    and public.is_admin()
   )
   with check (
     bucket_id = 'evidence'
-    and public.has_case_access(public.evidence_case_id(name))
+    and public.is_admin()
   );
 
 drop policy if exists evidence_delete_access on storage.objects;
-create policy evidence_delete_access
+drop policy if exists evidence_delete_admin on storage.objects;
+create policy evidence_delete_admin
   on storage.objects for delete
   to authenticated
   using (
     bucket_id = 'evidence'
-    and (
-      public.is_admin()
-      or owner = auth.uid()
-    )
-    and public.has_case_access(public.evidence_case_id(name))
+    and public.is_admin()
   );
 
 -- ============================================================================

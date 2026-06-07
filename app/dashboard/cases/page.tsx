@@ -377,7 +377,7 @@ function RecoveryHero({
               </Link>
             </Button>
             <Button asChild variant="outline">
-              <Link href="/dashboard">
+              <Link href="/dashboard/escrow">
                 <Wallet className="h-4 w-4" />
                 Open secure escrow account
               </Link>

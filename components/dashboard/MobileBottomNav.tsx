@@ -18,8 +18,8 @@ import type { UserRole } from "@/lib/types";
 import { MobileDrawer } from "@/components/dashboard/MobileDrawer";
 
 const CLIENT_ITEMS = [
-  { label: "Escrow", href: "/dashboard", icon: LayoutDashboard },
-  { label: "Cases", href: "/dashboard/cases", icon: FolderKanban },
+  { label: "Cases", href: "/dashboard", icon: FolderKanban },
+  { label: "Escrow", href: "/dashboard/escrow", icon: LayoutDashboard },
   { label: "KYC", href: "/dashboard/kyc", icon: IdCard },
   { label: "Profile", href: "/dashboard/profile", icon: UserRound },
 ];
@@ -42,7 +42,9 @@ export function MobileBottomNav({ role }: { role: UserRole }) {
           const Icon = item.icon;
           const active =
             item.href === "/dashboard" || item.href === "/admin"
-              ? pathname === item.href
+              ? item.href === "/dashboard"
+                ? pathname === "/dashboard" || pathname.startsWith("/dashboard/cases")
+                : pathname === item.href
               : pathname === item.href || pathname.startsWith(`${item.href}/`);
 
           return (

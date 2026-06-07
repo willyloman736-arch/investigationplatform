@@ -137,6 +137,7 @@ function revalidateCase(caseId: string) {
   revalidatePath("/admin/cases");
   revalidatePath(`/admin/cases/${caseId}`);
   revalidatePath("/dashboard");
+  revalidatePath("/dashboard/escrow");
   revalidatePath("/dashboard/cases");
   revalidatePath(`/dashboard/cases/${caseId}`);
 }

@@ -139,6 +139,7 @@ async function uploadKycFile({
 
 function revalidateKycSurfaces(userId?: string, submissionId?: string) {
   revalidatePath("/dashboard");
+  revalidatePath("/dashboard/escrow");
   revalidatePath("/dashboard/cases");
   revalidatePath("/dashboard/kyc");
   revalidatePath("/dashboard/profile");

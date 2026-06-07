@@ -109,12 +109,15 @@ export type WithdrawalStatus =
   | "not_requested"
   | "draft"
   | "submitted"
+  | "pending_review"
+  | "awaiting_fee_completion"
   | "pending_admin_review"
   | "conditions_required"
   | "requested"
   | "approved_for_processing"
   | "processing"
   | "approved"
+  | "completed"
   | "paid"
   | "failed"
   | "rejected"
@@ -128,6 +131,11 @@ export type WithdrawalAdminReviewStatus =
   | "approved"
   | "rejected"
   | "needs_more_information";
+
+export type WithdrawalFeeStatus =
+  | "unpaid"
+  | "pending_verification"
+  | "completed";
 
 export type WithdrawalConditionGate =
   | "before_request"
@@ -423,6 +431,8 @@ export interface WithdrawalRequest {
   amount: number;
   currency: string;
   provider_fee: number;
+  release_processing_fee?: number;
+  release_processing_fee_percentage?: number;
   net_amount: number;
   method: PayoutMethod;
   withdrawal_method: PayoutMethod;
@@ -430,6 +440,8 @@ export interface WithdrawalRequest {
   provider_reference: string | null;
   destination_label: string;
   status: WithdrawalStatus;
+  fee_status?: WithdrawalFeeStatus;
+  payment_details?: Record<string, unknown> | null;
   admin_review_status: WithdrawalAdminReviewStatus;
   admin_notes: string | null;
   admin_note: string | null;

@@ -11,7 +11,13 @@ export const metadata: Metadata = {
   description: `Sign in to your ${APP_NAME} account to manage recovery complaints, KYC, escrow, and withdrawal requests.`,
 };
 
-export default function LoginPage() {
+export default function LoginPage({
+  searchParams,
+}: {
+  searchParams?: { redirectTo?: string };
+}) {
+  const redirectTo = searchParams?.redirectTo;
+
   return (
     <AuthCard>
       <div className="mb-6 flex flex-col items-center text-center">
@@ -37,7 +43,7 @@ export default function LoginPage() {
         </div>
       ) : null}
 
-      <LoginForm />
+      <LoginForm redirectTo={redirectTo} />
 
       <p className="mt-6 text-center text-sm text-muted-foreground">
         New to {APP_NAME}?{" "}

@@ -13,6 +13,7 @@
 import { revalidatePath } from "next/cache";
 
 import { logAudit } from "@/lib/audit";
+import { createAdminClient } from "@/lib/supabase/server";
 import {
   ACCEPTED_FILE_TYPES,
   ACCEPTED_FILE_TYPES_COMBINED,
@@ -125,8 +126,9 @@ export async function uploadFile(formData: FormData): Promise<ActionResult> {
   // ── Upload to Supabase Storage at `<caseId>/<filename>` ────────────────────
   const fileName = safeFileName(file.name);
   const storagePath = `${caseId}/${fileName}`;
+  const admin = createAdminClient();
 
-  const { error: uploadError } = await supabase.storage
+  const { error: uploadError } = await admin.storage
     .from(STORAGE_BUCKET)
     .upload(storagePath, file, {
       contentType: file.type || "application/octet-stream",
@@ -139,7 +141,7 @@ export async function uploadFile(formData: FormData): Promise<ActionResult> {
 
   // Evidence is private; expose a path, not a public URL. The UI can request a
   // signed URL on demand. We store file_url as null here.
-  const { error: insertError } = await supabase.from("uploaded_files").insert({
+  const { error: insertError } = await admin.from("uploaded_files").insert({
     case_id: caseId,
     uploaded_by: profile.id,
     file_name: file.name,
@@ -152,7 +154,7 @@ export async function uploadFile(formData: FormData): Promise<ActionResult> {
 
   if (insertError) {
     // Best-effort cleanup of the orphaned object so storage and DB stay in sync.
-    await supabase.storage.from(STORAGE_BUCKET).remove([storagePath]);
+    await admin.storage.from(STORAGE_BUCKET).remove([storagePath]);
     return fail(`Could not record the file: ${insertError.message}`);
   }
 

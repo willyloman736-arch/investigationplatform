@@ -9,11 +9,12 @@
 --   * Users see only their own cases; admins see all.
 --   * Case access = admin OR case creator OR assigned_admin OR a party
 --     (case_parties row) on that case.
---   * audit_logs: insert by any authenticated user; select by case access or
---     admin; NEVER update/delete (no such policies exist -> denied).
+--   * audit_logs: insert by trusted server/service-role code only; select by
+--     case access or admin; NEVER update/delete (no such policies exist -> denied).
 --   * approvals: a party may upsert ONLY their own party_role row on a case
 --     they can access.
---   * profiles: self select/update; admins may do anything.
+--   * profiles: self select/update of safe profile fields only; privileged
+--     fields such as role, verification, and account status are server-only.
 --
 -- NOTE: the SERVICE ROLE key bypasses RLS entirely. Privileged server paths
 -- (webhook confirmation, guaranteed audit writes) use createAdminClient() and
@@ -115,9 +116,10 @@ alter table public.audit_logs          enable row level security;
 -- ============================================================================
 -- POLICIES: profiles
 -- ----------------------------------------------------------------------------
--- Self select/update; admins full access. Inserts are normally performed by the
--- handle_new_user() trigger (SECURITY DEFINER), but we also allow a user to
--- insert their own row defensively.
+-- Self select/update for safe fields only; admin/server privileged updates use
+-- trusted server actions. Inserts are normally performed by the handle_new_user()
+-- trigger (SECURITY DEFINER), but we also allow a user to insert their own row
+-- defensively with column privileges preventing role/verification spoofing.
 -- ============================================================================
 drop policy if exists profiles_select_self_or_admin on public.profiles;
 create policy profiles_select_self_or_admin
@@ -132,11 +134,19 @@ create policy profiles_insert_self
   with check (id = auth.uid() or public.is_admin());
 
 drop policy if exists profiles_update_self_or_admin on public.profiles;
-create policy profiles_update_self_or_admin
+drop policy if exists profiles_update_self_safe on public.profiles;
+create policy profiles_update_self_safe
   on public.profiles for update
   to authenticated
-  using (id = auth.uid() or public.is_admin())
-  with check (id = auth.uid() or public.is_admin());
+  using (id = auth.uid())
+  with check (id = auth.uid());
+
+drop policy if exists profiles_update_admin on public.profiles;
+create policy profiles_update_admin
+  on public.profiles for update
+  to authenticated
+  using (public.is_admin())
+  with check (public.is_admin());
 
 drop policy if exists profiles_delete_admin on public.profiles;
 create policy profiles_delete_admin
@@ -144,12 +154,19 @@ create policy profiles_delete_admin
   to authenticated
   using (public.is_admin());
 
+-- Prevent users from changing privileged columns such as role, is_verified,
+-- kyc_status, or account_status through direct Supabase client calls.
+revoke insert, update on public.profiles from authenticated;
+grant insert (id, email, full_name, company, phone, avatar_url) on public.profiles to authenticated;
+grant update (email, full_name, company, phone, avatar_url) on public.profiles to authenticated;
+
 -- ============================================================================
 -- POLICIES: cases
 -- ----------------------------------------------------------------------------
--- Select/update gated by has_case_access. Insert: any authenticated user may
+-- Select gated by has_case_access. Insert: any authenticated user may
 -- create a case they own (created_by = self), or an admin on anyone's behalf.
--- Delete: admin only.
+-- Updates/deletes: admin only; user-visible case changes go through trusted
+-- server actions after application-level checks.
 -- ============================================================================
 drop policy if exists cases_select_access on public.cases;
 create policy cases_select_access
@@ -164,11 +181,12 @@ create policy cases_insert_owner_or_admin
   with check (created_by = auth.uid() or public.is_admin());
 
 drop policy if exists cases_update_access on public.cases;
-create policy cases_update_access
+drop policy if exists cases_update_admin on public.cases;
+create policy cases_update_admin
   on public.cases for update
   to authenticated
-  using (public.has_case_access(id))
-  with check (public.has_case_access(id));
+  using (public.is_admin())
+  with check (public.is_admin());
 
 drop policy if exists cases_delete_admin on public.cases;
 create policy cases_delete_admin
@@ -179,8 +197,8 @@ create policy cases_delete_admin
 -- ============================================================================
 -- POLICIES: case_parties
 -- ----------------------------------------------------------------------------
--- A user may see/insert/update/delete party rows on a case they can access.
--- (The case creator/admin manages parties; a party can see co-parties.)
+-- A user may see party rows on a case they can access. Party assignment is
+-- admin/server-only.
 -- ============================================================================
 drop policy if exists case_parties_select_access on public.case_parties;
 create policy case_parties_select_access
@@ -189,30 +207,33 @@ create policy case_parties_select_access
   using (public.has_case_access(case_id));
 
 drop policy if exists case_parties_insert_access on public.case_parties;
-create policy case_parties_insert_access
+drop policy if exists case_parties_insert_admin on public.case_parties;
+create policy case_parties_insert_admin
   on public.case_parties for insert
   to authenticated
-  with check (public.has_case_access(case_id));
+  with check (public.is_admin());
 
 drop policy if exists case_parties_update_access on public.case_parties;
-create policy case_parties_update_access
+drop policy if exists case_parties_update_admin on public.case_parties;
+create policy case_parties_update_admin
   on public.case_parties for update
   to authenticated
-  using (public.has_case_access(case_id))
-  with check (public.has_case_access(case_id));
+  using (public.is_admin())
+  with check (public.is_admin());
 
 drop policy if exists case_parties_delete_access on public.case_parties;
-create policy case_parties_delete_access
+drop policy if exists case_parties_delete_admin on public.case_parties;
+create policy case_parties_delete_admin
   on public.case_parties for delete
   to authenticated
-  using (public.has_case_access(case_id));
+  using (public.is_admin());
 
 -- ============================================================================
 -- POLICIES: escrow_contracts
 -- ----------------------------------------------------------------------------
--- Read by case access. Inserts are allowed for case setup, but escrow workflow
--- updates are admin-only. Parties can approve/review; they cannot move escrow
--- state or write ledger events directly.
+-- Read by case access. Escrow account creation and workflow updates are
+-- admin/server-only. Parties can approve/review through controlled actions;
+-- they cannot move escrow state or write ledger events directly.
 -- ============================================================================
 drop policy if exists escrow_contracts_select_access on public.escrow_contracts;
 create policy escrow_contracts_select_access
@@ -221,10 +242,11 @@ create policy escrow_contracts_select_access
   using (public.has_case_access(case_id));
 
 drop policy if exists escrow_contracts_insert_access on public.escrow_contracts;
-create policy escrow_contracts_insert_access
+drop policy if exists escrow_contracts_insert_admin on public.escrow_contracts;
+create policy escrow_contracts_insert_admin
   on public.escrow_contracts for insert
   to authenticated
-  with check (public.has_case_access(case_id));
+  with check (public.is_admin());
 
 drop policy if exists escrow_contracts_update_access on public.escrow_contracts;
 create policy escrow_contracts_update_access
@@ -256,7 +278,7 @@ create policy escrow_txns_insert_access
 -- POLICIES: uploaded_files
 -- ----------------------------------------------------------------------------
 -- Read by case access. Insert requires case access AND uploaded_by = self.
--- Uploader (or admin) may delete their own evidence rows.
+-- Evidence metadata is written by trusted server actions; deletion is admin-only.
 -- ============================================================================
 drop policy if exists uploaded_files_select_access on public.uploaded_files;
 create policy uploaded_files_select_access
@@ -265,23 +287,25 @@ create policy uploaded_files_select_access
   using (public.has_case_access(case_id));
 
 drop policy if exists uploaded_files_insert_access on public.uploaded_files;
-create policy uploaded_files_insert_access
+drop policy if exists uploaded_files_insert_admin on public.uploaded_files;
+create policy uploaded_files_insert_admin
   on public.uploaded_files for insert
   to authenticated
-  with check (public.has_case_access(case_id) and uploaded_by = auth.uid());
+  with check (public.is_admin());
 
 drop policy if exists uploaded_files_delete_owner_or_admin on public.uploaded_files;
-create policy uploaded_files_delete_owner_or_admin
+drop policy if exists uploaded_files_delete_admin on public.uploaded_files;
+create policy uploaded_files_delete_admin
   on public.uploaded_files for delete
   to authenticated
-  using (uploaded_by = auth.uid() or public.is_admin());
+  using (public.is_admin());
 
 -- ============================================================================
 -- POLICIES: chat_messages
 -- ----------------------------------------------------------------------------
 -- Read by case access. Insert requires case access AND sender_id = self.
--- Update limited to case participants (used to flip read=true on received
--- messages); deletes restricted to admins.
+-- Updates/deletes are admin/server-only. User read receipts should be written
+-- through a trusted server action after case-access checks.
 -- ============================================================================
 drop policy if exists chat_messages_select_access on public.chat_messages;
 create policy chat_messages_select_access
@@ -296,11 +320,12 @@ create policy chat_messages_insert_self
   with check (public.has_case_access(case_id) and sender_id = auth.uid());
 
 drop policy if exists chat_messages_update_access on public.chat_messages;
-create policy chat_messages_update_access
+drop policy if exists chat_messages_update_admin on public.chat_messages;
+create policy chat_messages_update_admin
   on public.chat_messages for update
   to authenticated
-  using (public.has_case_access(case_id))
-  with check (public.has_case_access(case_id));
+  using (public.is_admin())
+  with check (public.is_admin());
 
 drop policy if exists chat_messages_delete_admin on public.chat_messages;
 create policy chat_messages_delete_admin
@@ -381,16 +406,13 @@ create policy disputes_delete_admin
 -- ============================================================================
 -- POLICIES: audit_logs  (append-only)
 -- ----------------------------------------------------------------------------
--- INSERT: any authenticated user (actions log themselves).
+-- INSERT: trusted server/service-role code only.
 -- SELECT: case access OR admin; rows with a null case_id are visible to admins.
 -- NO update/delete policies exist -> those operations are denied for all
 -- non-service roles. The append-only guarantee holds at the RLS layer.
 -- ============================================================================
 drop policy if exists audit_logs_insert_authenticated on public.audit_logs;
-create policy audit_logs_insert_authenticated
-  on public.audit_logs for insert
-  to authenticated
-  with check (true);
+drop policy if exists audit_logs_insert_admin on public.audit_logs;
 
 drop policy if exists audit_logs_select_access on public.audit_logs;
 create policy audit_logs_select_access

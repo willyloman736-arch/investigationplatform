@@ -12,6 +12,7 @@ import { TrustBanner } from "@/components/marketing/TrustBanner";
 import { StatsCounter } from "@/components/marketing/StatsCounter";
 import { FeatureGrid } from "@/components/marketing/FeatureGrid";
 import { HowItWorksSteps } from "@/components/marketing/HowItWorksSteps";
+import { ReviewsSection } from "@/components/marketing/ReviewsSection";
 import { Footer } from "@/components/marketing/Footer";
 
 /**
@@ -155,6 +156,9 @@ export default async function LandingPage() {
           </div>
         </section>
 
+        {/* Client reviews (placeholder content — replace before launch) */}
+        <ReviewsSection />
+
         {/* Final CTA */}
         <section className="py-16 sm:py-24" aria-label="Get started">
           <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -183,7 +187,7 @@ export default async function LandingPage() {
                   variant="outline"
                   className="w-full border-white/15 bg-white/5 hover:bg-white/10 sm:w-auto"
                 >
-                  <Link href="/register">Open Secure Escrow Account</Link>
+                  <Link href="/login?redirectTo=/dashboard/escrow">Secure Escrow Access</Link>
                 </Button>
               </div>
             </div>

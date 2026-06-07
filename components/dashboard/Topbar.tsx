@@ -172,8 +172,9 @@ function titleFromPath(pathname: string, role: UserRole): string {
   if (pathname.startsWith("/dashboard/kyc")) return "KYC Verification";
   if (pathname.startsWith("/dashboard/withdraw")) return "Withdraw Funds";
   if (pathname.startsWith("/dashboard/profile")) return "Profile";
+  if (pathname.startsWith("/dashboard/escrow")) return "Escrow Account";
   if (pathname.startsWith("/dashboard/cases")) return "Recovery Cases";
-  return "Escrow Dashboard";
+  return "Recovery Cases";
 }
 
 export default Topbar;
