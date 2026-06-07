@@ -311,7 +311,7 @@ function HeroStat({
         <p className="text-sm font-medium text-muted-foreground">{label}</p>
         <Icon3D icon={Icon} tone={tone} size={40} />
       </div>
-      <p className="mt-4 text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
+      <p className="mt-4 break-words text-2xl font-semibold tracking-tight tabular-nums text-foreground sm:text-3xl">
         {value}
       </p>
       <p className="mt-1 text-xs text-muted-foreground">{hint}</p>

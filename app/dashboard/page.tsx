@@ -627,7 +627,7 @@ function HeroMetric({
           <Icon className="h-4 w-4 sm:h-[18px] sm:w-[18px]" />
         </span>
       </div>
-      <p className="mt-2 text-xl font-semibold tracking-tight text-foreground sm:mt-4 sm:text-3xl">
+      <p className="mt-2 break-words text-xl font-semibold tracking-tight tabular-nums text-foreground sm:mt-4 sm:text-3xl">
         {value}
       </p>
       <p className="mt-1 line-clamp-2 text-[11px] leading-snug text-muted-foreground sm:text-xs">
@@ -769,7 +769,7 @@ function DetailMetric({ label, value }: { label: string; value: string }) {
   return (
     <div>
       <p className="text-xs text-muted-foreground">{label}</p>
-      <p className="mt-0.5 font-semibold tabular-nums text-foreground">{value}</p>
+      <p className="mt-0.5 break-words font-semibold tabular-nums text-foreground">{value}</p>
     </div>
   );
 }
@@ -870,16 +870,16 @@ function EscrowAccountCard({
       </div>
 
       <div className="mt-4 flex items-end justify-between gap-3">
-        <div>
+        <div className="min-w-0">
           <p className="text-xs text-muted-foreground">Available escrow</p>
-          <p className="mt-1 text-2xl font-semibold tabular-nums text-foreground">
+          <p className="mt-1 break-words text-2xl font-semibold tabular-nums text-foreground">
             {formatCurrency(
               operation.escrow_available_amount,
               operation.escrow?.currency ?? "USD"
             )}
           </p>
         </div>
-        <Badge variant={WITHDRAWAL_VARIANT[withdrawalStatus]}>
+        <Badge variant={WITHDRAWAL_VARIANT[withdrawalStatus]} className="shrink-0">
           {WITHDRAWAL_STATUS_LABELS[withdrawalStatus]}
         </Badge>
       </div>
