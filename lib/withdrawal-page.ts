@@ -133,6 +133,16 @@ export async function getWithdrawalCheckoutContext(
     redirect("/dashboard/kyc");
   }
 
+  if ((profile.escrow_account_status ?? "not_started") !== "active") {
+    return {
+      blocked: true,
+      title: "Secure escrow account setup required",
+      body: "Create your private escrow account before accessing withdrawal setup and payout request options.",
+      actionHref: "/dashboard/escrow",
+      actionLabel: "Create escrow account",
+    };
+  }
+
   const [operations, disputes, requests] = await Promise.all([
     getRecoveryOperationsCases(profile.role, profile.id),
     getDisputes(),

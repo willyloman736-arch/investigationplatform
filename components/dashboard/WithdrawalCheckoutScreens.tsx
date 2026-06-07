@@ -465,17 +465,17 @@ function PhoneShell({
   hideHeader?: boolean;
 }) {
   return (
-    <main className="min-h-[calc(100vh-2rem)] bg-[#001b2c] px-3 py-4 pb-[calc(env(safe-area-inset-bottom)+6rem)] text-white lg:pb-8">
+    <main className="min-h-[calc(100vh-2rem)] bg-[#001b2c] px-3 py-4 pb-[calc(env(safe-area-inset-bottom)+6rem)] text-white lg:bg-transparent lg:px-0 lg:py-0 lg:pb-8">
       <motion.div
         initial={{ opacity: 0, y: 18 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.32 }}
-        className="mx-auto w-full max-w-[390px] overflow-hidden rounded-[34px] border border-white/15 bg-[#041122]/95 p-4 shadow-[0_28px_80px_rgba(0,0,0,0.55)]"
+        className="mx-auto w-full max-w-[390px] overflow-hidden rounded-[34px] border border-white/15 bg-[#041122]/95 p-4 shadow-[0_28px_80px_rgba(0,0,0,0.55)] lg:max-w-6xl lg:rounded-[2rem] lg:bg-white/[0.045] lg:p-6 xl:p-8"
       >
         <StatusBar />
         {!hideHeader ? (
           <>
-            <div className="mt-5 flex items-center justify-between">
+            <div className="mt-5 flex items-center justify-between lg:mt-0">
               <Link
                 href="/dashboard/withdraw"
                 className="flex h-10 w-10 items-center justify-center rounded-full bg-white/[0.08] text-white"
@@ -486,18 +486,18 @@ function PhoneShell({
                 <TrailingIcon className="h-5 w-5" aria-hidden="true" />
               </span>
             </div>
-            <header className="mt-6">
-              <h1 className="text-[28px] font-semibold leading-tight tracking-[-0.02em] text-white">
+            <header className="mt-6 lg:max-w-3xl">
+              <h1 className="text-[28px] font-semibold leading-tight tracking-[-0.02em] text-white lg:text-4xl">
                 {title}
               </h1>
-              <p className="mt-2 max-w-[300px] text-sm leading-relaxed text-slate-300">
+              <p className="mt-2 max-w-[300px] text-sm leading-relaxed text-slate-300 lg:max-w-2xl lg:text-base">
                 {subtitle}
               </p>
             </header>
           </>
         ) : null}
-        <div className={cn("space-y-4", hideHeader ? "mt-2" : "mt-4")}>{children}</div>
-        <div className="mx-auto mt-4 h-1.5 w-32 rounded-full bg-white" />
+        <div className={cn("space-y-4 lg:space-y-5", hideHeader ? "mt-2" : "mt-4")}>{children}</div>
+        <div className="mx-auto mt-4 h-1.5 w-32 rounded-full bg-white lg:hidden" />
       </motion.div>
     </main>
   );
@@ -505,7 +505,7 @@ function PhoneShell({
 
 function StatusBar() {
   return (
-    <div className="flex items-center justify-between px-4 pt-1 text-sm font-semibold text-white">
+    <div className="flex items-center justify-between px-4 pt-1 text-sm font-semibold text-white lg:hidden">
       <span>9:41</span>
       <span className="flex items-center gap-1">
         <span className="h-2.5 w-4 rounded-sm border border-white/80" />
@@ -521,7 +521,7 @@ function TrustStrip({ badges }: { badges: string[] }) {
       {badges.map((badge) => (
         <div key={badge} className="min-w-0 text-center">
           <ShieldCheck className="mx-auto h-4 w-4 text-emerald-400" aria-hidden="true" />
-          <p className="mt-1 truncate text-[9px] font-semibold leading-tight text-slate-300">
+          <p className="mt-1 text-[9px] font-semibold leading-tight text-slate-300 lg:text-[11px]">
             {badge}
           </p>
         </div>
@@ -663,7 +663,7 @@ function BankForm({
   return (
     <>
       <GlassCard title="Bank Information" icon={Landmark} subtitle="Please provide your bank details accurately.">
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
           <InputField label="Account Holder Name" value={form.accountHolderName} onChange={(v) => update("accountHolderName", v)} />
           <InputField label="Bank Name" value={form.bankName} onChange={(v) => update("bankName", v)} />
           <InputField label="Routing Number" value={form.routingNumber} onChange={(v) => update("routingNumber", v)} inputMode="numeric" />
@@ -676,7 +676,7 @@ function BankForm({
           <InputField label="State" value={form.state} onChange={(v) => update("state", v)} />
           <InputField label="ZIP Code" value={form.zipCode} onChange={(v) => update("zipCode", v)} inputMode="numeric" />
           <InputField label="Phone Number" value={form.phoneNumber} onChange={(v) => update("phoneNumber", v)} />
-          <InputField label="Email" value={form.email} onChange={(v) => update("email", v)} inputMode="email" className="col-span-2" />
+          <InputField label="Email" value={form.email} onChange={(v) => update("email", v)} inputMode="email" className="sm:col-span-2 lg:col-span-3" />
         </div>
       </GlassCard>
       <PaymentMethodRail method="bank_transfer" />
@@ -699,7 +699,7 @@ function CardForm({
   return (
     <>
       <GlassCard title="Card Details" icon={CreditCard} rightLabel="Secured by Stripe">
-        <div className="grid gap-2">
+        <div className="grid gap-2 lg:grid-cols-2">
           <InputField label="Cardholder Name" value={form.cardholderName} onChange={(v) => update("cardholderName", v)} />
           <InputField label="Billing ZIP Code" value={form.billingZipCode} onChange={(v) => update("billingZipCode", v)} inputMode="numeric" />
           <SelectField label="Country" value={form.country} onChange={(v) => update("country", v)} options={["United States", "Canada", "United Kingdom"]} />
@@ -735,7 +735,7 @@ function PaypalForm({
   return (
     <>
       <GlassCard title="PayPal Account" icon={Mail} subtitle="Submit the PayPal account that should receive your payout.">
-        <div className="grid gap-2">
+        <div className="grid gap-2 lg:grid-cols-2">
           <InputField label="PayPal Email" value={form.paypalEmail} onChange={(v) => update("paypalEmail", v)} inputMode="email" />
           <InputField label="Confirm PayPal Email" value={form.confirmPaypalEmail} onChange={(v) => update("confirmPaypalEmail", v)} inputMode="email" />
           <SelectField label="Country" value={form.country} onChange={(v) => update("country", v)} options={["United States", "Canada", "United Kingdom"]} />
@@ -786,12 +786,12 @@ function PaymentMethodRail({ method }: { method: CheckoutMethod }) {
   const active = method === "bank_transfer" ? "Bank Transfer" : method === "paypal" ? "PayPal" : "Visa";
   return (
     <GlassCard title="Payment Method" icon={CreditCard} rightLabel="Verified Payment Processing">
-      <div className="grid grid-cols-4 gap-2">
+      <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
         {["Bank Transfer", "Visa", "Mastercard", "Stripe"].map((item) => (
           <div
             key={item}
             className={cn(
-              "rounded-[14px] border p-3 text-center text-xs font-bold",
+              "min-w-0 rounded-[14px] border p-3 text-center text-[11px] font-bold leading-tight sm:text-xs",
               active === item
                 ? "border-emerald-400/30 bg-emerald-400/15 text-emerald-200"
                 : "border-white/10 bg-white/[0.035] text-slate-300"
@@ -841,7 +841,7 @@ function GlassCard({
           </div>
         </div>
         {rightLabel ? (
-          <span className="rounded-full border border-emerald-400/20 bg-emerald-400/10 px-2 py-1 text-[10px] font-semibold text-emerald-200">
+          <span className="max-w-[48%] rounded-full border border-emerald-400/20 bg-emerald-400/10 px-2 py-1 text-[10px] font-semibold leading-tight text-emerald-200 sm:max-w-none">
             {rightLabel}
           </span>
         ) : null}
@@ -929,8 +929,8 @@ function SummaryRow({
 }) {
   return (
     <div className="flex items-center justify-between gap-3 py-1.5 text-sm">
-      <span className="text-slate-300">{label}</span>
-      <span className={cn("text-right font-semibold text-white", valueClassName)}>
+      <span className="min-w-0 text-slate-300">{label}</span>
+      <span className={cn("min-w-0 break-words text-right font-semibold text-white", valueClassName)}>
         {value}
       </span>
     </div>

@@ -62,10 +62,21 @@ end$$;
 -- ── PROFILE VERIFICATION FIELDS ─────────────────────────────────────────────
 alter table public.profiles
   add column if not exists kyc_status kyc_status not null default 'not_started',
-  add column if not exists is_verified boolean not null default false;
+  add column if not exists is_verified boolean not null default false,
+  add column if not exists escrow_account_status text not null default 'not_started',
+  add column if not exists escrow_account_reference text,
+  add column if not exists escrow_account_opened_at timestamptz;
+
+alter table public.profiles
+  drop constraint if exists profiles_escrow_account_status_check;
+
+alter table public.profiles
+  add constraint profiles_escrow_account_status_check
+  check (escrow_account_status in ('not_started', 'active'));
 
 create index if not exists idx_profiles_kyc_status on public.profiles(kyc_status);
 create index if not exists idx_profiles_is_verified on public.profiles(is_verified);
+create index if not exists idx_profiles_escrow_account_status on public.profiles(escrow_account_status);
 
 -- ── TABLE: kyc_submissions ──────────────────────────────────────────────────
 create table if not exists public.kyc_submissions (

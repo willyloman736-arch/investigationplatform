@@ -186,6 +186,9 @@ export interface Profile {
   avatar_url: string | null;
   kyc_status: KycStatus;
   is_verified: boolean;
+  escrow_account_status?: "not_started" | "active";
+  escrow_account_reference?: string | null;
+  escrow_account_opened_at?: string | null;
   // Added by notifications.sql; optional so existing Profile constructors
   // (mock data, demo fallbacks) keep compiling. Always present on real rows.
   account_status?: AccountStatus;

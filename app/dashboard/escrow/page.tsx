@@ -72,6 +72,7 @@ import { PayoutMethodStrip } from "@/components/shared/PayoutMethodStrip";
 import { FundsBreakdownTable } from "@/components/dashboard/FundsBreakdownTable";
 import { Sparkline } from "@/components/dashboard/Sparkline";
 import { WithdrawalRequestDialog } from "@/components/dashboard/WithdrawalRequestDialog";
+import { createSecureEscrowAccount } from "@/lib/actions/escrow-account";
 
 export const dynamic = "force-dynamic";
 
@@ -198,17 +199,41 @@ async function resolveUser(): Promise<{
   id?: string;
   role: UserRole;
   name: string;
+  email?: string;
+  phone?: string | null;
+  kycStatus: KycStatus;
+  isVerified: boolean;
+  escrowAccountStatus: "not_started" | "active";
+  escrowAccountReference?: string | null;
 }> {
   if (DEMO_MODE) {
     const mock = await getCurrentUserMock("client");
-    return { id: mock.id, role: mock.role, name: mock.full_name ?? mock.email };
+    return {
+      id: mock.id,
+      role: mock.role,
+      name: mock.full_name ?? mock.email,
+      email: mock.email,
+      phone: mock.phone,
+      kycStatus: mock.kyc_status,
+      isVerified: mock.is_verified,
+      escrowAccountStatus: mock.escrow_account_status ?? "active",
+      escrowAccountReference: mock.escrow_account_reference,
+    };
   }
 
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return { role: "client", name: "" };
+  if (!user) {
+    return {
+      role: "client",
+      name: "",
+      kycStatus: "not_started",
+      isVerified: false,
+      escrowAccountStatus: "not_started",
+    };
+  }
 
   const { data: profile } = await supabase
     .from("profiles")
@@ -220,6 +245,12 @@ async function resolveUser(): Promise<{
     id: profile?.id ?? user.id,
     role: profile?.role ?? "client",
     name: profile?.full_name ?? profile?.email ?? "",
+    email: profile?.email ?? user.email ?? "",
+    phone: profile?.phone,
+    kycStatus: profile?.kyc_status ?? "not_started",
+    isVerified: Boolean(profile?.is_verified),
+    escrowAccountStatus: profile?.escrow_account_status ?? "not_started",
+    escrowAccountReference: profile?.escrow_account_reference,
   };
 }
 
@@ -272,6 +303,27 @@ export default async function DashboardOverviewPage() {
 
   if (cases.length === 0) {
     return <EscrowPrerequisiteGate firstName={firstName(user.name)} />;
+  }
+
+  if (!user.isVerified) {
+    return (
+      <EscrowKycGate
+        firstName={firstName(user.name)}
+        kycStatus={user.kycStatus}
+      />
+    );
+  }
+
+  if (user.escrowAccountStatus !== "active") {
+    return (
+      <EscrowAccountSetupGate
+        firstName={firstName(user.name)}
+        name={user.name}
+        email={user.email ?? ""}
+        phone={user.phone ?? ""}
+        primaryCaseNumber={cases[0]?.case_number}
+      />
+    );
   }
 
   if (!primaryOperation || operations.length === 0) {
@@ -424,7 +476,7 @@ function EscrowHero({
   const tone = ESCROW_TONE[escrowStatus];
 
   return (
-    <section className="grid grid-cols-1 gap-4 sm:gap-5 xl:grid-cols-[minmax(0,1.4fr)_minmax(340px,.72fr)]">
+    <section className="grid grid-cols-1 gap-4 sm:gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(340px,420px)]">
       <div
         className={cn(
           "relative overflow-hidden rounded-[1.5rem] border bg-white/[0.055] p-4 shadow-2xl shadow-black/25 backdrop-blur-xl sm:rounded-3xl sm:p-6",
@@ -480,27 +532,29 @@ function EscrowHero({
           </div>
         </div>
 
-        <div className="relative mt-4 grid grid-cols-1 gap-3 sm:mt-6 sm:gap-4 lg:grid-cols-[minmax(0,1fr)_320px]">
+        <div className="relative mt-4 grid grid-cols-1 gap-3 sm:mt-6 sm:gap-4">
           <div className="rounded-2xl border border-white/10 bg-background/35 p-3 backdrop-blur-xl sm:p-4">
-            <div className="flex items-start justify-between gap-3">
-              <div>
+            <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
+              <div className="min-w-0">
                 <p className="text-sm font-medium text-muted-foreground">
                   Total escrow balance
                 </p>
-                <p className="mt-2 break-words text-[2rem] font-semibold leading-none tracking-tight text-foreground sm:text-5xl">
+                <p className="mt-2 max-w-full break-words text-[clamp(2.5rem,6vw,4.75rem)] font-semibold leading-none tracking-tight text-foreground">
                   {formatCurrency(balance, currency)}
                 </p>
               </div>
-              <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-400/15 text-emerald-200 ring-1 ring-inset ring-emerald-400/25">
+              <span className="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-emerald-400/15 text-emerald-200 ring-1 ring-inset ring-emerald-400/25">
                 <Wallet className="h-5 w-5" />
               </span>
             </div>
-            <div className="mt-4 sm:mt-5">
-              <Sparkline data={trend} className="h-16 w-full sm:h-24" />
-              <p className="mt-1 text-[11px] text-muted-foreground">
-                Balance visibility is updated after review and provider confirmation.
-              </p>
-              <div className="mt-4">
+            <div className="mt-4 grid gap-4 xl:grid-cols-[minmax(0,1fr)_280px] xl:items-end">
+              <div className="min-w-0">
+                <Sparkline data={trend} className="h-16 w-full sm:h-24" />
+                <p className="mt-1 text-[11px] text-muted-foreground">
+                  Balance visibility is updated after review and provider confirmation.
+                </p>
+              </div>
+              <div>
                 <WithdrawalRequestDialog
                   caseId={primaryOperation.id}
                   availableAmount={
@@ -526,7 +580,7 @@ function EscrowHero({
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-2 sm:gap-3">
+          <div className="grid grid-cols-2 gap-2 sm:gap-3 xl:grid-cols-4">
             <HeroMetric
               label="Active escrow"
               value={activeEscrows}
@@ -1282,6 +1336,171 @@ function EscrowPrerequisiteGate({ firstName }: { firstName: string }) {
   );
 }
 
+function EscrowKycGate({
+  firstName,
+  kycStatus,
+}: {
+  firstName: string;
+  kycStatus: KycStatus;
+}) {
+  return (
+    <SecureEscrowAccountCard
+      firstName={firstName}
+      title="Identity Verification Required"
+      body="Your recovery case is on file. Complete KYC verification and wait for approval before creating a private escrow account."
+      primaryHref="/dashboard/kyc"
+      primaryLabel="Complete KYC Verification"
+      secondaryHref="/dashboard"
+      secondaryLabel="View Recovery Cases"
+      locked
+      requirements={[
+        { label: "Recovery complaint filed", complete: true },
+        {
+          label: `KYC status: ${KYC_STATUS_LABELS[kycStatus]}`,
+          complete: kycStatus === "verified",
+        },
+        { label: "Private escrow account setup", complete: false },
+      ]}
+      footer="Escrow access becomes available only after KYC has been reviewed and approved."
+    />
+  );
+}
+
+function EscrowAccountSetupGate({
+  firstName,
+  name,
+  email,
+  phone,
+  primaryCaseNumber,
+}: {
+  firstName: string;
+  name: string;
+  email: string;
+  phone: string;
+  primaryCaseNumber?: string;
+}) {
+  return (
+    <section className="mx-auto grid max-w-6xl grid-cols-1 gap-5 xl:grid-cols-[minmax(0,0.9fr)_minmax(420px,0.7fr)]">
+      <div className="relative overflow-hidden rounded-[2rem] border border-emerald-300/20 bg-[#041122]/95 p-5 text-white shadow-[0_28px_80px_rgba(0,0,0,0.55)] backdrop-blur-2xl sm:p-8">
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute -right-24 -top-32 h-80 w-80 rounded-full bg-emerald-400/20 blur-3xl"
+        />
+        <div className="relative flex items-center gap-3">
+          <span className="inline-flex h-12 w-12 items-center justify-center rounded-2xl border border-emerald-300/25 bg-emerald-400/10 text-emerald-300">
+            <ShieldCheck className="h-6 w-6" />
+          </span>
+          <span className="text-xl font-semibold tracking-tight">
+            Secure<span className="text-emerald-300">Escrow</span>
+          </span>
+        </div>
+        <p className="relative mt-8 text-sm text-slate-400">
+          Welcome back, {firstName}
+        </p>
+        <h1 className="relative mt-2 max-w-2xl text-4xl font-semibold leading-tight tracking-tight sm:text-5xl">
+          Create Your Secure Escrow Account
+        </h1>
+        <p className="relative mt-4 max-w-2xl text-base leading-relaxed text-slate-300">
+          Complete the private escrow setup now that your identity has been
+          verified. Your escrow dashboard, balances, withdrawal requests,
+          receipts, and protected communications unlock after this step.
+        </p>
+
+        <div className="relative mt-8 grid grid-cols-2 gap-3 sm:grid-cols-4">
+          <EscrowSetupFeature icon={Lock} label="SSL Secured" />
+          <EscrowSetupFeature icon={IdCard} label="Verified Identity" />
+          <EscrowSetupFeature icon={MessageSquare} label="Protected Messages" />
+          <EscrowSetupFeature icon={Wallet} label="Secure Withdrawals" />
+        </div>
+      </div>
+
+      <form
+        action={createSecureEscrowAccount}
+        className="rounded-[2rem] border border-white/15 bg-white/[0.06] p-5 text-white shadow-[0_28px_80px_rgba(0,0,0,0.38)] backdrop-blur-2xl sm:p-6"
+      >
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-[0.22em] text-blue-300">
+            Private escrow setup
+          </p>
+          <h2 className="mt-2 text-2xl font-semibold">Account details</h2>
+          <p className="mt-2 text-sm leading-relaxed text-slate-300">
+            This account is linked to your verified recovery profile and becomes
+            the destination workspace for release review and payout requests.
+          </p>
+        </div>
+
+        <div className="mt-5 grid gap-3 sm:grid-cols-2">
+          <EscrowSetupInput
+            label="Full Name"
+            name="fullName"
+            defaultValue={name}
+            className="sm:col-span-2"
+            required
+          />
+          <EscrowSetupInput
+            label="Email Address"
+            name="email"
+            defaultValue={email}
+            type="email"
+            disabled
+          />
+          <EscrowSetupInput
+            label="Phone Number"
+            name="phone"
+            defaultValue={phone}
+            required
+          />
+          <EscrowSetupSelect
+            label="Account Type"
+            name="accountType"
+            options={["Individual", "Business"]}
+          />
+          <EscrowSetupSelect
+            label="Country"
+            name="country"
+            options={["United States", "Canada", "United Kingdom"]}
+          />
+          <EscrowSetupInput
+            label="Referral / Case Code"
+            name="caseCode"
+            defaultValue={primaryCaseNumber ?? ""}
+            className="sm:col-span-2"
+          />
+        </div>
+
+        <div className="mt-5 space-y-2">
+          <RequirementRow complete label="Recovery complaint filed" />
+          <RequirementRow complete label="KYC verified by review team" />
+          <RequirementRow complete={false} label="Private escrow account setup" />
+        </div>
+
+        <label className="mt-5 flex items-start gap-3 text-xs leading-relaxed text-slate-300">
+          <input
+            name="terms"
+            type="checkbox"
+            required
+            className="mt-0.5 h-4 w-4 rounded border-blue-300 bg-blue-500 text-blue-500"
+          />
+          <span>
+            I agree to use this escrow account only for verified recovery case
+            activity and provider-reviewed payout requests.
+          </span>
+        </label>
+
+        <Button className="mt-5 h-14 w-full rounded-2xl bg-blue-600 text-base font-semibold hover:bg-blue-500">
+          <Lock className="h-4 w-4" />
+          Create Account Securely
+          <ArrowRight className="ml-auto h-4 w-4" />
+        </Button>
+
+        <p className="mt-4 text-center text-xs text-slate-400">
+          Your data is protected with bank-level security controls.
+        </p>
+      </form>
+    </section>
+  );
+}
+
 function EmptyEscrowDashboard({
   firstName,
   hasCase = false,
@@ -1303,6 +1522,11 @@ function EmptyEscrowDashboard({
       secondaryHref="/dashboard/profile"
       secondaryLabel="Complete Profile"
       locked={!hasCase}
+      requirements={[
+        { label: "Recovery complaint filed", complete: hasCase },
+        { label: "KYC verification and review", complete: false },
+        { label: "Private escrow account setup", complete: false },
+      ]}
     />
   );
 }
@@ -1316,6 +1540,8 @@ function SecureEscrowAccountCard({
   secondaryHref,
   secondaryLabel,
   locked,
+  requirements,
+  footer,
 }: {
   firstName: string;
   title: string;
@@ -1325,7 +1551,16 @@ function SecureEscrowAccountCard({
   secondaryHref: string;
   secondaryLabel: string;
   locked: boolean;
+  requirements?: { label: string; complete: boolean }[];
+  footer?: string;
 }) {
+  const checklist =
+    requirements ?? [
+      { label: "Recovery complaint filed", complete: !locked },
+      { label: "Escrow workspace eligibility", complete: !locked },
+      { label: "KYC verification and review", complete: false },
+    ];
+
   return (
     <section className="mx-auto max-w-[520px] rounded-[2rem] border border-white/15 bg-[#041122]/95 p-4 text-white shadow-[0_28px_80px_rgba(0,0,0,0.55)] backdrop-blur-2xl sm:p-6">
       <div className="flex items-center justify-between px-3 pt-1 text-sm font-semibold">
@@ -1370,18 +1605,13 @@ function SecureEscrowAccountCard({
         </div>
 
         <div className="mt-4 space-y-2">
-          <RequirementRow
-            complete={!locked}
-            label="Recovery complaint filed"
-          />
-          <RequirementRow
-            complete={!locked}
-            label="Escrow workspace eligibility"
-          />
-          <RequirementRow
-            complete={false}
-            label="KYC verification and review"
-          />
+          {checklist.map((item) => (
+            <RequirementRow
+              key={item.label}
+              complete={item.complete}
+              label={item.label}
+            />
+          ))}
         </div>
 
         <Button asChild className="mt-5 h-14 w-full rounded-2xl bg-blue-600 text-base font-semibold hover:bg-blue-500">
@@ -1398,10 +1628,91 @@ function SecureEscrowAccountCard({
       </div>
 
       <p className="mt-5 text-center text-xs leading-relaxed text-slate-400">
-        Your escrow workspace is only available after a recovery complaint has
-        been opened and linked to your account.
+        {footer ??
+          "Your escrow workspace is only available after a recovery complaint has been opened and linked to your account."}
       </p>
     </section>
+  );
+}
+
+function EscrowSetupFeature({
+  icon: Icon,
+  label,
+}: {
+  icon: LucideIcon;
+  label: string;
+}) {
+  return (
+    <div className="rounded-2xl border border-white/10 bg-white/[0.06] px-3 py-4 text-center backdrop-blur-xl">
+      <Icon className="mx-auto h-5 w-5 text-blue-300" />
+      <p className="mt-2 text-xs font-semibold leading-tight text-slate-200">
+        {label}
+      </p>
+    </div>
+  );
+}
+
+function EscrowSetupInput({
+  label,
+  name,
+  defaultValue,
+  type = "text",
+  disabled = false,
+  required = false,
+  className,
+}: {
+  label: string;
+  name: string;
+  defaultValue?: string;
+  type?: string;
+  disabled?: boolean;
+  required?: boolean;
+  className?: string;
+}) {
+  return (
+    <label
+      className={cn(
+        "block rounded-2xl border border-white/10 bg-slate-950/25 px-4 py-3",
+        disabled && "opacity-70",
+        className
+      )}
+    >
+      <span className="text-[11px] font-medium text-slate-400">{label}</span>
+      <input
+        name={name}
+        type={type}
+        defaultValue={defaultValue}
+        disabled={disabled}
+        required={required}
+        className="mt-2 w-full min-w-0 bg-transparent text-sm font-semibold text-white outline-none placeholder:text-slate-500"
+      />
+    </label>
+  );
+}
+
+function EscrowSetupSelect({
+  label,
+  name,
+  options,
+}: {
+  label: string;
+  name: string;
+  options: string[];
+}) {
+  return (
+    <label className="block rounded-2xl border border-white/10 bg-slate-950/25 px-4 py-3">
+      <span className="text-[11px] font-medium text-slate-400">{label}</span>
+      <select
+        name={name}
+        className="mt-2 w-full appearance-none bg-transparent text-sm font-semibold text-white outline-none"
+      >
+        {options.map((option) => (
+          <option key={option} value={option} className="bg-slate-950 text-white">
+            {option}
+          </option>
+        ))}
+      </select>
+    </label>
   );
 }
 
